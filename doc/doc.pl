@@ -142,7 +142,7 @@ my $oHtmlSite =
         $oDocConfig,
         "${strBasePath}/xml",
         "${strBasePath}/html",
-        "${strBasePath}/css/default.css",
+        "${strBasePath}/resource/html/default.css",
         $strHtmlRoot,
         !$bNoExe
     );
