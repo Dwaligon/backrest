@@ -1,34 +1,49 @@
-% hello.tex - Our first LaTeX example!
-\documentclass[titlepage]{article}
-% \documentclass[titlepage,a4paper,10pt]{book}
+% ----------------------------------------------------------------------------------------------------------------------------------
+% Preamble for Latex User Guide
+% ----------------------------------------------------------------------------------------------------------------------------------
+\documentclass[titlepage,letterpaper,12pt]{article}
 
 % Add hyperlinks to TOC
+% ----------------------------------------------------------------------------------------------------------------------------------
 \usepackage{hyperref}
 
+% Create the program float to use for source code listings
+% ----------------------------------------------------------------------------------------------------------------------------------
 \usepackage{float}
 \floatstyle{ruled}
 \newfloat{program}{thp}{lop}
-\floatname{program}{Program}
+\floatname{program}{Example}
 
-\usepackage{times}
+% Set the font to Helvetica
+% ----------------------------------------------------------------------------------------------------------------------------------
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
 
- \usepackage[top=1cm, bottom=1cm, left=1cm, right=1cm]{geometry}
+% Set margins to 1 inch
+% ----------------------------------------------------------------------------------------------------------------------------------
+\usepackage[top=.5in, bottom=.5in, left=.5in, right=.5in]{geometry}
 
+% Begin the document
+% ----------------------------------------------------------------------------------------------------------------------------------
 \begin{document}
-% \frontmatter
 
+% Create the title page
+% ----------------------------------------------------------------------------------------------------------------------------------
 \title{pgBackRest User Guide}
 \author{Presented By\\
         Crunchy Data Solutions, Inc.}
 \date{\today}
 \maketitle
 
+% Generate TOC
+% ----------------------------------------------------------------------------------------------------------------------------------
 % \setcounter{tocdepth}{1}
 \renewcommand\contentsname{Table of Contents}
 \tableofcontents
 \newpage
-% \mainmatter
 
+% Content
+% ----------------------------------------------------------------------------------------------------------------------------------
 \section{Introduction}
 
 Hello World!
@@ -48,6 +63,9 @@ class HelloWorldApp {
   \caption{The Hello World! program in Java.}
 \end{program}
 
+\subsubsection{Example 2}
+
+Yada, Yada, yada!
 
 \section{Another Section}
 
