@@ -2,6 +2,9 @@
 \documentclass[titlepage]{article}
 % \documentclass[titlepage,a4paper,10pt]{book}
 
+% Add hyperlinks to TOC
+\usepackage{hyperref}
+
 \usepackage{float}
 \floatstyle{ruled}
 \newfloat{program}{thp}{lop}
@@ -14,12 +17,14 @@
 \begin{document}
 % \frontmatter
 
-\title{How to Structure a \LaTeX{} Document}
-\author{Crunchy Data Solutions}
+\title{pgBackRest User Guide}
+\author{Presented By\\
+        Crunchy Data Solutions, Inc.}
 \date{\today}
 \maketitle
 
 % \setcounter{tocdepth}{1}
+\renewcommand\contentsname{Table of Contents}
 \tableofcontents
 \newpage
 % \mainmatter
