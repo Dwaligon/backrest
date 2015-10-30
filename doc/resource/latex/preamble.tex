@@ -1,0 +1,43 @@
+% hello.tex - Our first LaTeX example!
+\documentclass[titlepage]{article}
+
+\usepackage{float}
+\floatstyle{ruled}
+\newfloat{program}{thp}{lop}
+\floatname{program}{Program}
+
+\usepackage{times}
+
+ \usepackage[top=1cm, bottom=1cm, left=1cm, right=1cm]{geometry}
+
+\begin{document}
+
+% \begin{figure}
+% \centering
+
+\title{How to Structure a \LaTeX{} Document}
+\author{Crunchy Data Solutions}
+\date{\today}
+\maketitle
+% \end{figure}
+
+\newpage
+
+\section{Introduction}
+
+Hello World!
+
+\begin{program}
+  \begin{verbatim}
+
+class HelloWorldApp {
+  public static void main(String[] args) {
+    //Display the string
+    System.out.println("Hello World!");
+  }
+}
+\end{verbatim}
+  \caption{The Hello World! program in Java.}
+\end{program}
+
+\end{document}
