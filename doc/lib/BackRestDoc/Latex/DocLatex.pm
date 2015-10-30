@@ -237,6 +237,7 @@ sub process
     # }
 
     executeTest("pdflatex -output-directory=$self->{strLatexPath} $self->{strPreambleFile}");
+    executeTest("pdflatex -output-directory=$self->{strLatexPath} $self->{strPreambleFile}");
 
     # Return from function and log return values if any
     logDebugReturn($strOperation);

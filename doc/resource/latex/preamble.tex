@@ -1,5 +1,6 @@
 % hello.tex - Our first LaTeX example!
 \documentclass[titlepage]{article}
+% \documentclass[titlepage,a4paper,10pt]{book}
 
 \usepackage{float}
 \floatstyle{ruled}
@@ -11,21 +12,23 @@
  \usepackage[top=1cm, bottom=1cm, left=1cm, right=1cm]{geometry}
 
 \begin{document}
-
-% \begin{figure}
-% \centering
+% \frontmatter
 
 \title{How to Structure a \LaTeX{} Document}
 \author{Crunchy Data Solutions}
 \date{\today}
 \maketitle
-% \end{figure}
 
+% \setcounter{tocdepth}{1}
+\tableofcontents
 \newpage
+% \mainmatter
 
 \section{Introduction}
 
 Hello World!
+
+\subsection{Example}
 
 \begin{program}
   \begin{verbatim}
@@ -39,5 +42,10 @@ class HelloWorldApp {
 \end{verbatim}
   \caption{The Hello World! program in Java.}
 \end{program}
+
+
+\section{Another Section}
+
+Hello World!
 
 \end{document}
