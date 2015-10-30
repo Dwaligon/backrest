@@ -6,3 +6,4 @@ test/vm/.vagrant
 test/nytprof.out
 test/nytprof/*
 doc/html/*
+doc/latex/*

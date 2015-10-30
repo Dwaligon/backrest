@@ -22,6 +22,7 @@ use lib dirname($0) . '/lib';
 use BackRestDoc::Common::Doc;
 use BackRestDoc::Common::DocConfig;
 use BackRestDoc::Html::DocHtmlSite;
+use BackRestDoc::Latex::DocLatex;
 use BackRestDoc::Common::DocRender;
 
 use lib dirname($0) . '/../lib';
@@ -65,6 +66,7 @@ my $strExeName = 'pg_backrest';                     # Exe name to use in docs
 my $bHtml = false;                                  # Generate full html documentation
 my $strHtmlRoot = '/';                              # Root html page
 my $bNoExe = false;                                 # Should commands be executed when buildng help? (for testing only)
+my $bPDF = false;                                   # Generate the PDF file
 
 GetOptions ('help' => \$bHelp,
             'version' => \$bVersion,
@@ -72,6 +74,7 @@ GetOptions ('help' => \$bHelp,
             'log-level=s' => \$strLogLevel,
             'html' => \$bHtml,
             'html-root=s' => \$strHtmlRoot,
+            'pdf' => \$bPDF,
             'no-exe', \$bNoExe)
     or pod2usage(2);
 
@@ -151,4 +154,21 @@ docProcess("${strBasePath}/xml/change-log.xml", "${strBasePath}/../CHANGELOG.md"
 if ($bHtml)
 {
     $oHtmlSite->process();
+}
+
+# Only generate the PDF file when requested
+my $oLatex =
+    new BackRestDoc::Latex::DocLatex
+    (
+        new BackRestDoc::Common::DocRender('html', $strProjectName, $strExeName),
+        $oDocConfig,
+        "${strBasePath}/xml",
+        "${strBasePath}/latex",
+        "${strBasePath}/resource/latex/preamble.tex",
+        !$bNoExe
+    );
+
+if ($bPDF)
+{
+    $oLatex->process();
 }
