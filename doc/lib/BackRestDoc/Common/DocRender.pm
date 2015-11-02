@@ -76,6 +76,33 @@ my $oRenderTag =
         'postgres' => ['PostgreSQL', '']
     },
 
+    'latex' =>
+    {
+        'b' => ['', ''],
+        'i' => ['', ''],
+        'bi' => ['', ''],
+        'ul' => ["\n", "\n"],
+        'ol' => ["\n", "\n"],
+        'li' => ['* ', "\n"],
+        'id' => ['', ''],
+        'file' => ['', ''],
+        'path' => ['', ''],
+        'cmd' => ['', ''],
+        'user' => ['', ''],
+        'br-option' => ['', ''],
+        'param' => ['', ''],
+        'setting' => ['', ''],
+        'br-option' => ['', ''],
+        'br-setting' => ['', ''],
+        'pg-option' => ['', ''],
+        'pg-setting' => ['', ''],
+        'code' => ['', ''],
+        'code-block' => ['', ''],
+        'exe' => [undef, ''],
+        'backrest' => [undef, ''],
+        'postgres' => ['PostgreSQL', '']
+    },
+
     'html' =>
     {
         'b' => ['<b>', '</b>'],
@@ -130,8 +157,13 @@ sub new
 
     $$oRenderTag{markdown}{backrest}[0] = $self->{strProjectName};
     $$oRenderTag{markdown}{exe}[0] = $self->{strExeName};
+
     $$oRenderTag{text}{backrest}[0] = $self->{strProjectName};
     $$oRenderTag{text}{exe}[0] = $self->{strExeName};
+
+    $$oRenderTag{latex}{backrest}[0] = $self->{strProjectName};
+    $$oRenderTag{latex}{exe}[0] = $self->{strExeName};
+
     $$oRenderTag{html}{backrest}[0] = "<span class=\"backrest\">$self->{strProjectName}</span>";
 
     # Return from function and log return values if any
@@ -369,6 +401,10 @@ sub processTag
 
             $strBuffer = '<a href="' . $strUrl . '">' . $oTag->valueGet() . '</a>';
         }
+        elsif ($strType eq 'latex')
+        {
+            $strBuffer = $oTag->valueGet();
+        }
         else
         {
             confess "tag link not valid for type ${strType}";
@@ -461,6 +497,14 @@ sub processText
         $strBuffer =~ s/ +/ /g;
         $strBuffer =~ s/^ //smg;
     # }
+
+    if ($strType eq 'latex')
+    {
+        $strBuffer =~ s/\&mdash\;/\\-/g;
+        $strBuffer =~ s/\&lt\;/\</g;
+        $strBuffer =~ s/\_/\\_/g;
+        $strBuffer =~ s/\-/\\-/g;
+    }
 
     # Return from function and log return values if any
     return logDebugReturn

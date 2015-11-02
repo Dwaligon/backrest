@@ -151,7 +151,7 @@ docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oHtml
 docProcess("${strBasePath}/xml/change-log.xml", "${strBasePath}/../CHANGELOG.md", $oHtmlSite);
 
 # Only generate the HTML site when requested
-if ($bHtml)
+if ($bHtml || $bPDF)
 {
     $oHtmlSite->process();
 }
@@ -160,7 +160,7 @@ if ($bHtml)
 my $oLatex =
     new BackRestDoc::Latex::DocLatex
     (
-        new BackRestDoc::Common::DocRender('html', $strProjectName, $strExeName),
+        new BackRestDoc::Common::DocRender('latex', $strProjectName, $strExeName),
         $oDocConfig,
         "${strBasePath}/xml",
         "${strBasePath}/latex",

@@ -18,13 +18,14 @@ use Storable qw(dclone);
 use lib dirname($0) . '/../lib';
 use BackRest::Common::Log;
 use BackRest::Common::String;
-# use BackRest::FileCommon;
+use BackRest::FileCommon;
 use BackRest::Version;
 
 use lib dirname($0) . '/../test/lib';
 use BackRestTest::Common::ExecuteTest;
 
 use BackRestDoc::Common::DocConfig;
+use BackRestDoc::Latex::DocLatexSection;
 
 ####################################################################################################################################
 # Operation constants
@@ -80,49 +81,49 @@ sub new
             or confess &log(ERROR, "unable to create path $self->{strLatexPath}");
     }
 
-    # # Create the footer
-    # $self->{strFooter} = 'Copyright © 2015' . (strftime('%Y', localtime) ne '2015' ?  '-' . strftime('%Y', localtime) : '') .
-    #                      ', The PostgreSQL Global Development Group, <a href="{[github-url-license]}">MIT License</a>.  Updated ' .
-    #                      strftime('%B ', localtime) . trim(strftime('%e,', localtime)) . strftime(' %Y.', localtime);
+    # Create the footer
+    $self->{strFooter} = 'Copyright © 2015' . (strftime('%Y', localtime) ne '2015' ?  '-' . strftime('%Y', localtime) : '') .
+                         ', The PostgreSQL Global Development Group, <a href="{[github-url-license]}">MIT License</a>.  Updated ' .
+                         strftime('%B ', localtime) . trim(strftime('%e,', localtime)) . strftime(' %Y.', localtime);
 
-    # # Insert pages into the site hash
-    # $self->{oSite} =
-    # {
-    #     'common' =>
-    #     {
-    #         'oRender' => $self->{oRender},
-    #         'oReference' => $self->{oReference},
-    #         'strFooter' => $self->{strFooter}
-    #     },
-    #
-    #     'page' =>
-    #     {
-    #         'index' =>
-    #         {
-    #             strMenuTitle => 'Home',
-    #             oDoc => new BackRestDoc::Common::Doc("$self->{strXmlPath}/index.xml")
-    #         },
-    #
-    #         'command' =>
-    #         {
-    #             strMenuTitle => 'Commands',
-    #             oDoc => $self->{oReference}->helpCommandDocGet()
-    #         },
-    #
-    #         'configuration' =>
-    #         {
-    #             strMenuTitle => 'Configuration',
-    #             oDoc => $self->{oReference}->helpConfigDocGet()
-    #         # }
-    #         },
-    #
-    #         'user-guide' =>
-    #         {
-    #             strMenuTitle => 'User Guide',
-    #             oDoc => new BackRestDoc::Common::Doc("$self->{strXmlPath}/user-guide.xml")
-    #         }
-    #     }
-    # };
+    # Insert pages into the site hash
+    $self->{oSite} =
+    {
+        'common' =>
+        {
+            'oRender' => $self->{oRender},
+            'oReference' => $self->{oReference},
+            'strFooter' => $self->{strFooter}
+        },
+
+        'page' =>
+        {
+            'index' =>
+            {
+                strMenuTitle => 'Home',
+                oDoc => new BackRestDoc::Common::Doc("$self->{strXmlPath}/index.xml")
+            },
+
+            'command' =>
+            {
+                strMenuTitle => 'Commands',
+                oDoc => $self->{oReference}->helpCommandDocGet()
+            },
+
+            'configuration' =>
+            {
+                strMenuTitle => 'Configuration',
+                oDoc => $self->{oReference}->helpConfigDocGet()
+            # }
+            },
+
+            'user-guide' =>
+            {
+                strMenuTitle => 'User Guide',
+                oDoc => new BackRestDoc::Common::Doc("$self->{strXmlPath}/user-guide.xml")
+            }
+        }
+    };
 
     # Create common variables
     ${$self->{var}}{version} = $VERSION;
@@ -131,22 +132,22 @@ sub new
     ${$self->{var}}{'backrest-url-root'} = $self->{strHtmlRoot};
     ${$self->{var}}{'dash'} = '-';
 
-    # # Read variables from pages
-    # foreach my $strPageId (sort(keys(${$self->{oSite}}{page})))
-    # {
-    #     my $oPage = ${$self->{oSite}}{page}{$strPageId};
-    #
-    #     if (defined($$oPage{oDoc}->nodeGet('variable-list', false)))
-    #     {
-    #         foreach my $oVariable ($$oPage{oDoc}->nodeGet('variable-list')->nodeList('variable'))
-    #         {
-    #             my $strName = $oVariable->fieldGet('variable-name');
-    #             my $strValue = $oVariable->fieldGet('variable-value');
-    #
-    #             ${$self->{var}}{$strName} = $self->variableReplace($strValue);
-    #         }
-    #     }
-    # }
+    # Read variables from pages
+    foreach my $strPageId (sort(keys(${$self->{oSite}}{page})))
+    {
+        my $oPage = ${$self->{oSite}}{page}{$strPageId};
+
+        if (defined($$oPage{oDoc}->nodeGet('variable-list', false)))
+        {
+            foreach my $oVariable ($$oPage{oDoc}->nodeGet('variable-list')->nodeList('variable'))
+            {
+                my $strName = $oVariable->fieldGet('variable-name');
+                my $strValue = $oVariable->fieldGet('variable-value');
+
+                ${$self->{var}}{$strName} = $self->variableReplace($strValue);
+            }
+        }
+    }
 
     # Return from function and log return values if any
     return logDebugReturn
@@ -236,8 +237,16 @@ sub process
     #                     false);
     # }
 
-    executeTest("pdflatex -output-directory=$self->{strLatexPath} $self->{strPreambleFile}");
-    executeTest("pdflatex -output-directory=$self->{strLatexPath} $self->{strPreambleFile}");
+    my $strLatex = fileStringRead($self->{strPreambleFile});
+    $strLatex .= $self->variableReplace((new BackRestDoc::Latex::DocLatexSection($self, 'user-guide', $self->{bExe}))->process());
+    $strLatex .= "\\end{document}\n";
+
+    my $strLatexFileName = "$self->{strLatexPath}/pgBackrest-UserGuide.tex";
+
+    fileStringWrite($strLatexFileName, $strLatex, false);
+
+    executeTest("pdflatex -output-directory=$self->{strLatexPath} $strLatexFileName");
+    executeTest("pdflatex -output-directory=$self->{strLatexPath} $strLatexFileName");
 
     # Return from function and log return values if any
     logDebugReturn($strOperation);
