@@ -51,6 +51,7 @@ sub new
     # Assign function parameters, defaults, and log debug info
     (
         my $strOperation,
+        $self->{var},
         $self->{oRender},
         $self->{oReference},
         $self->{strXmlPath},
@@ -61,6 +62,7 @@ sub new
         logDebugParam
         (
             OP_DOC_LATEX_NEW, \@_,
+            {name => 'oVariable'},
             {name => 'oRender'},
             {name => 'oReference'},
             {name => 'strXmlPath'},
@@ -125,29 +127,29 @@ sub new
         }
     };
 
-    # Create common variables
-    ${$self->{var}}{version} = $VERSION;
-    ${$self->{var}}{'backrest-exe'} = $self->{oRender}->{strExeName};
-    ${$self->{var}}{'postgres'} = 'PostgreSQL';
-    ${$self->{var}}{'backrest-url-root'} = $self->{strHtmlRoot};
-    ${$self->{var}}{'dash'} = '-';
-
-    # Read variables from pages
-    foreach my $strPageId (sort(keys(${$self->{oSite}}{page})))
-    {
-        my $oPage = ${$self->{oSite}}{page}{$strPageId};
-
-        if (defined($$oPage{oDoc}->nodeGet('variable-list', false)))
-        {
-            foreach my $oVariable ($$oPage{oDoc}->nodeGet('variable-list')->nodeList('variable'))
-            {
-                my $strName = $oVariable->fieldGet('variable-name');
-                my $strValue = $oVariable->fieldGet('variable-value');
-
-                ${$self->{var}}{$strName} = $self->variableReplace($strValue);
-            }
-        }
-    }
+    # # Create common variables
+    # ${$self->{var}}{version} = $VERSION;
+    # ${$self->{var}}{'backrest-exe'} = $self->{oRender}->{strExeName};
+    # ${$self->{var}}{'postgres'} = 'PostgreSQL';
+    # ${$self->{var}}{'backrest-url-root'} = $self->{strHtmlRoot};
+    # ${$self->{var}}{'dash'} = '-';
+    #
+    # # Read variables from pages
+    # foreach my $strPageId (sort(keys(${$self->{oSite}}{page})))
+    # {
+    #     my $oPage = ${$self->{oSite}}{page}{$strPageId};
+    #
+    #     if (defined($$oPage{oDoc}->nodeGet('variable-list', false)))
+    #     {
+    #         foreach my $oVariable ($$oPage{oDoc}->nodeGet('variable-list')->nodeList('variable'))
+    #         {
+    #             my $strName = $oVariable->fieldGet('variable-name');
+    #             my $strValue = $oVariable->fieldGet('variable-value');
+    #
+    #             ${$self->{var}}{$strName} = $self->variableReplace($strValue);
+    #         }
+    #     }
+    # }
 
     # Return from function and log return values if any
     return logDebugReturn
@@ -180,20 +182,6 @@ sub variableReplace
     }
 
     return $strBuffer;
-}
-
-####################################################################################################################################
-# variableSet
-#
-# Set a variable to be replaced later.
-####################################################################################################################################
-sub variableSet
-{
-    my $self = shift;
-    my $strKey = shift;
-    my $strValue = shift;
-
-    ${$self->{var}}{$strKey} = $strValue;
 }
 
 ####################################################################################################################################
@@ -240,6 +228,7 @@ sub process
     my $strLatex = fileStringRead($self->{strPreambleFile});
     $strLatex .= $self->variableReplace((new BackRestDoc::Latex::DocLatexSection($self, 'user-guide', $self->{bExe}))->process());
     $strLatex .= "\\end{document}\n";
+    $strLatex =~ s/\_/\\_/g;
 
     my $strLatexFileName = "$self->{strLatexPath}/pgBackrest-UserGuide.tex";
 

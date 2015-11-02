@@ -160,6 +160,7 @@ if ($bHtml || $bPDF)
 my $oLatex =
     new BackRestDoc::Latex::DocLatex
     (
+        $oHtmlSite->{var},
         new BackRestDoc::Common::DocRender('latex', $strProjectName, $strExeName),
         $oDocConfig,
         "${strBasePath}/xml",

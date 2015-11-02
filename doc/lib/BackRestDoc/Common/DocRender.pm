@@ -26,8 +26,6 @@ use constant OP_DOC_RENDER_PROCESS_TEXT                             => OP_DOC_RE
 use constant OP_DOC_RENDER_NEW                                      => OP_DOC_RENDER . '->new';
 use constant OP_DOC_RENDER_SAVE                                     => OP_DOC_RENDER . '->save';
 
-# use HTML::HTML5::Builder qw[:standard JQUERY];
-
 ####################################################################################################################################
 # Render tags for various output types
 ####################################################################################################################################
@@ -502,8 +500,8 @@ sub processText
     {
         $strBuffer =~ s/\&mdash\;/\\-/g;
         $strBuffer =~ s/\&lt\;/\</g;
-        $strBuffer =~ s/\_/\\_/g;
-        $strBuffer =~ s/\-/\\-/g;
+        $strBuffer =~ s/\<\=/\$\\leq\$/g;
+        $strBuffer =~ s/\>\=/\$\\geq\$/g;
     }
 
     # Return from function and log return values if any

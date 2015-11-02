@@ -263,7 +263,7 @@ sub sectionProcess
         # Add descriptive text
         elsif ($oChild->nameGet() eq 'p')
         {
-            $strLatex .= "\n" . $oRender->processText($oChild->textGet()) . "\n";
+            $strLatex .= "\n\n" . $oRender->processText($oChild->textGet()) . "\n";
         }
         # Add option descriptive text
         elsif ($oChild->nameGet() eq 'option-description')
@@ -294,12 +294,6 @@ sub sectionProcess
         elsif ($oChild->nameGet() eq 'section')
         {
             $strLatex .= "\n" . $self->sectionProcess($oChild, $strAnchor, $iDepth + 1);
-
-            # my ($oChildSectionElement, $oChildSectionTocElement) =
-            #     $self->sectionProcess($oChild, $strAnchor, $iDepth + 1);
-            #
-            # $oSectionBodyElement->add($oChildSectionElement);
-            # $oSectionTocElement->add($oChildSectionTocElement);
         }
         # Skip children that have already been processed and error on others
         elsif ($oChild->nameGet() ne 'title')

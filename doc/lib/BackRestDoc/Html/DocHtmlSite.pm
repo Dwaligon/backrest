@@ -195,6 +195,11 @@ sub variableSet
     my $strKey = shift;
     my $strValue = shift;
 
+    if (defined(${$self->{var}}{$strKey}))
+    {
+        confess &log(ERROR, "${strKey} variable is already defined");
+    }
+
     ${$self->{var}}{$strKey} = $strValue;
 }
 
