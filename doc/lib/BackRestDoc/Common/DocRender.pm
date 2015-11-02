@@ -498,7 +498,7 @@ sub processText
 
     if ($strType eq 'latex')
     {
-        $strBuffer =~ s/\&mdash\;/\\-/g;
+        $strBuffer =~ s/\&mdash\;/---/g;
         $strBuffer =~ s/\&lt\;/\</g;
         $strBuffer =~ s/\<\=/\$\\leq\$/g;
         $strBuffer =~ s/\>\=/\$\\geq\$/g;

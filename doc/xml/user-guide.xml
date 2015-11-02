@@ -701,7 +701,7 @@
                 </execute>
             </execute-list>
 
-            <p>Now take a new backup and attempt the recovery from the new backup.</p>
+            <p>Now take a new backup and attempt recovery from the new backup.</p>
 
             <execute-list>
                 <title>Perform a backup then attempt recovery from that backup</title>
