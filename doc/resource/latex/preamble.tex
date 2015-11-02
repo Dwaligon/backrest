@@ -7,6 +7,9 @@
 % ----------------------------------------------------------------------------------------------------------------------------------
 \usepackage{hyperref}
 
+\let\stdsection\section
+\renewcommand\section{\newpage\stdsection}
+
 % Create the program float to use for source code listings
 % ----------------------------------------------------------------------------------------------------------------------------------
 \usepackage{float}
@@ -59,7 +62,6 @@
 % \setcounter{tocdepth}{1}
 \renewcommand\contentsname{Table of Contents}
 \tableofcontents
-\newpage
 
 % Sample Content
 % ----------------------------------------------------------------------------------------------------------------------------------

@@ -174,8 +174,8 @@
 
             <execute>
                 <exe-cmd>wget -O -
-                    https://github.com/pgmasters/backrest/archive/release/{[version]}.tar.gz
-                    | tar zxv -C ~</exe-cmd>
+                    https://github.com/pgmasters/backrest/archive/release/{[version]}.tar.gz |
+                    tar zxv -C ~</exe-cmd>
                 <exe-user>vagrant</exe-user>
                 <exe-skip/>
             </execute>
@@ -605,7 +605,7 @@
             <p>It is important to represent the time as reckoned by <postgres/> and to include timezone offsets.  This reduces the possibility of unintended timezone conversions and an unexpected recovery result.</p>
 
             <execute-list>
-                <title>Get time from <postgres/></title>
+                <title>Get the time from <postgres/></title>
 
                 <execute>
                     <exe-cmd>
