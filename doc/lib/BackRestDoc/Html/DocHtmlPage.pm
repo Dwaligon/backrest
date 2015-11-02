@@ -129,6 +129,18 @@ sub execute
     $strCommand = $self->{oSite}->variableReplace(
         ($strUser eq 'vagrant' ? '' : 'sudo ' . ($strUser eq 'root' ? '' : "-u ${strUser} ")) . $strCommand);
 
+    # Add continuation chars and proper spacing
+    $strCommand =~ s/[ ]*\n[ ]*/ \\\n    /smg;
+
+    # Make sure that no lines are greater than 80 chars
+    foreach my $strLine (split("\n", $strCommand))
+    {
+        if (length(trim($strLine)) > 80)
+        {
+            confess &log(ERROR, "command has a line > 80 characters:\n${strCommand}");
+        }
+    }
+
     &log(INFO, ('    ' x $iIndent) . "execute: $strCommand");
 
     if (!$bExeSkip)
@@ -389,6 +401,8 @@ sub sectionProcess
 
                 if ($bExeShow)
                 {
+                    $oExecute->fieldSet('actual-command', $strCommand);
+
                     $oExecuteBodyElement->
                         addNew(HTML_DIV, "execute-body-cmd" . ($bFirst ? '-first' : ''),
                                {strContent => $strCommand});
@@ -399,6 +413,8 @@ sub sectionProcess
                         my $bHighLightOld;
                         my $bHighLightFound = false;
                         my $strHighLightOutput;
+
+                        $oExecute->fieldSet('actual-output', $strOutput);
 
                         foreach my $strLine (split("\n", $strOutput))
                         {
@@ -610,7 +626,7 @@ sub postgresConfigProcess
     # Get filename
     my $strFile = $self->{oSite}->variableReplace($oConfig->paramGet('file'));
 
-    if (!defined(${$self->{'pg-config'}}{$strFile}{base}))
+    if (!defined(${$self->{'pg-config'}}{$strFile}{base}) && $self->{bExe})
     {
         ${$self->{'pg-config'}}{$strFile}{base} = fileStringRead($strFile);
     }
@@ -662,12 +678,15 @@ sub postgresConfigProcess
     }
 
     # Save the conf file
-    executeTest("sudo chown vagrant $strFile");
+    if ($self->{bExe})
+    {
+        executeTest("sudo chown vagrant $strFile");
 
-    fileStringWrite($strFile, $$oConfigHash{base} .
-                    (defined($strConfig) ? "\n# pgBackRest Configuration\n${strConfig}" : ''));
+        fileStringWrite($strFile, $$oConfigHash{base} .
+                        (defined($strConfig) ? "\n# pgBackRest Configuration\n${strConfig}" : ''));
 
-    executeTest("sudo chown postgres $strFile");
+        executeTest("sudo chown postgres $strFile");
+    }
 
     # Generate config element
     my $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");

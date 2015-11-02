@@ -161,6 +161,7 @@ my $oLatex =
     new BackRestDoc::Latex::DocLatex
     (
         $oHtmlSite->{var},
+        $oHtmlSite->{oSite},
         new BackRestDoc::Common::DocRender('latex', $strProjectName, $strExeName),
         $oDocConfig,
         "${strBasePath}/xml",

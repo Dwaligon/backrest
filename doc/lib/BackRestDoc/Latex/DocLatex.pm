@@ -52,6 +52,7 @@ sub new
     (
         my $strOperation,
         $self->{var},
+        $self->{oSite},
         $self->{oRender},
         $self->{oReference},
         $self->{strXmlPath},
@@ -63,6 +64,7 @@ sub new
         (
             OP_DOC_LATEX_NEW, \@_,
             {name => 'oVariable'},
+            {name => 'oSite'},
             {name => 'oRender'},
             {name => 'oReference'},
             {name => 'strXmlPath'},
@@ -88,68 +90,8 @@ sub new
                          ', The PostgreSQL Global Development Group, <a href="{[github-url-license]}">MIT License</a>.  Updated ' .
                          strftime('%B ', localtime) . trim(strftime('%e,', localtime)) . strftime(' %Y.', localtime);
 
-    # Insert pages into the site hash
-    $self->{oSite} =
-    {
-        'common' =>
-        {
-            'oRender' => $self->{oRender},
-            'oReference' => $self->{oReference},
-            'strFooter' => $self->{strFooter}
-        },
-
-        'page' =>
-        {
-            'index' =>
-            {
-                strMenuTitle => 'Home',
-                oDoc => new BackRestDoc::Common::Doc("$self->{strXmlPath}/index.xml")
-            },
-
-            'command' =>
-            {
-                strMenuTitle => 'Commands',
-                oDoc => $self->{oReference}->helpCommandDocGet()
-            },
-
-            'configuration' =>
-            {
-                strMenuTitle => 'Configuration',
-                oDoc => $self->{oReference}->helpConfigDocGet()
-            # }
-            },
-
-            'user-guide' =>
-            {
-                strMenuTitle => 'User Guide',
-                oDoc => new BackRestDoc::Common::Doc("$self->{strXmlPath}/user-guide.xml")
-            }
-        }
-    };
-
-    # # Create common variables
-    # ${$self->{var}}{version} = $VERSION;
-    # ${$self->{var}}{'backrest-exe'} = $self->{oRender}->{strExeName};
-    # ${$self->{var}}{'postgres'} = 'PostgreSQL';
-    # ${$self->{var}}{'backrest-url-root'} = $self->{strHtmlRoot};
-    # ${$self->{var}}{'dash'} = '-';
-    #
-    # # Read variables from pages
-    # foreach my $strPageId (sort(keys(${$self->{oSite}}{page})))
-    # {
-    #     my $oPage = ${$self->{oSite}}{page}{$strPageId};
-    #
-    #     if (defined($$oPage{oDoc}->nodeGet('variable-list', false)))
-    #     {
-    #         foreach my $oVariable ($$oPage{oDoc}->nodeGet('variable-list')->nodeList('variable'))
-    #         {
-    #             my $strName = $oVariable->fieldGet('variable-name');
-    #             my $strValue = $oVariable->fieldGet('variable-value');
-    #
-    #             ${$self->{var}}{$strName} = $self->variableReplace($strValue);
-    #         }
-    #     }
-    # }
+    ${$self->{oSite}}{common}{strFooter} = $self->{strFooter};
+    ${$self->{oSite}}{common}{oRender} = $self->{oRender};
 
     # Return from function and log return values if any
     return logDebugReturn
@@ -177,6 +119,7 @@ sub variableReplace
     foreach my $strName (sort(keys(%{$self->{var}})))
     {
         my $strValue = $self->{var}{$strName};
+        $strValue =~ s/\_/\\_/g;
 
         $strBuffer =~ s/\{\[$strName\]\}/$strValue/g;
     }
@@ -184,18 +127,19 @@ sub variableReplace
     return $strBuffer;
 }
 
-####################################################################################################################################
-# variableGet
 #
-# Get the current value of a variable.
-####################################################################################################################################
-sub variableGet
-{
-    my $self = shift;
-    my $strKey = shift;
-
-    return ${$self->{var}}{$strKey};
-}
+# ####################################################################################################################################
+# # variableGet
+# #
+# # Get the current value of a variable.
+# ####################################################################################################################################
+# sub variableGet
+# {
+#     my $self = shift;
+#     my $strKey = shift;
+#
+#     return ${$self->{var}}{$strKey};
+# }
 
 ####################################################################################################################################
 # process
@@ -228,7 +172,6 @@ sub process
     my $strLatex = fileStringRead($self->{strPreambleFile});
     $strLatex .= $self->variableReplace((new BackRestDoc::Latex::DocLatexSection($self, 'user-guide', $self->{bExe}))->process());
     $strLatex .= "\\end{document}\n";
-    $strLatex =~ s/\_/\\_/g;
 
     my $strLatexFileName = "$self->{strLatexPath}/pgBackrest-UserGuide.tex";
 

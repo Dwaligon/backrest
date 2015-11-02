@@ -52,7 +52,8 @@
             <exe-err-suppress/>
         </execute>
         <execute>
-            <exe-cmd>apt-get remove -y libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl</exe-cmd>
+            <exe-cmd>apt-get remove -y libdbd-pg-perl libdbi-perl libnet-daemon-perl
+                libplrpc-perl</exe-cmd>
             <exe-user>root</exe-user>
         </execute>
         <execute>
@@ -172,7 +173,9 @@
             <title>Download version <id>{[version]}</id> of <backrest/></title>
 
             <execute>
-                <exe-cmd>wget -O - https://github.com/pgmasters/backrest/archive/release/{[version]}.tar.gz | tar zxv -C ~</exe-cmd>
+                <exe-cmd>wget -O -
+                    https://github.com/pgmasters/backrest/archive/release/{[version]}.tar.gz
+                    | tar zxv -C ~</exe-cmd>
                 <exe-user>vagrant</exe-user>
                 <exe-skip/>
             </execute>
@@ -364,7 +367,8 @@
                 <title>Differential backup of the {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=diff backup {[dash]}-log-level-console=info</exe-cmd>
+                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=diff
+                        {[dash]}-log-level-console=info backup</exe-cmd>
                     <exe-output/>
                 </execute>
             </execute-list>
@@ -462,7 +466,8 @@
                 <title>Incremental backup of the {[postgres-cluster-demo]} cluster with the regularly scheduled checkpoint</title>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup {[dash]}-log-level-console=info</exe-cmd>
+                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        {[dash]}-log-level-console=info backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>backup begins after the next regular checkpoint completes</exe-highlight>
                 </execute>
@@ -484,7 +489,8 @@
                 <title>Incremental backup of the {[postgres-cluster-demo]} cluster with an immediate checkpoint</title>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup {[dash]}-log-level-console=info</exe-cmd>
+                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        {[dash]}-log-level-console=info backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>backup begins after the requested immediate checkpoint completes</exe-highlight>
                 </execute>
@@ -508,7 +514,8 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup {[dash]}-log-level-console=info</exe-cmd>
+                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        {[dash]}-log-level-console=info backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>ERROR:</exe-highlight>
                     <exe-err-expect>199</exe-err-expect>
@@ -526,7 +533,8 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup {[dash]}-log-level-console=info</exe-cmd>
+                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        {[dash]}-log-level-console=info backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>ERROR:</exe-highlight>
                     <exe-err-expect>132</exe-err-expect>
@@ -551,7 +559,8 @@
                 <title>Perform an incremental backup</title>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup {[dash]}-log-level-console=info</exe-cmd>
+                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        {[dash]}-log-level-console=info backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>cluster is already in backup mode|backup begins after the requested immediate checkpoint completes</exe-highlight>
                 </execute>
@@ -638,7 +647,8 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=time "--target={[time-recovery-timestamp]}" --delta restore</exe-cmd>
+                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --delta
+                        --type=time "--target={[time-recovery-timestamp]}" restore</exe-cmd>
                 </execute>
 
                 <execute>
@@ -716,7 +726,8 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=time "--target={[time-recovery-timestamp]}" --delta restore</exe-cmd>
+                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --delta
+                         --type=time "--target={[time-recovery-timestamp]}" restore</exe-cmd>
                 </execute>
 
                 <execute>
@@ -758,7 +769,11 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=time "--target={[time-recovery-timestamp]}" --set={[backup-last]} --delta restore</exe-cmd>
+                    <exe-cmd>
+                        {[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --delta
+                            --type=time "--target={[time-recovery-timestamp]}"
+                            --set={[backup-last]} restore
+                    </exe-cmd>
                 </execute>
 
                 <execute>

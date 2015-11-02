@@ -502,6 +502,7 @@ sub processText
         $strBuffer =~ s/\&lt\;/\</g;
         $strBuffer =~ s/\<\=/\$\\leq\$/g;
         $strBuffer =~ s/\>\=/\$\\geq\$/g;
+        $strBuffer =~ s/\_/\\_/g;
     }
 
     # Return from function and log return values if any
