@@ -75,7 +75,8 @@ GetOptions ('help' => \$bHelp,
             'html' => \$bHtml,
             'html-root=s' => \$strHtmlRoot,
             'pdf' => \$bPDF,
-            'no-exe', \$bNoExe)
+            'no-exe', \$bNoExe,
+            'project-name=s', \$strProjectName)
     or pod2usage(2);
 
 # Display version and exit if requested
