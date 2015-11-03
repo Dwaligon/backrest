@@ -742,7 +742,7 @@
                 </execute>
             </execute-list>
 
-            <p>Looking at the log output it's not obvious that recovery failed to restore the table.  The key is to look for the presence of the "recovery stopping before..." and "last completed transaction..." log messages.  If they are not present then the recovery to the specified point-in-time was not successful.</p>
+            <p>Looking at the log output it's not obvious that recovery failed to restore the table.  The key is to look for the presence of the <quote>recovery stopping before...</quote> and <quote>last completed transaction...</quote> log messages.  If they are not present then the recovery to the specified point-in-time was not successful.</p>
 
             <execute-list>
                 <title>Examine the <postgres/> log output to discover the recovery was not successful</title>
@@ -787,7 +787,7 @@
                 </execute>
             </execute-list>
 
-            <p>Now the the log output will contain the expected "recovery stopping before..." and "last completed transaction..." messages showing that the recovery was successful.</p>
+            <p>Now the the log output will contain the expected <quote>recovery stopping before...</quote> and <quote>last completed transaction...</quote> messages showing that the recovery was successful.</p>
 
             <execute-list>
                 <title>Examine the <postgres/> log output for log messages indicating success</title>

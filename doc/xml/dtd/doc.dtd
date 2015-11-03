@@ -115,18 +115,18 @@
 <!ELEMENT support (text)>
     <!ATTLIST support title CDATA #REQUIRED>
 
-<!ELEMENT summary (#PCDATA|b|i|bi|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
-                   pg-option|pg-setting|link|user)*>
-<!ELEMENT p (#PCDATA|b|i|bi|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
+<!ELEMENT summary (#PCDATA|quote|b|i|bi|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
+                   br-setting|pg-option|pg-setting|link|user)*>
+<!ELEMENT p (#PCDATA|quote|b|i|bi|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
              pg-option|pg-setting|link|user)*>
-<!ELEMENT text (#PCDATA|b|i|bi|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
-                pg-option|pg-setting|link|user)*>
+<!ELEMENT text (#PCDATA|quote|b|i|bi|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
+                br-setting|pg-option|pg-setting|link|user)*>
 <!ELEMENT i (#PCDATA)>
 <!ELEMENT b (#PCDATA)>
 <!ELEMENT bi (#PCDATA)>
 <!ELEMENT ul (li+)>
 <!ELEMENT ol (li+)>
-<!ELEMENT li (#PCDATA|b|i|bi|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
+<!ELEMENT li (#PCDATA|quote|b|i|bi|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
               pg-option|pg-setting|link|user)*>
 <!ELEMENT id (#PCDATA)>
 <!ELEMENT code (#PCDATA)>
@@ -135,6 +135,7 @@
 <!ELEMENT path (#PCDATA)>
 <!ELEMENT cmd (#PCDATA)>
 <!ELEMENT user (#PCDATA)>
+<!ELEMENT quote (#PCDATA)>
 <!ELEMENT param (#PCDATA)>
 <!ELEMENT setting (#PCDATA)>
 <!ELEMENT br-option (#PCDATA)>

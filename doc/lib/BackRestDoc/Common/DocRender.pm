@@ -33,6 +33,7 @@ my $oRenderTag =
 {
     'markdown' =>
     {
+        'quote' => ['"', '"'],
         'b' => ['**', '**'],
         'i' => ['_', '_'],
         'bi' => ['_**', '**_'],
@@ -54,6 +55,7 @@ my $oRenderTag =
 
     'text' =>
     {
+        'quote' => ['"', '"'],
         'b' => ['', ''],
         'i' => ['', ''],
         'bi' => ['', ''],
@@ -76,6 +78,7 @@ my $oRenderTag =
 
     'latex' =>
     {
+        'quote' => ['``', '"'],
         'b' => ['', ''],
         'i' => ['', ''],
         'bi' => ['', ''],
@@ -103,6 +106,7 @@ my $oRenderTag =
 
     'html' =>
     {
+        'quote' => ['<q>', '</q>'],
         'b' => ['<b>', '</b>'],
         'i' => ['<i>', '</i>'],
         'bi' => ['<i><b>', '</b></i>'],
@@ -473,6 +477,11 @@ sub processText
     {
         if (ref(\$oNode) eq "SCALAR")
         {
+            if ($oNode =~ /\"/)
+            {
+                confess &log(ERROR, "unable to process quotes in string (use <quote> instead):\n${oNode}");
+            }
+
             $strBuffer .= $oNode;
         }
         else
