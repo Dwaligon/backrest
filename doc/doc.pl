@@ -62,6 +62,7 @@ my $bVersion = false;                               # Display version
 my $bQuiet = false;                                 # Sets log level to ERROR
 my $strLogLevel = 'info';                           # Log level for tests
 my $strProjectName = 'pgBackRest';                  # Project name to use in docs
+my $strPdfProjectName = $strProjectName;            # Project name to use in PDF docs
 my $strExeName = 'pg_backrest';                     # Exe name to use in docs
 my $bHtml = false;                                  # Generate full html documentation
 my $strHtmlRoot = '/';                              # Root html page
@@ -76,7 +77,8 @@ GetOptions ('help' => \$bHelp,
             'html-root=s' => \$strHtmlRoot,
             'pdf' => \$bPDF,
             'no-exe', \$bNoExe,
-            'project-name=s', \$strProjectName)
+            'project-name=s', \$strProjectName,
+            'pdf-project-name=s', \$strPdfProjectName)
     or pod2usage(2);
 
 # Display version and exit if requested
@@ -158,12 +160,14 @@ if ($bHtml || $bPDF)
 }
 
 # Only generate the PDF file when requested
+$oHtmlSite->{var}->{backrest} = $strPdfProjectName;
+
 my $oLatex =
     new BackRestDoc::Latex::DocLatex
     (
         $oHtmlSite->{var},
         $oHtmlSite->{oSite},
-        new BackRestDoc::Common::DocRender('latex', $strProjectName, $strExeName),
+        new BackRestDoc::Common::DocRender('latex', $strPdfProjectName, $strExeName),
         $oDocConfig,
         "${strBasePath}/xml",
         "${strBasePath}/latex",

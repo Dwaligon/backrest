@@ -182,13 +182,13 @@ sub sectionProcess
 
                     if (defined($strOutput))
                     {
-                        $strLatex .=
-                            "\\end\{lstlisting\}\n" .
-                            "\\lstset\{title={Output:}\}\n" .
-                            "\\begin\{lstlisting\}\n${strOutput}\n";
+                        # $strLatex .=
+                        #     "\\end\{lstlisting\}\n" .
+                        #     "\\lstset\{title={Output:}\}\n" .
+                        #     "\\begin\{lstlisting\}\n${strOutput}\n";
 
                         # $strOutput =~ s/^/    /smg;
-                        # $strLatex .= "\nOutput:\n\n${strOutput}\n";
+                        $strLatex .= "\nOutput:\n\n${strOutput}\n";
 
                         # my $strHighLight = $self->{oSite}->variableReplace($oExecute->fieldGet('exe-highlight', false));
                         # my $bHighLightOld;
@@ -262,12 +262,12 @@ sub sectionProcess
         # Add/remove backrest config options
         elsif ($oChild->nameGet() eq 'backrest-config')
         {
-            # $oSectionBodyElement->add($self->backrestConfigProcess($oChild, $iDepth));
+            $strLatex .= $self->configProcess($oChild, $iDepth);
         }
         # Add/remove postgres config options
         elsif ($oChild->nameGet() eq 'postgres-config')
         {
-            # $oSectionBodyElement->add($self->postgresConfigProcess($oChild, $iDepth));
+            $strLatex .= $self->configProcess($oChild, $iDepth);
         }
         # Add a subsection
         elsif ($oChild->nameGet() eq 'section')
@@ -314,6 +314,12 @@ sub configProcess
     my $strFile = $self->{oSite}->variableReplace($oConfig->paramGet('file'));
 
     &log(INFO, ('    ' x $iDepth) . 'process backrest config: ' . $strFile);
+
+    my $strLatex =
+        "\n\\begin\{lstlisting\}[title=\{" . $self->{oRender}->processText($oConfig->nodeGet('title')->textGet()) . " in \\textnormal\{\\texttt\{${strFile}\}\}:}]\n" .
+        # "${strFile}:\n\n" .
+        $oConfig->fieldGet('actual-config') .
+        "\\end{lstlisting}\n";
 
     # foreach my $oOption ($oConfig->nodeList('backrest-config-option'))
     # {
@@ -367,7 +373,7 @@ sub configProcess
     return logDebugReturn
     (
         $strOperation,
-        {name => 'strConfig', value => '', trace => true}
+        {name => 'strConfig', value => $strLatex, trace => true}
     );
 }
 

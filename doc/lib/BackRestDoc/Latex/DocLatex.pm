@@ -110,6 +110,7 @@ sub variableReplace
 {
     my $self = shift;
     my $strBuffer = shift;
+    my $bVerbatim = shift;
 
     if (!defined($strBuffer))
     {
@@ -119,7 +120,11 @@ sub variableReplace
     foreach my $strName (sort(keys(%{$self->{var}})))
     {
         my $strValue = $self->{var}{$strName};
-        $strValue =~ s/\_/\\_/g;
+
+        if (!defined($bVerbatim) || !$bVerbatim)
+        {
+            $strValue =~ s/\_/\\_/g;
+        }
 
         $strBuffer =~ s/\{\[$strName\]\}/$strValue/g;
     }

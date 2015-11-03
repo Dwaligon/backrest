@@ -85,18 +85,18 @@ my $oRenderTag =
         # 'ul' => ["\n", "\n"],
         # 'ol' => ["\n", "\n"],
         # 'li' => ['* ', "\n"],
-        'id' => ['\texttt{', '}'],
-        'file' => ['\texttt{', '}'],
-        'path' => ['\texttt{', '}'],
-        'cmd' => ['\texttt{', "}"],
-        'user' => ['\texttt{', '}'],
+        'id' => ['\textnormal{\texttt{', '}}'],
+        'file' => ['\textnormal{\texttt{', '}}'],
+        'path' => ['\textnormal{\texttt{', '}}'],
+        'cmd' => ['\textnormal{\texttt{', "}}"],
+        'user' => ['\textnormal{\texttt{', '}}'],
         'br-option' => ['', ''],
         # 'param' => ['\texttt{', '}'],
         # 'setting' => ['\texttt{', '}'],
-        'br-option' => ['\texttt{', '}'],
-        'br-setting' => ['\texttt{', '}'],
-        'pg-option' => ['\texttt{', '}'],
-        'pg-setting' => ['\texttt{', '}'],
+        'br-option' => ['\textnormal{\texttt{', '}}'],
+        'br-setting' => ['\textnormal{\texttt{', '}}'],
+        'pg-option' => ['\textnormal{\texttt{', '}}'],
+        'pg-setting' => ['\textnormal{\texttt{', '}}'],
         # 'code' => ['\texttt{', '}'],
         # 'code-block' => ['', ''],
         # 'exe' => [undef, ''],
@@ -164,7 +164,7 @@ sub new
     $$oRenderTag{text}{exe}[0] = $self->{strExeName};
 
     $$oRenderTag{latex}{backrest}[0] = $self->{strProjectName};
-    $$oRenderTag{latex}{exe}[0] = "\\texttt\{$self->{strExeName}\}";
+    $$oRenderTag{latex}{exe}[0] = "\\textnormal\{\\texttt\{$self->{strExeName}\}\}";
 
     $$oRenderTag{html}{backrest}[0] = "<span class=\"backrest\">$self->{strProjectName}</span>";
     $$oRenderTag{html}{exe}[0] = "<span class=\"file\">$self->{strExeName}</span>";
