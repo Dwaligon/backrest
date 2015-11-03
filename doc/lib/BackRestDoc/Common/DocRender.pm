@@ -36,7 +36,7 @@ my $oRenderTag =
         'quote' => ['"', '"'],
         'b' => ['**', '**'],
         'i' => ['_', '_'],
-        'bi' => ['_**', '**_'],
+        # 'bi' => ['_**', '**_'],
         'ul' => ["\n", "\n"],
         'ol' => ["\n", "\n"],
         'li' => ['- ', "\n"],
@@ -47,8 +47,8 @@ my $oRenderTag =
         'param' => ['`', '`'],
         'setting' => ['`', '`'],
         'code' => ['`', '`'],
-        'code-block' => ['```', '```'],
-        'exe' => [undef, ''],
+        # 'code-block' => ['```', '```'],
+        # 'exe' => [undef, ''],
         'backrest' => [undef, ''],
         'postgres' => ['PostgreSQL', '']
     },
@@ -58,7 +58,7 @@ my $oRenderTag =
         'quote' => ['"', '"'],
         'b' => ['', ''],
         'i' => ['', ''],
-        'bi' => ['', ''],
+        # 'bi' => ['', ''],
         'ul' => ["\n", "\n"],
         'ol' => ["\n", "\n"],
         'li' => ['* ', "\n"],
@@ -79,27 +79,27 @@ my $oRenderTag =
     'latex' =>
     {
         'quote' => ['``', '"'],
-        'b' => ['', ''],
-        'i' => ['', ''],
-        'bi' => ['', ''],
-        'ul' => ["\n", "\n"],
-        'ol' => ["\n", "\n"],
-        'li' => ['* ', "\n"],
-        'id' => ['', ''],
-        'file' => ['', ''],
-        'path' => ['', ''],
-        'cmd' => ['', ''],
-        'user' => ['', ''],
+        'b' => ['\textbf{', '}'],
+        'i' => ['\textit{', '}'],
+        # 'bi' => ['', ''],
+        # 'ul' => ["\n", "\n"],
+        # 'ol' => ["\n", "\n"],
+        # 'li' => ['* ', "\n"],
+        'id' => ['\texttt{', '}'],
+        'file' => ['\texttt{', '}'],
+        'path' => ['\texttt{', '}'],
+        'cmd' => ['\texttt{', "}"],
+        'user' => ['\texttt{', '}'],
         'br-option' => ['', ''],
-        'param' => ['', ''],
-        'setting' => ['', ''],
-        'br-option' => ['', ''],
-        'br-setting' => ['', ''],
-        'pg-option' => ['', ''],
-        'pg-setting' => ['', ''],
-        'code' => ['', ''],
-        'code-block' => ['', ''],
-        'exe' => [undef, ''],
+        # 'param' => ['\texttt{', '}'],
+        # 'setting' => ['\texttt{', '}'],
+        'br-option' => ['\texttt{', '}'],
+        'br-setting' => ['\texttt{', '}'],
+        'pg-option' => ['\texttt{', '}'],
+        'pg-setting' => ['\texttt{', '}'],
+        # 'code' => ['\texttt{', '}'],
+        # 'code-block' => ['', ''],
+        # 'exe' => [undef, ''],
         'backrest' => [undef, ''],
         'postgres' => ['PostgreSQL', '']
     },
@@ -109,7 +109,7 @@ my $oRenderTag =
         'quote' => ['<q>', '</q>'],
         'b' => ['<b>', '</b>'],
         'i' => ['<i>', '</i>'],
-        'bi' => ['<i><b>', '</b></i>'],
+        # 'bi' => ['<i><b>', '</b></i>'],
         'ul' => ['<ul>', '</ul>'],
         'ol' => ['<ol>', '</ol>'],
         'li' => ['<li>', '</li>'],
@@ -124,7 +124,7 @@ my $oRenderTag =
         'pg-setting' => ['<span class="pg-setting">', '</span>'],
         'code' => ['<id>', '</id>'],
         'code-block' => ['<code-block>', '</code-block>'],
-        'exe' => ['<id>', '</id>'],
+        'exe' => [undef, ''],
         'setting' => ['<span class="br-setting">', '</span>'], # !!! This will need to be fixed
         'backrest' => [undef, ''],
         'postgres' => ['<span class="postgres">PostgreSQL</span>', '']
@@ -164,9 +164,10 @@ sub new
     $$oRenderTag{text}{exe}[0] = $self->{strExeName};
 
     $$oRenderTag{latex}{backrest}[0] = $self->{strProjectName};
-    $$oRenderTag{latex}{exe}[0] = $self->{strExeName};
+    $$oRenderTag{latex}{exe}[0] = "\\texttt\{$self->{strExeName}\}";
 
     $$oRenderTag{html}{backrest}[0] = "<span class=\"backrest\">$self->{strProjectName}</span>";
+    $$oRenderTag{html}{exe}[0] = "<span class=\"file\">$self->{strExeName}</span>";
 
     # Return from function and log return values if any
     return logDebugReturn

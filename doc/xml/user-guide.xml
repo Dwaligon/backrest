@@ -444,7 +444,7 @@
                 </execute>
             </execute-list>
 
-            <p>This time the cluster started successfully since the <cmd>restore</cmd> replaced the missing <file>pg_control</file> file.</p>
+            <p>This time the cluster started successfully since the restore replaced the missing <file>pg_control</file> file.</p>
 
             <p>More information about the <cmd>restore</cmd> command can be found in the <link page="#restore">Restore</link> section.</p>
         </section>
