@@ -174,7 +174,7 @@ sub process
     #                     false);
     # }
 
-    my $strLatex = $self->variableReplace(fileStringRead($self->{strPreambleFile}));
+    my $strLatex = $self->variableReplace(fileStringRead($self->{strPreambleFile})) . "\n";
     $strLatex .= $self->variableReplace((new BackRestDoc::Latex::DocLatexSection($self, 'user-guide', $self->{bExe}))->process());
     $strLatex .= "\n% " . ('-' x 130) . "\n% End document\n% " . ('-' x 130) . "\n\\end{document}\n";
 
