@@ -188,6 +188,7 @@ sub sectionProcess
                         #     "\\begin\{lstlisting\}\n${strOutput}\n";
 
                         # $strOutput =~ s/^/    /smg;
+                        # $strLatex .= "\nOutput:\n\n\%\\Hilight\%${strOutput}\n";
                         $strLatex .= "\nOutput:\n\n${strOutput}\n";
 
                         # my $strHighLight = $self->{oSite}->variableReplace($oExecute->fieldGet('exe-highlight', false));
