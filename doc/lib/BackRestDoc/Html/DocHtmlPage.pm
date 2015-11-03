@@ -591,6 +591,8 @@ sub backrestConfigProcess
         addNew(HTML_DIV, "config-body-output",
                {strContent => fileStringRead($strFile)});
 
+    $oConfig->fieldSet('actual-config', fileStringRead($strFile));
+
     executeTest("sudo chown postgres:postgres $strFile");
     executeTest("sudo chmod 640 $strFile");
 
@@ -706,6 +708,8 @@ sub postgresConfigProcess
                {strContent => defined($strConfig) ? $strConfig : '<No PgBackRest Settings>'});
 
     $$oConfigHash{old} = $oConfigHashNew;
+
+    $oConfig->fieldSet('actual-config', $strConfig);
 
     # Return from function and log return values if any
     return logDebugReturn

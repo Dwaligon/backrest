@@ -182,13 +182,13 @@ sub sectionProcess
 
                     if (defined($strOutput))
                     {
-                        # $strLatex .=
-                        #     "\\end\{lstlisting\}\n" .
-                        #     "\\lstset\{title={Output:}\}\n" .
-                        #     "\\begin\{lstlisting\}\n${strOutput}\n";
+                        $strLatex .=
+                            "\\end\{lstlisting\}\n" .
+                            "\\lstset\{title={Output:}\}\n" .
+                            "\\begin\{lstlisting\}\n${strOutput}\n";
 
                         # $strOutput =~ s/^/    /smg;
-                        $strLatex .= "\nOutput:\n\n${strOutput}\n";
+                        # $strLatex .= "\nOutput:\n\n${strOutput}\n";
 
                         # my $strHighLight = $self->{oSite}->variableReplace($oExecute->fieldGet('exe-highlight', false));
                         # my $bHighLightOld;
