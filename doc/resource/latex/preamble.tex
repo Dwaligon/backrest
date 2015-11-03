@@ -33,9 +33,9 @@
 \usepackage{helvet}
 \renewcommand{\familydefault}{\sfdefault}
 
-% Set margins to .5 inches
+% Set margins
 % ----------------------------------------------------------------------------------------------------------------------------------
-\usepackage[top=.5in, bottom=.5in, left=.5in, right=.5in]{geometry}
+\usepackage[top=1in, bottom=.9in, left=.5in, right=.5in]{geometry}
 
 % Sections start a new page
 % ----------------------------------------------------------------------------------------------------------------------------------
@@ -47,6 +47,24 @@
 \setlength\parindent{0pt}
 \usepackage{parskip}
 
+% Add page headers and footers
+% ----------------------------------------------------------------------------------------------------------------------------------
+\usepackage{fancyhdr}
+
+\fancyhead[LE,RO]{\slshape \rightmark}
+\fancyhead[LO,RE]{\slshape \leftmark}
+
+\fancypagestyle{plain}
+{
+    \fancyhead{}
+    \lhead[]{TABLE OF CONTENTS}
+}
+
+\lfoot[]{{[backrest]} User Guide}
+\cfoot[]{-\ \thepage\ -}
+\rfoot[]{Version {[version]}}
+\pagestyle{fancy}
+
 % ----------------------------------------------------------------------------------------------------------------------------------
 % Begin document
 % ----------------------------------------------------------------------------------------------------------------------------------
@@ -54,8 +72,8 @@
 
 % Create the title page
 % ----------------------------------------------------------------------------------------------------------------------------------
-\title{Crunchy BackRest User Guide\\
-       Version 0.85}
+\title{{[backrest]} User Guide\\
+       Version {[version]}}
 \author{Crunchy Data Solutions, Inc.}
 \date{\today}
 \maketitle
@@ -63,6 +81,7 @@
 % Generate TOC
 % ----------------------------------------------------------------------------------------------------------------------------------
 % \setcounter{tocdepth}{1}
+\thispagestyle{plain}
 \renewcommand\contentsname{Table of Contents}
 \tableofcontents
 

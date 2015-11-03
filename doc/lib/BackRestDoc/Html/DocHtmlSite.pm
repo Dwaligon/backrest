@@ -128,6 +128,7 @@ sub new
     };
 
     # Create common variables
+    ${$self->{var}}{backrest} = $self->{oRender}->{strProjectName};
     ${$self->{var}}{version} = $VERSION;
     ${$self->{var}}{'backrest-exe'} = $self->{oRender}->{strExeName};
     ${$self->{var}}{'postgres'} = 'PostgreSQL';
