@@ -612,7 +612,6 @@ sub helpCommandDocGet
         return $oOption, $strSection;
     }
 
-
     # Working variables
     my $oConfigHash = $self->{oConfigHash};
     my $oOperationDoc = $self->{oDoc}->nodeGet('operation');

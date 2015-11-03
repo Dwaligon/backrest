@@ -132,53 +132,30 @@ sub sectionProcess
     (
         $strOperation,
         $oSection,
-        $strAnchor,
+        $strSection,
         $iDepth
     ) =
         logDebugParam
         (
             OP_DOC_LATEX_SECTION_SECTION_PROCESS, \@_,
             {name => 'oSection'},
-            {name => 'strAnchor', required => false},
+            {name => 'strSection', required => false},
             {name => 'iDepth'}
         );
 
     &log(INFO, ('    ' x ($iDepth - 1)) . 'process section: ' . $oSection->paramGet('id'));
 
     # Working variables
-    # $strAnchor = (defined($strAnchor) ? "${strAnchor}-" : '') . $oSection->paramGet('id');
     my $oRender = $self->{oRender};
 
     # Create the section
-    my $strLatex = "\\" . ($iDepth > 1 ? ('sub' x ($iDepth - 1)) : '') .
-                   "section{" . $oRender->processText($oSection->nodeGet('title')->textGet()) . '}';
-    #
-    # $oSectionElement->
-    #     addNew(HTML_DIV, "section${iDepth}-title",
-    #            {strContent => $strSectionTitle});
-    #
-    # my $oTocSectionTitleElement = $oSectionTocElement->
-    #     addNew(HTML_DIV, "section${iDepth}-toc-title");
-    #
-    # $oTocSectionTitleElement->
-    #     addNew(HTML_A, undef,
-    #            {strContent => $strSectionTitle, strRef => "#${strAnchor}"});
-    #
-    # # Add the section intro if it exists
-    # if (defined($oSection->textGet(false)))
-    # {
-    #     $oSectionElement->
-    #         addNew(HTML_DIV, "section-intro",
-    #                {strContent => $oRender->processText($oSection->textGet())});
-    # }
-    #
-    # # Add the section body
-    # my $oSectionBodyElement = $oSectionElement->addNew(HTML_DIV, "section-body");
-    #
-    # # Process each child
-    # my $oSectionBodyExe;
-    #
-    my $strRule = "\\rule{\\textwidth}{0.75pt}";
+    my $strSectionTitle = $oRender->processText($oSection->nodeGet('title')->textGet());
+    $strSection .= (defined($strSection) ? ', ' : '') . "'${strSectionTitle}' " . ('Sub' x ($iDepth - 1)) . "Section";
+
+    my $strLatex =
+        "% ${strSection}\n% " . ('-' x 130) . "\n" .
+        "\\" . ($iDepth > 1 ? ('sub' x ($iDepth - 1)) : '') .
+        "section\{${strSectionTitle}\}\n";
 
     foreach my $oChild ($oSection->nodeList())
     {
@@ -188,8 +165,7 @@ sub sectionProcess
         if ($oChild->nameGet() eq 'execute-list')
         {
             $strLatex .=
-                "\\lstset\{title=\{" . $oRender->processText($oChild->nodeGet('title')->textGet()) . ":\}\}\n" .
-                "\\begin\{lstlisting\}\n";
+                "\n\\begin\{lstlisting\}[title=\{" . $oRender->processText($oChild->nodeGet('title')->textGet()) . ":}]\n";
 
             foreach my $oExecute ($oChild->nodeList('execute'))
             {
@@ -259,12 +235,12 @@ sub sectionProcess
                 "\\end{lstlisting}\n";
         }
         # Add code block
-        elsif ($oChild->nameGet() eq 'code-block')
-        {
-            # $oSectionBodyElement->
-            #     addNew(HTML_DIV, 'code-block',
-            #            {strContent => $oChild->valueGet()});
-        }
+        # elsif ($oChild->nameGet() eq 'code-block')
+        # {
+        #     $oSectionBodyElement->
+        #         addNew(HTML_DIV, 'code-block',
+        #                {strContent => $oChild->valueGet()});
+        # }
         # Add descriptive text
         elsif ($oChild->nameGet() eq 'p')
         {
@@ -273,17 +249,15 @@ sub sectionProcess
         # Add option descriptive text
         elsif ($oChild->nameGet() eq 'option-description')
         {
-            # my $strOption = $oChild->paramGet("key");
-            # my $oDescription = ${$self->{oReference}->{oConfigHash}}{&CONFIG_HELP_OPTION}{$strOption}{&CONFIG_HELP_DESCRIPTION};
-            #
-            # if (!defined($oDescription))
-            # {
-            #     confess &log(ERROR, "unable to find ${strOption} option in sections - try adding command?");
-            # }
-            #
-            # $oSectionBodyElement->
-            #     addNew(HTML_DIV, 'section-body-text',
-            #            {strContent => $oRender->processText($oDescription)});
+            my $strOption = $oChild->paramGet("key");
+            my $oDescription = ${$self->{oReference}->{oConfigHash}}{&CONFIG_HELP_OPTION}{$strOption}{&CONFIG_HELP_DESCRIPTION};
+
+            if (!defined($oDescription))
+            {
+                confess &log(ERROR, "unable to find ${strOption} option in sections - try adding command?");
+            }
+
+            $strLatex .= "\n" . $oRender->processText($oDescription) . "\n";
         }
         # Add/remove backrest config options
         elsif ($oChild->nameGet() eq 'backrest-config')
@@ -298,7 +272,7 @@ sub sectionProcess
         # Add a subsection
         elsif ($oChild->nameGet() eq 'section')
         {
-            $strLatex .= "\n" . $self->sectionProcess($oChild, $strAnchor, $iDepth + 1);
+            $strLatex .= "\n" . $self->sectionProcess($oChild, $strSection, $iDepth + 1);
         }
         # Skip children that have already been processed and error on others
         elsif ($oChild->nameGet() ne 'title')

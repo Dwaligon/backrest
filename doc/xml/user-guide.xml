@@ -252,7 +252,7 @@
 
             <p><backrest/> needs to know where the base data directory for the <postgres/> cluster is located.  The path can be requested from <postgres/> directly but in a recovery scenario the <postgres/> process will not be available.  During backups the value supplied to <backrest/> will be compared against the path that <postgres/> is running on and they must be equal or the backup will return an error.  Make sure that <br-option>db-path</br-option> is exactly equal to <pg-option>data_directory</pg-option> in <file>postgresql.conf</file>.</p>
 
-            <p>By default Ubuntu stores clusters in <path>/var/lib/postgresql/[VERSION]/[CLUSTER-NAME]</path> so it is easy to determine the correct path for the data directory.</p>
+            <p>By default Ubuntu stores clusters in <path>/var/lib/postgresql/[version]/[cluster]</path> so it is easy to determine the correct path for the data directory.</p>
 
             <backrest-config file="{[backrest-config-demo]}">
                 <title>Configure the <postgres/> cluster data directory</title>

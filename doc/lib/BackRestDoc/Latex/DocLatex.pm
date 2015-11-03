@@ -171,7 +171,7 @@ sub process
 
     my $strLatex = fileStringRead($self->{strPreambleFile});
     $strLatex .= $self->variableReplace((new BackRestDoc::Latex::DocLatexSection($self, 'user-guide', $self->{bExe}))->process());
-    $strLatex .= "\\end{document}\n";
+    $strLatex .= "\n% " . ('-' x 130) . "\n% End document\n% " . ('-' x 130) . "\n\\end{document}\n";
 
     my $strLatexFileName = "$self->{strLatexPath}/pgBackrest-UserGuide.tex";
 

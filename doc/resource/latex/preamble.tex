@@ -1,14 +1,11 @@
 % ----------------------------------------------------------------------------------------------------------------------------------
-% Preamble for Latex User Guide
+% pgBackRest User Guide
 % ----------------------------------------------------------------------------------------------------------------------------------
 \documentclass[titlepage,letterpaper,12pt]{article}
 
 % Add hyperlinks to TOC
 % ----------------------------------------------------------------------------------------------------------------------------------
 \usepackage{hyperref}
-
-\let\stdsection\section
-\renewcommand\section{\newpage\stdsection}
 
 % Use the caption package to enable captions that are not numbered (caption*)
 % ----------------------------------------------------------------------------------------------------------------------------------
@@ -19,7 +16,7 @@
 \usepackage{xcolor}
 \definecolor{ltgray}{HTML}{E8E8E8}
 
-% Use listings package instead of verbatim
+% Use listings package instead of verbatim for displaying code
 % ----------------------------------------------------------------------------------------------------------------------------------
 \usepackage{listings}
 \lstset
@@ -36,16 +33,22 @@
 \usepackage{helvet}
 \renewcommand{\familydefault}{\sfdefault}
 
-% Set margins to 1 inch
+% Set margins to .5 inches
 % ----------------------------------------------------------------------------------------------------------------------------------
 \usepackage[top=.5in, bottom=.5in, left=.5in, right=.5in]{geometry}
 
-% Format paragraphs
+% Sections start a new page
+% ----------------------------------------------------------------------------------------------------------------------------------
+\let\stdsection\section
+\renewcommand\section{\newpage\stdsection}
+
+% Format paragraphs with no indent and a blank line between paragraphs
 % ----------------------------------------------------------------------------------------------------------------------------------
 \setlength\parindent{0pt}
 \usepackage{parskip}
 
-% Begin the document
+% ----------------------------------------------------------------------------------------------------------------------------------
+% Begin document
 % ----------------------------------------------------------------------------------------------------------------------------------
 \begin{document}
 
@@ -63,5 +66,6 @@
 \renewcommand\contentsname{Table of Contents}
 \tableofcontents
 
+% ----------------------------------------------------------------------------------------------------------------------------------
 % Content
 % ----------------------------------------------------------------------------------------------------------------------------------
