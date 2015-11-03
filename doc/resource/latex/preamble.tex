@@ -12,14 +12,18 @@
 
 % Create the program float to use for source code listings
 % ----------------------------------------------------------------------------------------------------------------------------------
-\usepackage{float}
-\floatstyle{ruled}
-\newfloat{program}{h!}{lop}
-\floatname{program}{}
+% \usepackage[font=bf,skip=\baselineskip]{caption}
+% \captionsetup[lstlisting]{font={small,tt}}
+
+% \usepackage{float}
+% \floatstyle{ruled}
+% \newfloat{program}{h!}{lop}
+% \floatname{program}{}
 
 % Use the caption package to enable captions that are not numbered (caption*)
 % ----------------------------------------------------------------------------------------------------------------------------------
-\usepackage{caption}
+\usepackage[font=small,textfont=it,justification=justified,singlelinecheck=false]{caption}
+% \DeclareCaptionFont{tiny}{\tiny}
 
 % Use listings package instead of verbatim
 % ----------------------------------------------------------------------------------------------------------------------------------
@@ -48,6 +52,8 @@
 % Begin the document
 % ----------------------------------------------------------------------------------------------------------------------------------
 \begin{document}
+
+\lstset{frame=tb}
 
 % Create the title page
 % ----------------------------------------------------------------------------------------------------------------------------------

@@ -178,6 +178,8 @@ sub sectionProcess
     # # Process each child
     # my $oSectionBodyExe;
     #
+    my $strRule = "\\rule{\\textwidth}{0.75pt}";
+
     foreach my $oChild ($oSection->nodeList())
     {
         &log(INFO, ('    ' x $iDepth) . 'process child ' . $oChild->nameGet());
@@ -185,7 +187,9 @@ sub sectionProcess
         # Execute a command
         if ($oChild->nameGet() eq 'execute-list')
         {
-            $strLatex .= "\n\\begin{program}\n\\begin{lstlisting}\n";
+            $strLatex .=
+                "\\lstset\{title=\{" . $oRender->processText($oChild->nodeGet('title')->textGet()) . ":\}\}\n" .
+                "\\begin\{lstlisting\}\n";
 
             foreach my $oExecute ($oChild->nodeList('execute'))
             {
@@ -202,7 +206,13 @@ sub sectionProcess
 
                     if (defined($strOutput))
                     {
-                        $strLatex .= "\\end\{lstlisting\}\nOutput:\n\\begin\{lstlisting\}\n${strOutput}\n";
+                        # $strLatex .=
+                        #     "\\end\{lstlisting\}\n" .
+                        #     "\\lstset\{title={Output:}\}\n" .
+                        #     "\\begin\{lstlisting\}\n${strOutput}\n";
+
+                        # $strOutput =~ s/^/    /smg;
+                        $strLatex .= "\nOutput:\n\n${strOutput}\n";
 
                         # my $strHighLight = $self->{oSite}->variableReplace($oExecute->fieldGet('exe-highlight', false));
                         # my $bHighLightOld;
@@ -246,9 +256,7 @@ sub sectionProcess
             }
 
             $strLatex .=
-                "\\end{lstlisting}\n" .
-                "\\caption*{" . $oRender->processText($oChild->nodeGet('title')->textGet()) . "}\n" .
-                "\\end{program}\n";
+                "\\end{lstlisting}\n";
         }
         # Add code block
         elsif ($oChild->nameGet() eq 'code-block')
