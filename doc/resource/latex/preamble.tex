@@ -10,20 +10,14 @@
 \let\stdsection\section
 \renewcommand\section{\newpage\stdsection}
 
-% Create the program float to use for source code listings
-% ----------------------------------------------------------------------------------------------------------------------------------
-% \usepackage[font=bf,skip=\baselineskip]{caption}
-% \captionsetup[lstlisting]{font={small,tt}}
-
-% \usepackage{float}
-% \floatstyle{ruled}
-% \newfloat{program}{h!}{lop}
-% \floatname{program}{}
-
 % Use the caption package to enable captions that are not numbered (caption*)
 % ----------------------------------------------------------------------------------------------------------------------------------
 \usepackage[font=small,textfont=it,justification=justified,singlelinecheck=false]{caption}
-% \DeclareCaptionFont{tiny}{\tiny}
+
+% Create a light gray color to use for source code listings
+% ----------------------------------------------------------------------------------------------------------------------------------
+\usepackage{xcolor}
+\definecolor{ltgray}{HTML}{E8E8E8}
 
 % Use listings package instead of verbatim
 % ----------------------------------------------------------------------------------------------------------------------------------
@@ -32,7 +26,9 @@
 {
     basicstyle=\small\ttfamily,
     columns=flexible,
-    breaklines=true
+    breaklines=true,
+    frame=tb,
+    backgroundcolor=\color{ltgray}
 }
 
 % Set the font to Helvetica
@@ -53,8 +49,6 @@
 % ----------------------------------------------------------------------------------------------------------------------------------
 \begin{document}
 
-\lstset{frame=tb}
-
 % Create the title page
 % ----------------------------------------------------------------------------------------------------------------------------------
 \title{Crunchy BackRest User Guide\\
@@ -68,37 +62,6 @@
 % \setcounter{tocdepth}{1}
 \renewcommand\contentsname{Table of Contents}
 \tableofcontents
-
-% Sample Content
-% ----------------------------------------------------------------------------------------------------------------------------------
-%\section{Introduction}
-%
-%Hello World!
-%
-%\subsection{Example}
-%
-%\begin{program}
-%  \begin{verbatim}
-%
-%class HelloWorldApp {
-%  public static void main(String[] args) {
-%    //Display the string
-%    System.out.println("Hello World!");
-%  }
-%}
-%\end{verbatim}
-%  \caption{The Hello World! program in Java.}
-%\end{program}
-%
-%\subsubsection{Example 2}
-%
-%Yada, Yada, yada!
-%
-%\section{Another Section}
-%
-%Hello World!
-%
-%\end{document}
 
 % Content
 % ----------------------------------------------------------------------------------------------------------------------------------
