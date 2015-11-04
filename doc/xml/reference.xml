@@ -171,7 +171,7 @@
                         <text>Required only if the path to <exe/> is different on the local and remote systems.  If not defined, the remote exe path will be set the same as the local exe path.</text>
 
                         <default>same as local</default>
-                        <example>/usr/lib/backrest/bin/pg_backrest_remote.pl</example>
+                        <example>/usr/lib/backrest/bin/pg_backrest</example>
                     </config-key>
                 </config-key-list>
             </config-section>
