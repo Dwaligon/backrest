@@ -51,8 +51,6 @@ sub new
     # Assign function parameters, defaults, and log debug info
     (
         my $strOperation,
-        $self->{var},
-        my $oUserGuideDoc,
         $self->{oRender},
         $self->{oReference},
         $self->{strXmlPath},
@@ -64,8 +62,6 @@ sub new
         logDebugParam
         (
             OP_DOC_HTML_SITE_NEW, \@_,
-            {name => 'oVariable', required => false},
-            {name => 'oUserGuideDoc', required => false},
             {name => 'oRender'},
             {name => 'oReference'},
             {name => 'strXmlPath'},
@@ -131,35 +127,27 @@ sub new
         }
     };
 
-    if (defined($oUserGuideDoc))
-    {
-        ${$self->{oSite}}{'page'}{'user-guide'}{oDoc}{oDoc} = $oUserGuideDoc;
-    }
-
     # Create common variables
-    if (!defined($self->{var}))
+    ${$self->{var}}{backrest} = $self->{oRender}->{strProjectName};
+    ${$self->{var}}{version} = $VERSION;
+    ${$self->{var}}{'backrest-exe'} = $self->{oRender}->{strExeName};
+    ${$self->{var}}{'postgres'} = 'PostgreSQL';
+    ${$self->{var}}{'backrest-url-root'} = $self->{strHtmlRoot};
+    ${$self->{var}}{'dash'} = '-';
+
+    # Read variables from pages
+    foreach my $strPageId (sort(keys(${$self->{oSite}}{page})))
     {
-        ${$self->{var}}{backrest} = $self->{oRender}->{strProjectName};
-        ${$self->{var}}{version} = $VERSION;
-        ${$self->{var}}{'backrest-exe'} = $self->{oRender}->{strExeName};
-        ${$self->{var}}{'postgres'} = 'PostgreSQL';
-        ${$self->{var}}{'backrest-url-root'} = $self->{strHtmlRoot};
-        ${$self->{var}}{'dash'} = '-';
+        my $oPage = ${$self->{oSite}}{page}{$strPageId};
 
-        # Read variables from pages
-        foreach my $strPageId (sort(keys(${$self->{oSite}}{page})))
+        if (defined($$oPage{oDoc}->nodeGet('variable-list', false)))
         {
-            my $oPage = ${$self->{oSite}}{page}{$strPageId};
-
-            if (defined($$oPage{oDoc}->nodeGet('variable-list', false)))
+            foreach my $oVariable ($$oPage{oDoc}->nodeGet('variable-list')->nodeList('variable'))
             {
-                foreach my $oVariable ($$oPage{oDoc}->nodeGet('variable-list')->nodeList('variable'))
-                {
-                    my $strName = $oVariable->fieldGet('variable-name');
-                    my $strValue = $oVariable->fieldGet('variable-value');
+                my $strName = $oVariable->fieldGet('variable-name');
+                my $strValue = $oVariable->fieldGet('variable-value');
 
-                    ${$self->{var}}{$strName} = $self->variableReplace($strValue);
-                }
+                ${$self->{var}}{$strName} = $self->variableReplace($strValue);
             }
         }
     }

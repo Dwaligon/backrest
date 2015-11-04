@@ -151,18 +151,7 @@ $oDocConfig->helpDataWrite();
 # Only generate the HTML/PDF when requested
 if ($bHtml || $bPDF)
 {
-    my $strUserGuideFile = "${strOutputPath}/user-guide.xml";
-    my $strVarFile = "${strOutputPath}/var.xml";
-    my $oUserGuide;
-    my $oVar;
-
-    if ($bUseCached && -e $strUserGuideFile && -e $strVarFile)
-    {
-        $oUserGuide = retrieve($strUserGuideFile);
-        $oVar = retrieve($strVarFile);
-        #
-        # use Data::Dumper; confess Dumper($oSite);
-    }
+    my $strSiteFile = "${strOutputPath}/site.storable";
 
     # Create the out path if it does not exist
     if (!-e $strOutputPath)
@@ -173,19 +162,26 @@ if ($bHtml || $bPDF)
 
     # !!! Create Html Site Object to perform variable replacements on markdown and test
     # !!! This should be replaced with a more generic site object in the future
-    my $oHtmlSite =
-        new BackRestDoc::Html::DocHtmlSite
-        (
-            $oVar,
-            $oUserGuide,
-            new BackRestDoc::Common::DocRender('html', $strProjectName, $strExeName),
-            $oDocConfig,
-            "${strBasePath}/xml",
-            "${strOutputPath}/html",
-            "${strBasePath}/resource/html/default.css",
-            $strHtmlRoot,
-            !$bNoExe
-        );
+    my $oHtmlSite;
+
+    if ($bUseCached && -e $strSiteFile)
+    {
+        $oHtmlSite = retrieve($strSiteFile);
+    }
+    else
+    {
+        $oHtmlSite =
+            new BackRestDoc::Html::DocHtmlSite
+            (
+                new BackRestDoc::Common::DocRender('html', $strProjectName, $strExeName),
+                $oDocConfig,
+                "${strBasePath}/xml",
+                "${strOutputPath}/html",
+                "${strBasePath}/resource/html/default.css",
+                $strHtmlRoot,
+                !$bNoExe
+            );
+    }
 
     docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oHtmlSite);
     docProcess("${strBasePath}/xml/change-log.xml", "${strBasePath}/../CHANGELOG.md", $oHtmlSite);
@@ -195,8 +191,8 @@ if ($bHtml || $bPDF)
 
     if (!$bUseCached)
     {
-        store($oHtmlSite->{oSite}->{page}->{'user-guide'}->{oDoc}->{oDoc}, $strUserGuideFile);
-        store($oHtmlSite->{var}, $strVarFile);
+        $oHtmlSite->{bExe} = false;
+        store($oHtmlSite, $strSiteFile);
     }
 
     # Only generate the PDF file when requested
