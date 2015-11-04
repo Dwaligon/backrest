@@ -160,8 +160,8 @@ sub process
 
     # # Copy the css file
     # my $strCssFileDestination = "$self->{strHtmlPath}/default.css";
-    # copy($self->{strCssFile}, $strCssFileDestination)
-    #     or confess &log(ERROR, "unable to copy $self->{strCssFile} to ${strCssFileDestination}");
+    copy('/backrest/doc/resource/latex/crunchy-logo.eps', "$self->{strLatexPath}/logo.eps")
+        or confess &log(ERROR, "unable to copy logo");
 
     # # Render pages
     # my $oSite = $self->{oSite};
@@ -182,8 +182,8 @@ sub process
 
     fileStringWrite($strLatexFileName, $strLatex, false);
 
-    executeTest("pdflatex -output-directory=$self->{strLatexPath} $strLatexFileName");
-    executeTest("pdflatex -output-directory=$self->{strLatexPath} $strLatexFileName");
+    executeTest("pdflatex -output-directory=$self->{strLatexPath} -shell-escape $strLatexFileName");
+    executeTest("pdflatex -output-directory=$self->{strLatexPath} -shell-escape $strLatexFileName");
 
     # Return from function and log return values if any
     logDebugReturn($strOperation);

@@ -1,11 +1,16 @@
 % ----------------------------------------------------------------------------------------------------------------------------------
 % pgBackRest User Guide
 % ----------------------------------------------------------------------------------------------------------------------------------
-\documentclass[titlepage,letterpaper,12pt]{article}
+\documentclass[letterpaper,12pt]{article}
 
 % Add hyperlinks to TOC
 % ----------------------------------------------------------------------------------------------------------------------------------
 \usepackage{hyperref}
+
+% Allow EPS files
+% ----------------------------------------------------------------------------------------------------------------------------------
+\usepackage{graphicx}
+\usepackage{epstopdf}
 
 % Use the caption package to enable captions that are not numbered (caption*)
 % ----------------------------------------------------------------------------------------------------------------------------------
@@ -41,7 +46,7 @@
 
 % Set margins
 % ----------------------------------------------------------------------------------------------------------------------------------
-\usepackage[top=1in, bottom=.9in, left=.5in, right=.5in]{geometry}
+\usepackage[top=.9in, bottom=1in, left=.5in, right=.5in]{geometry}
 
 % Sections start a new page
 % ----------------------------------------------------------------------------------------------------------------------------------
@@ -66,27 +71,48 @@
     \lhead[]{TABLE OF CONTENTS}
 }
 
-\lfoot[]{{[backrest]} User Guide}
+\lfoot[]{{[backrest]} User Guide\\
+         Version {[version]}}
 \cfoot[]{-\ \thepage\ -}
-\rfoot[]{Version {[version]}}
+\rfoot[]{Crunchy Data Solutions, Inc.\\\today}
 \pagestyle{fancy}
+
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
 
 % ----------------------------------------------------------------------------------------------------------------------------------
 % Begin document
 % ----------------------------------------------------------------------------------------------------------------------------------
 \begin{document}
 
+
 % Create the title page
 % ----------------------------------------------------------------------------------------------------------------------------------
-\title{{[backrest]} User Guide\\
-       Version {[version]}}
-\author{Crunchy Data Solutions, Inc.}
-\date{\today}
-\maketitle
+\title{{[backrest]} User Guide}
+% \author{Crunchy Data Solutions, Inc.}
+% \date{\today}
+
+\topskip2in
+
+\makeatletter
+    \begin{titlepage}
+        \begin{center}
+            {\huge \bfseries \@title}\\[1ex]
+            {\large \bfseries Version {[version]}}\\[4ex]
+            {\large Open Source PostgreSQL Backup and Restore Utility}\\[12ex]
+            \includegraphics[width=6in]{/backrest/doc/latex/logo}\\[12ex]
+            {\large Crunchy Data Solutions, Inc.}\\[1ex]
+            {\large \today}
+        \end{center}
+    \end{titlepage}
+\makeatother
+\thispagestyle{empty}
+\newpage
 
 % Generate TOC
 % ----------------------------------------------------------------------------------------------------------------------------------
 % \setcounter{tocdepth}{1}
+\topskip0in
 \thispagestyle{plain}
 \renewcommand\contentsname{Table of Contents}
 \tableofcontents
