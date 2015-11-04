@@ -1,0 +1,5 @@
+<!ELEMENT doc (variable-list, source-list, render-list)>
+
+<!ELEMENT variable-list (variable+)>
+<!ELEMENT variable (#PCDATA)>
+    <!ATTLIST variable key CDATA #REQUIRED>

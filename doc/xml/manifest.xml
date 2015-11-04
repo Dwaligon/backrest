@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE doc SYSTEM "manifest.dtd">
+<doc>
+    <!-- System-wide variables  -->
+    <variable-list>
+        <variable key="backrest">pgBackRest</variable>
+        <variable key="version">0.87</variable>
+        <variable key="backrest-exe">pg_backrest</variable>
+        <variable key="backrest-url-root">/</variable>
+        <variable key="postgres">PostgreSQL</variable>
+        <variable key="dash">-</variable>
+    </variable-list>
+
+    <source-list>
+        <source key="index"/>
+        <source key="user-guide"/>
+        <source key="reference" type="custom"/>
+    </souce-list>
+
+    <render-list>
+        <render type="html">
+            <render-source key="index" menu="Home"/>
+            <render-source key="user-guide" menu="User Guide"/>
+            <render-source key="configuration" menu="Configuration" type="custom"/>
+            <render-source key="command" menu="Commands" type="custom"/>
+        </render>
+    </render-list>
+
+    <render-list>
+        <render type="pdf" name="{[backrest]}-UserGuide-{[version]}">
+            <render-source key="user-guide"/>
+        </render>
+    </render-list>
+</doc>
