@@ -16,7 +16,9 @@ use Cwd qw(abs_path);
 use File::Basename qw(dirname);
 use Getopt::Long qw(GetOptions);
 use Pod::Usage qw(pod2usage);
+use Storable;
 use XML::Checker::Parser;
+# use XML::Simple;
 
 use lib dirname($0) . '/lib';
 use BackRestDoc::Common::Doc;
@@ -29,6 +31,7 @@ use lib dirname($0) . '/../lib';
 use BackRest::Common::Log;
 use BackRest::Common::String;
 use BackRest::Config::Config;
+use BackRest::FileCommon;
 
 ####################################################################################################################################
 # Usage
@@ -68,6 +71,7 @@ my $bHtml = false;                                  # Generate full html documen
 my $strHtmlRoot = '/';                              # Root html page
 my $bNoExe = false;                                 # Should commands be executed when buildng help? (for testing only)
 my $bPDF = false;                                   # Generate the PDF file
+my $bUseCached = false;                             # Use cached data to generate the docs (for testing code changes only)
 
 GetOptions ('help' => \$bHelp,
             'version' => \$bVersion,
@@ -77,6 +81,7 @@ GetOptions ('help' => \$bHelp,
             'html-root=s' => \$strHtmlRoot,
             'pdf' => \$bPDF,
             'no-exe', \$bNoExe,
+            'use-cached', \$bUseCached,
             'project-name=s', \$strProjectName,
             'pdf-project-name=s', \$strPdfProjectName)
     or pod2usage(2);
@@ -95,6 +100,12 @@ if ($bHelp || $bVersion)
     exit 0;
 }
 
+# Set no-exe if use-cached
+if ($bUseCached)
+{
+    $bNoExe = true;
+}
+
 # Set console log level
 if ($bQuiet)
 {
@@ -105,6 +116,7 @@ logLevelSet(undef, uc($strLogLevel));
 
 # Get the base path
 my $strBasePath = abs_path(dirname($0));
+my $strOutputPath = "${strBasePath}/output";
 
 sub docProcess
 {
@@ -136,46 +148,75 @@ my $oRender = new BackRestDoc::Common::DocRender('text', $strProjectName, $strEx
 my $oDocConfig = new BackRestDoc::Common::DocConfig(new BackRestDoc::Common::Doc("${strBasePath}/xml/reference.xml"), $oRender);
 $oDocConfig->helpDataWrite();
 
-# !!! Create Html Site Object to perform variable replacements on markdown and test
-# !!! This should be replaced with a more generic site object in the future
-my $oHtmlSite =
-    new BackRestDoc::Html::DocHtmlSite
-    (
-        new BackRestDoc::Common::DocRender('html', $strProjectName, $strExeName),
-        $oDocConfig,
-        "${strBasePath}/xml",
-        "${strBasePath}/html",
-        "${strBasePath}/resource/html/default.css",
-        $strHtmlRoot,
-        !$bNoExe
-    );
-
-docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oHtmlSite);
-docProcess("${strBasePath}/xml/change-log.xml", "${strBasePath}/../CHANGELOG.md", $oHtmlSite);
-
-# Only generate the HTML site when requested
+# Only generate the HTML/PDF when requested
 if ($bHtml || $bPDF)
 {
+    my $strUserGuideFile = "${strOutputPath}/user-guide.xml";
+    my $strVarFile = "${strOutputPath}/var.xml";
+    my $oUserGuide;
+    my $oVar;
+
+    if ($bUseCached && -e $strUserGuideFile && -e $strVarFile)
+    {
+        $oUserGuide = retrieve($strUserGuideFile);
+        $oVar = retrieve($strVarFile);
+        #
+        # use Data::Dumper; confess Dumper($oSite);
+    }
+
+    # Create the out path if it does not exist
+    if (!-e $strOutputPath)
+    {
+        mkdir($strOutputPath)
+            or confess &log(ERROR, "unable to create path ${strOutputPath}");
+    }
+
+    # !!! Create Html Site Object to perform variable replacements on markdown and test
+    # !!! This should be replaced with a more generic site object in the future
+    my $oHtmlSite =
+        new BackRestDoc::Html::DocHtmlSite
+        (
+            $oVar,
+            $oUserGuide,
+            new BackRestDoc::Common::DocRender('html', $strProjectName, $strExeName),
+            $oDocConfig,
+            "${strBasePath}/xml",
+            "${strOutputPath}/html",
+            "${strBasePath}/resource/html/default.css",
+            $strHtmlRoot,
+            !$bNoExe
+        );
+
+    docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oHtmlSite);
+    docProcess("${strBasePath}/xml/change-log.xml", "${strBasePath}/../CHANGELOG.md", $oHtmlSite);
+
+    # Generate HTML
     $oHtmlSite->process();
-}
 
-# Only generate the PDF file when requested
-$oHtmlSite->{var}->{backrest} = $strPdfProjectName;
+    if (!$bUseCached)
+    {
+        store($oHtmlSite->{oSite}->{page}->{'user-guide'}->{oDoc}->{oDoc}, $strUserGuideFile);
+        store($oHtmlSite->{var}, $strVarFile);
+    }
 
-my $oLatex =
-    new BackRestDoc::Latex::DocLatex
-    (
-        $oHtmlSite->{var},
-        $oHtmlSite->{oSite},
-        new BackRestDoc::Common::DocRender('latex', $strPdfProjectName, $strExeName),
-        $oDocConfig,
-        "${strBasePath}/xml",
-        "${strBasePath}/latex",
-        "${strBasePath}/resource/latex/preamble.tex",
-        !$bNoExe
-    );
+    # Only generate the PDF file when requested
+    $oHtmlSite->{var}->{backrest} = $strPdfProjectName;
 
-if ($bPDF)
-{
-    $oLatex->process();
+    my $oLatex =
+        new BackRestDoc::Latex::DocLatex
+        (
+            $oHtmlSite->{var},
+            $oHtmlSite->{oSite},
+            new BackRestDoc::Common::DocRender('latex', $strPdfProjectName, $strExeName),
+            $oDocConfig,
+            "${strBasePath}/xml",
+            "${strOutputPath}/latex",
+            "${strBasePath}/resource/latex/preamble.tex",
+            !$bNoExe
+        );
+
+    if ($bPDF)
+    {
+        $oLatex->process();
+    }
 }

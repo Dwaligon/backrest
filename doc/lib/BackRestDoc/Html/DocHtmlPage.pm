@@ -214,7 +214,7 @@ sub process
                                                              $strTitle . (defined($strSubTitle) ? " - ${strSubTitle}" : ''));
 
     # Execute cleanup commands
-    if (defined($self->{oDoc}->nodeGet('cleanup', false)))
+    if ($self->{bExe} && defined($self->{oDoc}->nodeGet('cleanup', false)))
     {
         &log(INFO, "do cleanup");
 
@@ -397,7 +397,18 @@ sub sectionProcess
             {
                 my $bExeShow = defined($oExecute->fieldGet('exe-no-show', false)) ? false : true;
                 my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
-                my ($strCommand, $strOutput) = $self->execute($oExecute, $iDepth + 1);
+                my $strCommand;
+                my $strOutput;
+
+                if (defined($oExecute->fieldGet('actual-command', false)))
+                {
+                    $strCommand = $oExecute->fieldGet('actual-command');
+                    $strOutput = $oExecute->fieldGet('actual-output', false);
+                }
+                else
+                {
+                    ($strCommand, $strOutput) = $self->execute($oExecute, $iDepth + 1);
+                }
 
                 if ($bExeShow)
                 {

@@ -11,10 +11,12 @@ use Carp qw(confess);
 #     our @EXPORT = qw();
 use File::Basename qw(dirname);
 use Scalar::Util qw(blessed);
+use XML::Simple;
 
 use lib dirname($0) . '/../lib';
 use BackRest::Common::Log;
 use BackRest::Common::String;
+use BackRest::FileCommon;
 
 ####################################################################################################################################
 # Operation constants
@@ -49,44 +51,52 @@ sub new
     # Assign function parameters, defaults, and log debug info
     (
         my $strOperation,
-        $self->{strFileName}
+        $self->{strFileName},
+        my $bCached
     ) =
         logDebugParam
         (
             OP_DOC_NEW, \@_,
-            {name => 'strFileName', required => false}
+            {name => 'strFileName', required => false},
+            {name => 'bCached', default => false}
         );
 
     # Load the doc from a file if one has been defined
     if (defined($self->{strFileName}))
     {
-        my $oParser = XML::Checker::Parser->new(ErrorContext => 2, Style => 'Tree');
-        $oParser->set_sgml_search_path(dirname($self->{strFileName}) . '/dtd');
-
-        my $oTree;
-
-        eval
+        if ($bCached)
         {
-            local $XML::Checker::FAIL = sub
-            {
-                my $iCode = shift;
+            $self->oDoc = XMLin(fileStringRead($self->{strFileName}));
+        }
+        else
+        {
+            my $oParser = XML::Checker::Parser->new(ErrorContext => 2, Style => 'Tree');
+            $oParser->set_sgml_search_path(dirname($self->{strFileName}) . '/dtd');
 
-                die XML::Checker::error_string($iCode, @_);
+            my $oTree;
+
+            eval
+            {
+                local $XML::Checker::FAIL = sub
+                {
+                    my $iCode = shift;
+
+                    die XML::Checker::error_string($iCode, @_);
+                };
+
+                $oTree = $oParser->parsefile($self->{strFileName});
             };
 
-            $oTree = $oParser->parsefile($self->{strFileName});
-        };
+            # Report any error that stopped parsing
+            if ($@)
+            {
+                $@ =~ s/at \/.*?$//s;               # remove module line number
+                die "malformed xml in '$self->{strFileName}':\n" . trim($@);
+            }
 
-        # Report any error that stopped parsing
-        if ($@)
-        {
-            $@ =~ s/at \/.*?$//s;               # remove module line number
-            die "malformed xml in '$self->{strFileName}':\n" . trim($@);
+            # Parse and build the doc
+            $self->{oDoc} = $self->build($self->parse(${$oTree}[0], ${$oTree}[1]));
         }
-
-        # Parse and build the doc
-        $self->{oDoc} = $self->build($self->parse(${$oTree}[0], ${$oTree}[1]));
-
     }
     # Else create a blank doc
     else
