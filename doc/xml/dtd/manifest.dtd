@@ -10,6 +10,10 @@
     <!ATTLIST source type CDATA "">
 
 <!ELEMENT render-list (render+)>
-<!ELEMENT render EMPTY>
-    <!ATTLIST render key CDATA #REQUIRED>
+<!ELEMENT render (render-source+)>
+    <!ATTLIST render type CDATA #REQUIRED>
     <!ATTLIST render file CDATA "">
+<!ELEMENT render-source EMPTY>
+    <!ATTLIST render-source key CDATA #REQUIRED>
+    <!ATTLIST render-source type CDATA "">
+    <!ATTLIST render-source menu CDATA "">

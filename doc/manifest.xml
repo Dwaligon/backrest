@@ -15,7 +15,7 @@
         <source key="index"/>
         <source key="user-guide"/>
         <source key="reference" type="custom"/>
-    </souce-list>
+    </source-list>
 
     <render-list>
         <render type="html">
@@ -28,6 +28,5 @@
         <render type="pdf" file="{[backrest]}-UserGuide-{[version]}">
             <render-source key="user-guide"/>
         </render>
-
     </render-list>
 </doc>
