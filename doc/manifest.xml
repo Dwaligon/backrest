@@ -24,11 +24,10 @@
             <render-source key="configuration" menu="Configuration" type="custom"/>
             <render-source key="command" menu="Commands" type="custom"/>
         </render>
-    </render-list>
 
-    <render-list>
-        <render type="pdf" name="{[backrest]}-UserGuide-{[version]}">
+        <render type="pdf" file="{[backrest]}-UserGuide-{[version]}">
             <render-source key="user-guide"/>
         </render>
+
     </render-list>
 </doc>

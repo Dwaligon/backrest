@@ -11,7 +11,6 @@ use Carp qw(confess);
 #     our @EXPORT = qw();
 use File::Basename qw(dirname);
 use Scalar::Util qw(blessed);
-use XML::Simple;
 
 use lib dirname($0) . '/../lib';
 use BackRest::Common::Log;
@@ -71,7 +70,15 @@ sub new
         else
         {
             my $oParser = XML::Checker::Parser->new(ErrorContext => 2, Style => 'Tree');
-            $oParser->set_sgml_search_path(dirname($self->{strFileName}) . '/dtd');
+
+            if (-e dirname($self->{strFileName}) . '/dtd')
+            {
+                $oParser->set_sgml_search_path(dirname($self->{strFileName}) . '/dtd')
+            }
+            else
+            {
+                $oParser->set_sgml_search_path(dirname($self->{strFileName}) . '/xml/dtd');
+            }
 
             my $oTree;
 

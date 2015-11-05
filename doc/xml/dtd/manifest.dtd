@@ -3,3 +3,13 @@
 <!ELEMENT variable-list (variable+)>
 <!ELEMENT variable (#PCDATA)>
     <!ATTLIST variable key CDATA #REQUIRED>
+
+<!ELEMENT source-list (source+)>
+<!ELEMENT source EMPTY>
+    <!ATTLIST source key CDATA #REQUIRED>
+    <!ATTLIST source type CDATA "">
+
+<!ELEMENT render-list (render+)>
+<!ELEMENT render EMPTY>
+    <!ATTLIST render key CDATA #REQUIRED>
+    <!ATTLIST render file CDATA "">

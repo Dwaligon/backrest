@@ -18,14 +18,14 @@ use Getopt::Long qw(GetOptions);
 use Pod::Usage qw(pod2usage);
 use Storable;
 use XML::Checker::Parser;
-# use XML::Simple;
 
 use lib dirname($0) . '/lib';
 use BackRestDoc::Common::Doc;
 use BackRestDoc::Common::DocConfig;
+use BackRestDoc::Common::DocManifest;
+use BackRestDoc::Common::DocRender;
 use BackRestDoc::Html::DocHtmlSite;
 use BackRestDoc::Latex::DocLatex;
-use BackRestDoc::Common::DocRender;
 
 use lib dirname($0) . '/../lib';
 use BackRest::Common::Log;
@@ -147,6 +147,9 @@ sub docProcess
 my $oRender = new BackRestDoc::Common::DocRender('text', $strProjectName, $strExeName);
 my $oDocConfig = new BackRestDoc::Common::DocConfig(new BackRestDoc::Common::Doc("${strBasePath}/xml/reference.xml"), $oRender);
 $oDocConfig->helpDataWrite();
+
+# Load the manifest
+my $oManifest = new BackRestDoc::Common::DocManifest();
 
 # Only generate the HTML/PDF when requested
 if ($bHtml || $bPDF)
