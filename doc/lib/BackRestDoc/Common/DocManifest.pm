@@ -84,13 +84,8 @@ sub new
     # Iterate the renderers
     foreach my $oRender ($self->{oManifestXml}->nodeGet('render-list')->nodeList('render'))
     {
+        my $oRenderHash = {};
         my $strType = $oRender->paramGet(RENDER_TYPE);
-
-        logDebugMisc
-        (
-            $strOperation, '    load render',
-            {name => 'strType', value => $strType}
-        );
 
         # Only one instance of each render type can be defined
         if (defined(${$self->{oManifest}}{&RENDER}{$strType}))
@@ -98,28 +93,35 @@ sub new
             confess &log(ERROR, "render ${strType} has already been defined");
         }
 
-        # Get the filename if this is a pdf
-        ${$self->{oManifest}}{render}{$strType}{file} = $oRender->paramGet(RENDER_FILE, false);
+        # Get the file param
+        $${oRenderHash}{file} = $oRender->paramGet(RENDER_FILE, false);
 
-        if (defined(${$self->{oManifest}}{render}{$strType}{file}) && $strType ne RENDER_TYPE_PDF)
+        logDebugMisc
+        (
+            $strOperation, '    load render',
+            {name => 'strType', value => $strType},
+            {name => 'strFile', value => $${oRenderHash}{file}}
+        );
+
+        # Error if file is set and render type is not pdf
+        if (defined($${oRenderHash}{file}) && $strType ne RENDER_TYPE_PDF)
         {
             confess &log(ERROR, 'only the pdf render type can have file set')
         }
 
         # Iterate the render sources
-        foreach my $oRenderSource ($oRender->nodeList('render-source'))
+        foreach my $oRenderOut ($oRender->nodeList('render-source'))
         {
-            my $strKey = $oRenderSource->paramGet('key');
-            my $strSource = $oRenderSource->paramGet('source', false, $strKey);
+            my $oRenderOutHash = {};
+            my $strKey = $oRenderOut->paramGet('key');
+            my $strSource = $oRenderOut->paramGet('source', false, $strKey);
 
-            ${$self->{oManifest}}{render}{$strType}{$strKey}{source} = $strSource;
-
-            my $oRenderSourceHash = ${$self->{oManifest}}{render}{$strType}{$strKey};
+            $$oRenderOutHash{source} = $strSource;
 
             # Get the filename if this is a pdf
-            $${oRenderSourceHash}{menu} = $oRenderSource->paramGet('menu', false);
+            $$oRenderOutHash{menu} = $oRenderOut->paramGet('menu', false);
 
-            if (defined($${oRenderSourceHash}{menu}) && $strType ne RENDER_TYPE_HTML)
+            if (defined($$oRenderOutHash{menu}) && $strType ne RENDER_TYPE_HTML)
             {
                 confess &log(ERROR, 'only the html render type can have menu set')
             }
@@ -129,9 +131,13 @@ sub new
                 $strOperation, '        load render source',
                 {name => 'strKey', value => $strKey},
                 {name => 'strSource', value => $strSource},
-                {name => 'strMenu', value => $${oRenderSourceHash}{menu}}
+                {name => 'strMenu', value => $${oRenderOutHash}{menu}}
             );
+
+            $${oRenderHash}{out}{$strKey} = $oRenderOutHash;
         }
+
+        ${$self->{oManifest}}{render}{$strType} = $oRenderHash;
     }
 
     # Return from function and log return values if any
