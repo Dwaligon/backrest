@@ -21,8 +21,8 @@
         <render type="html">
             <render-source key="index" menu="Home"/>
             <render-source key="user-guide" menu="User Guide"/>
-            <render-source key="configuration" menu="Configuration" type="custom"/>
-            <render-source key="command" menu="Commands" type="custom"/>
+            <render-source key="configuration" source="reference" menu="Configuration"/>
+            <render-source key="command" source="reference" menu="Commands"/>
         </render>
 
         <render type="pdf" file="{[backrest]}-UserGuide-{[version]}">

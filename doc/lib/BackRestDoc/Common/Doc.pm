@@ -556,6 +556,7 @@ sub paramGet
         $strOperation,
         $strName,
         $bRequired,
+        $strDefault,
         $strType
     ) =
         logDebugParam
@@ -563,14 +564,20 @@ sub paramGet
             OP_DOC_PARAM_GET, \@_,
             {name => 'strName', trace => true},
             {name => 'bRequired', default => true, trace => true},
+            {name => 'strDefault', required => false, trace => true},
             {name => 'strType', default => 'param', trace => true}
         );
 
     my $strValue = ${$self->{oDoc}}{$strType}{$strName};
 
-    if (!defined($strValue) && $bRequired)
+    if (!defined($strValue))
     {
-        confess "${strType} '${strName}' in required in node '$self->{strName}'";
+        if ($bRequired)
+        {
+            confess "${strType} '${strName}' in required in node '$self->{strName}'";
+        }
+
+        $strValue = $strDefault;
     }
 
     # Return from function and log return values if any
@@ -621,7 +628,7 @@ sub fieldGet
 {
     my $self = shift;
 
-    return $self->paramGet(shift, shift, 'field');
+    return $self->paramGet(shift, shift, shift, 'field');
 }
 
 ####################################################################################################################################
@@ -633,7 +640,7 @@ sub textGet
 {
     my $self = shift;
 
-    return $self->nodeBless($self->paramGet('text', shift, 'field'));
+    return $self->nodeBless($self->paramGet('text', shift, shift, 'field'));
 }
 
 ####################################################################################################################################
