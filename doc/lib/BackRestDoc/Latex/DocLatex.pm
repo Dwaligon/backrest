@@ -30,7 +30,7 @@ use BackRestDoc::Latex::DocLatexSection;
 ####################################################################################################################################
 # Operation constants
 ####################################################################################################################################
-use constant OP_DOC_LATEX                                           => 'DocHtmlSite';
+use constant OP_DOC_LATEX                                           => 'DocLatex';
 
 use constant OP_DOC_LATEX_NEW                                       => OP_DOC_LATEX . '->new';
 use constant OP_DOC_LATEX_PROCESS                                   => OP_DOC_LATEX . '->process';
@@ -51,10 +51,7 @@ sub new
     # Assign function parameters, defaults, and log debug info
     (
         my $strOperation,
-        $self->{var},
-        $self->{oSite},
-        $self->{oRender},
-        $self->{oReference},
+        $self->{oManifest},
         $self->{strXmlPath},
         $self->{strLatexPath},
         $self->{strPreambleFile},
@@ -63,10 +60,7 @@ sub new
         logDebugParam
         (
             OP_DOC_LATEX_NEW, \@_,
-            {name => 'oVariable'},
-            {name => 'oSite'},
-            {name => 'oRender'},
-            {name => 'oReference'},
+            {name => 'oManifest'},
             {name => 'strXmlPath'},
             {name => 'strLatexPath'},
             {name => 'strPreambleFile'},
@@ -85,14 +79,6 @@ sub new
             or confess &log(ERROR, "unable to create path $self->{strLatexPath}");
     }
 
-    # Create the footer
-    $self->{strFooter} = 'Copyright © 2015' . (strftime('%Y', localtime) ne '2015' ?  '-' . strftime('%Y', localtime) : '') .
-                         ', The PostgreSQL Global Development Group, <a href="{[github-url-license]}">MIT License</a>.  Updated ' .
-                         strftime('%B ', localtime) . trim(strftime('%e,', localtime)) . strftime(' %Y.', localtime);
-
-    ${$self->{oSite}}{common}{strFooter} = $self->{strFooter};
-    ${$self->{oSite}}{common}{oRender} = $self->{oRender};
-
     # Return from function and log return values if any
     return logDebugReturn
     (
@@ -106,31 +92,31 @@ sub new
 #
 # Replace variables in the string.
 ####################################################################################################################################
-sub variableReplace
-{
-    my $self = shift;
-    my $strBuffer = shift;
-    my $bVerbatim = shift;
-
-    if (!defined($strBuffer))
-    {
-        return undef;
-    }
-
-    foreach my $strName (sort(keys(%{$self->{var}})))
-    {
-        my $strValue = $self->{var}{$strName};
-
-        if (!defined($bVerbatim) || !$bVerbatim)
-        {
-            $strValue =~ s/\_/\\_/g;
-        }
-
-        $strBuffer =~ s/\{\[$strName\]\}/$strValue/g;
-    }
-
-    return $strBuffer;
-}
+# sub variableReplace
+# {
+#     my $self = shift;
+#     my $strBuffer = shift;
+#     my $bVerbatim = shift;
+#
+#     if (!defined($strBuffer))
+#     {
+#         return undef;
+#     }
+#
+#     foreach my $strName (sort(keys(%{$self->{var}})))
+#     {
+#         my $strValue = $self->{var}{$strName};
+#
+#         if (!defined($bVerbatim) || !$bVerbatim)
+#         {
+#             $strValue =~ s/\_/\\_/g;
+#         }
+#
+#         $strBuffer =~ s/\{\[$strName\]\}/$strValue/g;
+#     }
+#
+#     return $strBuffer;
+# }
 
 #
 # ####################################################################################################################################
@@ -158,25 +144,16 @@ sub process
     # Assign function parameters, defaults, and log debug info
     my $strOperation = logDebugParam(OP_DOC_LATEX_PROCESS);
 
-    # # Copy the css file
-    # my $strCssFileDestination = "$self->{strHtmlPath}/default.css";
+    # Copy the logo
     copy('/backrest/doc/resource/latex/crunchy-logo.eps', "$self->{strLatexPath}/logo.eps")
         or confess &log(ERROR, "unable to copy logo");
 
-    # # Render pages
-    # my $oSite = $self->{oSite};
-    #
-    # foreach my $strPageId (sort(keys($$oSite{'page'})))
-    # {
-    #     # Save the html page
-    #     fileStringWrite("$self->{strHtmlPath}/${strPageId}.html",
-    #                     $self->variableReplace((new BackRestDoc::Html::DocHtmlPage($self, $strPageId, $self->{bExe}))->process()),
-    #                     false);
-    # }
-
-    my $strLatex = $self->variableReplace(fileStringRead($self->{strPreambleFile})) . "\n";
-    $strLatex .= $self->variableReplace((new BackRestDoc::Latex::DocLatexSection($self, 'user-guide', $self->{bExe}))->process());
+    my $strLatex = $self->{oManifest}->variableReplace(fileStringRead($self->{strPreambleFile}), 'latex') . "\n";
+    $strLatex .= $self->{oManifest}->variableReplace((new BackRestDoc::Latex::DocLatexSection($self->{oManifest},
+                                                    'user-guide', $self->{bExe}))->process(), 'latex');
     $strLatex .= "\n% " . ('-' x 130) . "\n% End document\n% " . ('-' x 130) . "\n\\end{document}\n";
+    #
+    # $strLatex =~ s/\_/\\_/g;
 
     my $strLatexFileName = "$self->{strLatexPath}/pgBackrest-UserGuide.tex";
 

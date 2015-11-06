@@ -211,6 +211,7 @@ sub variableReplace
 {
     my $self = shift;
     my $strBuffer = shift;
+    my $strType = shift;
 
     if (!defined($strBuffer))
     {
@@ -220,6 +221,11 @@ sub variableReplace
     foreach my $strName (sort(keys(%{$self->{oVariable}})))
     {
         my $strValue = $self->{oVariable}{$strName};
+
+        if (defined($strType) && $strType eq 'latex')
+        {
+            $strValue =~ s/\_/\\_/g;
+        }
 
         $strBuffer =~ s/\{\[$strName\]\}/$strValue/g;
     }

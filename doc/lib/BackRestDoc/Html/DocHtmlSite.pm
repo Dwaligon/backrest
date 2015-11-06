@@ -53,7 +53,6 @@ sub new
     (
         my $strOperation,
         $self->{oManifest},
-        $self->{oReference},
         $self->{strXmlPath},
         $self->{strHtmlPath},
         $self->{strCssFile},
@@ -64,7 +63,6 @@ sub new
         (
             OP_DOC_HTML_SITE_NEW, \@_,
             {name => 'oManifest'},
-            {name => 'oReference'},
             {name => 'strXmlPath'},
             {name => 'strHtmlPath'},
             {name => 'strCssFile'},

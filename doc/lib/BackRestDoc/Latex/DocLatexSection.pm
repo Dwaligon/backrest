@@ -2,6 +2,7 @@
 # DOC LATEX SECTION MODULE
 ####################################################################################################################################
 package BackRestDoc::Latex::DocLatexSection;
+use parent 'BackRestDoc::Common::DocRender';
 
 use strict;
 use warnings FATAL => qw(all);
@@ -21,6 +22,8 @@ use BackRest::Common::String;
 use BackRest::Config::ConfigHelp;
 use BackRest::FileCommon;
 
+use BackRestDoc::Common::DocManifest;
+
 ####################################################################################################################################
 # Operation constants
 ####################################################################################################################################
@@ -38,32 +41,25 @@ sub new
 {
     my $class = shift;       # Class name
 
-    # Create the class hash
-    my $self = {};
-    bless $self, $class;
-
-    $self->{strClass} = $class;
-
     # Assign function parameters, defaults, and log debug info
+    my
     (
-        my $strOperation,
-        $self->{oSite},
-        $self->{strPageId},
-        $self->{bExe}
+        $strOperation,
+        $oManifest,
+        $strRenderOutKey,
+        $bExe
     ) =
         logDebugParam
         (
             OP_DOC_LATEX_SECTION_NEW, \@_,
-            {name => 'oSite'},
-            {name => 'strPageId'},
-            {name => 'bExe', default => true}
+            {name => 'oManifest'},
+            {name => 'strRenderOutKey'},
+            {name => 'bExe'}
         );
 
-    # Copy page data to self
-    $self->{oPage} = ${$self->{oSite}->{oSite}}{page}{$self->{strPageId}};
-    $self->{oDoc} = ${$self->{oPage}}{'oDoc'};
-    $self->{oRender} = ${$self->{oSite}->{oSite}}{common}{oRender};
-    $self->{oReference} = ${$self->{oSite}->{oSite}}{common}{oReference};
+    # Create the class hash
+    my $self = $class->SUPER::new('latex', $oManifest, $strRenderOutKey, $bExe);
+    bless $self, $class;
 
     # Return from function and log return values if any
     return logDebugReturn
@@ -72,6 +68,37 @@ sub new
         {name => 'self', value => $self}
     );
 }
+
+# ####################################################################################################################################
+# # variableReplace
+# #
+# # Replace variables in the string.
+# ####################################################################################################################################
+# sub variableReplace
+# {
+#     my $self = shift;
+#     my $strBuffer = shift;
+#     my $bVerbatim = shift;
+#
+#     if (!defined($strBuffer))
+#     {
+#         return undef;
+#     }
+#
+#     foreach my $strName (sort(keys(%{$self->{var}})))
+#     {
+#         my $strValue = $self->{var}{$strName};
+#
+#         if (!defined($bVerbatim) || !$bVerbatim)
+#         {
+#             $strValue =~ s/\_/\\_/g;
+#         }
+#
+#         $strBuffer =~ s/\{\[$strName\]\}/$strValue/g;
+#     }
+#
+#     return $strBuffer;
+# }
 
 ####################################################################################################################################
 # process
@@ -90,7 +117,7 @@ sub process
     my $strLatex;
 
     # Initialize page
-    my $strTitle = ${$self->{oRender}}{strProjectName} .
+    my $strTitle = "{[project]}" .
                    (defined($oPage->paramGet('title', false)) ? ' ' . $oPage->paramGet('title') : '');
     my $strSubTitle = $oPage->paramGet('subtitle', false);
 
@@ -145,11 +172,8 @@ sub sectionProcess
 
     &log(INFO, ('    ' x ($iDepth - 1)) . 'process section: ' . $oSection->paramGet('id'));
 
-    # Working variables
-    my $oRender = $self->{oRender};
-
     # Create the section
-    my $strSectionTitle = $oRender->processText($oSection->nodeGet('title')->textGet());
+    my $strSectionTitle = $self->processText($oSection->nodeGet('title')->textGet());
     $strSection .= (defined($strSection) ? ', ' : '') . "'${strSectionTitle}' " . ('Sub' x ($iDepth - 1)) . "Section";
 
     my $strLatex =
@@ -165,7 +189,7 @@ sub sectionProcess
         if ($oChild->nameGet() eq 'execute-list')
         {
             $strLatex .=
-                "\n\\begin\{lstlisting\}[title=\{" . $oRender->processText($oChild->nodeGet('title')->textGet()) . ":}]\n";
+                "\n\\begin\{lstlisting\}[title=\{" . $self->processText($oChild->nodeGet('title')->textGet()) . ":}]\n";
 
             foreach my $oExecute ($oChild->nodeList('execute'))
             {
@@ -191,7 +215,7 @@ sub sectionProcess
                         # $strLatex .= "\nOutput:\n\n\%\\Hilight\%${strOutput}\n";
                         $strLatex .= "\nOutput:\n\n${strOutput}\n";
 
-                        # my $strHighLight = $self->{oSite}->variableReplace($oExecute->fieldGet('exe-highlight', false));
+                        # my $strHighLight = $self->variableReplace($oExecute->fieldGet('exe-highlight', false));
                         # my $bHighLightOld;
                         # my $bHighLightFound = false;
                         # my $strHighLightOutput;
@@ -245,7 +269,7 @@ sub sectionProcess
         # Add descriptive text
         elsif ($oChild->nameGet() eq 'p')
         {
-            $strLatex .= "\n" . $oRender->processText($oChild->textGet()) . "\n";
+            $strLatex .= "\n" . $self->processText($oChild->textGet()) . "\n";
         }
         # Add option descriptive text
         elsif ($oChild->nameGet() eq 'option-description')
@@ -258,7 +282,7 @@ sub sectionProcess
                 confess &log(ERROR, "unable to find ${strOption} option in sections - try adding command?");
             }
 
-            $strLatex .= "\n" . $oRender->processText($oDescription) . "\n";
+            $strLatex .= "\n" . $self->processText($oDescription) . "\n";
         }
         # Add/remove backrest config options
         elsif ($oChild->nameGet() eq 'backrest-config')
@@ -312,12 +336,12 @@ sub configProcess
         );
 
     # Get filename
-    my $strFile = $self->{oSite}->variableReplace($oConfig->paramGet('file'));
+    my $strFile = $self->variableReplace($oConfig->paramGet('file'));
 
     &log(INFO, ('    ' x $iDepth) . 'process backrest config: ' . $strFile);
 
     my $strLatex =
-        "\n\\begin\{lstlisting\}[title=\{" . $self->{oRender}->processText($oConfig->nodeGet('title')->textGet()) . " in \\textnormal\{\\texttt\{${strFile}\}\}:}]\n" .
+        "\n\\begin\{lstlisting\}[title=\{" . $self->processText($oConfig->nodeGet('title')->textGet()) . " in \\textnormal\{\\texttt\{${strFile}\}\}:}]\n" .
         # "${strFile}:\n\n" .
         $oConfig->fieldGet('actual-config') .
         "\\end{lstlisting}\n";
@@ -326,7 +350,7 @@ sub configProcess
     # {
     #     my $strSection = $oOption->fieldGet('backrest-config-option-section');
     #     my $strKey = $oOption->fieldGet('backrest-config-option-key');
-    #     my $strValue = $self->{oSite}->variableReplace(trim($oOption->fieldGet('backrest-config-option-value'), false));
+    #     my $strValue = $self->variableReplace(trim($oOption->fieldGet('backrest-config-option-value'), false));
     #
     #     if (!defined($strValue))
     #     {
@@ -355,7 +379,7 @@ sub configProcess
     #
     # $oConfigElement->
     #     addNew(HTML_DIV, "config-title",
-    #            {strContent => $self->{oRender}->processText($oConfig->nodeGet('title')->textGet()) . ':'});
+    #            {strContent => $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
     #
     # my $oConfigBodyElement = $oConfigElement->addNew(HTML_DIV, "config-body");
     #

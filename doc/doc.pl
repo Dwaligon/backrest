@@ -182,7 +182,6 @@ if ($bHtml || $bPDF)
             new BackRestDoc::Html::DocHtmlSite
             (
                 $oManifest,
-                $oDocConfig,
                 "${strBasePath}/xml",
                 "${strOutputPath}/html",
                 "${strBasePath}/resource/html/default.css",
@@ -200,24 +199,21 @@ if ($bHtml || $bPDF)
         store($oHtmlSite, $strSiteFile);
     }
 
-    # # Only generate the PDF file when requested
-    # $oHtmlSite->{var}->{backrest} = $strPdfProjectName;
-    #
-    # my $oLatex =
-    #     new BackRestDoc::Latex::DocLatex
-    #     (
-    #         $oHtmlSite->{var},
-    #         $oHtmlSite->{oSite},
-    #         new BackRestDoc::Common::DocRender('latex'),
-    #         $oDocConfig,
-    #         "${strBasePath}/xml",
-    #         "${strOutputPath}/latex",
-    #         "${strBasePath}/resource/latex/preamble.tex",
-    #         !$bNoExe
-    #     );
-    #
-    # if ($bPDF)
-    # {
-    #     $oLatex->process();
-    # }
+    # Only generate the PDF file when requested
+    $oManifest->{oVariable}->{project} = $strPdfProjectName;
+
+    my $oLatex =
+        new BackRestDoc::Latex::DocLatex
+        (
+            $oManifest,
+            "${strBasePath}/xml",
+            "${strOutputPath}/latex",
+            "${strBasePath}/resource/latex/preamble.tex",
+            !$bNoExe
+        );
+
+    if ($bPDF)
+    {
+        $oLatex->process();
+    }
 }
