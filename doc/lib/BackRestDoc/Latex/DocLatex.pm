@@ -25,6 +25,7 @@ use lib dirname($0) . '/../test/lib';
 use BackRestTest::Common::ExecuteTest;
 
 use BackRestDoc::Common::DocConfig;
+use BackRestDoc::Common::DocManifest;
 use BackRestDoc::Latex::DocLatexSection;
 
 ####################################################################################################################################
@@ -88,51 +89,6 @@ sub new
 }
 
 ####################################################################################################################################
-# variableReplace
-#
-# Replace variables in the string.
-####################################################################################################################################
-# sub variableReplace
-# {
-#     my $self = shift;
-#     my $strBuffer = shift;
-#     my $bVerbatim = shift;
-#
-#     if (!defined($strBuffer))
-#     {
-#         return undef;
-#     }
-#
-#     foreach my $strName (sort(keys(%{$self->{var}})))
-#     {
-#         my $strValue = $self->{var}{$strName};
-#
-#         if (!defined($bVerbatim) || !$bVerbatim)
-#         {
-#             $strValue =~ s/\_/\\_/g;
-#         }
-#
-#         $strBuffer =~ s/\{\[$strName\]\}/$strValue/g;
-#     }
-#
-#     return $strBuffer;
-# }
-
-#
-# ####################################################################################################################################
-# # variableGet
-# #
-# # Get the current value of a variable.
-# ####################################################################################################################################
-# sub variableGet
-# {
-#     my $self = shift;
-#     my $strKey = shift;
-#
-#     return ${$self->{var}}{$strKey};
-# }
-
-####################################################################################################################################
 # process
 #
 # Generate the site html
@@ -149,11 +105,17 @@ sub process
         or confess &log(ERROR, "unable to copy logo");
 
     my $strLatex = $self->{oManifest}->variableReplace(fileStringRead($self->{strPreambleFile}), 'latex') . "\n";
-    $strLatex .= $self->{oManifest}->variableReplace((new BackRestDoc::Latex::DocLatexSection($self->{oManifest},
-                                                    'user-guide', $self->{bExe}))->process(), 'latex');
+
+    foreach my $strPageId ($self->{oManifest}->renderOutList(RENDER_TYPE_PDF))
+    {
+        my $oDocLatexSection =
+            new BackRestDoc::Latex::DocLatexSection($self->{oManifest}, $strPageId, $self->{bExe});
+
+        # Save the html page
+        $strLatex .= $self->{oManifest}->variableReplace($oDocLatexSection->process(), 'latex');
+    }
+
     $strLatex .= "\n% " . ('-' x 130) . "\n% End document\n% " . ('-' x 130) . "\n\\end{document}\n";
-    #
-    # $strLatex =~ s/\_/\\_/g;
 
     my $strLatexFileName = "$self->{strLatexPath}/pgBackrest-UserGuide.tex";
 

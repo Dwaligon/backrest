@@ -71,7 +71,7 @@
     \lhead[]{TABLE OF CONTENTS}
 }
 
-\lfoot[]{{[project]} User Guide\\
+\lfoot[]{[pdf-title]\\
          Version {[version]}}
 \cfoot[]{\ \\-\ \thepage\ -}
 \rfoot[]{Crunchy Data Solutions, Inc.\\\today}
@@ -88,19 +88,16 @@
 
 % Create the title page
 % ----------------------------------------------------------------------------------------------------------------------------------
-\title{{[project]} User Guide}
-% \author{Crunchy Data Solutions, Inc.}
-% \date{\today}
-
-\topskip2in
+\title{{[pdf-title]}}
 
 \makeatletter
     \begin{titlepage}
         \begin{center}
+            {\large \ }\\[18ex]
             {\huge \bfseries \@title}\\[1ex]
             {\large \bfseries Version {[version]}}\\[4ex]
-            {\large Open Source PostgreSQL Backup and Restore Utility}\\[12ex]
-            \includegraphics[width=6in]{/backrest/doc/output/latex/logo}\\[12ex]
+            {\large {[pdf-subtitle]}}\\[12ex]
+            \includegraphics[width=6in]{{[crunchy-logo]}}\\[12ex]
             {\large Crunchy Data Solutions, Inc.}\\[1ex]
             {\large \today}
         \end{center}
