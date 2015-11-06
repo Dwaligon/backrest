@@ -56,7 +56,6 @@ sub new
         $self->{strXmlPath},
         $self->{strHtmlPath},
         $self->{strCssFile},
-        $self->{strHtmlRoot},
         $self->{bExe}
     ) =
         logDebugParam
@@ -66,7 +65,6 @@ sub new
             {name => 'strXmlPath'},
             {name => 'strHtmlPath'},
             {name => 'strCssFile'},
-            {name => 'strHtmlRoot'},
             {name => 'bExe'}
         );
 

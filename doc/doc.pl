@@ -64,11 +64,7 @@ my $bHelp = false;                                  # Display usage
 my $bVersion = false;                               # Display version
 my $bQuiet = false;                                 # Sets log level to ERROR
 my $strLogLevel = 'info';                           # Log level for tests
-my $strProjectName = 'pgBackRest';                  # Project name to use in docs
-my $strPdfProjectName = $strProjectName;            # Project name to use in PDF docs
-my $strExeName = 'pg_backrest';                     # Exe name to use in docs
 my $bHtml = false;                                  # Generate full html documentation
-my $strHtmlRoot = '/';                              # Root html page
 my $bNoExe = false;                                 # Should commands be executed when buildng help? (for testing only)
 my $bPDF = false;                                   # Generate the PDF file
 my $bUseCached = false;                             # Use cached data to generate the docs (for testing code changes only)
@@ -79,12 +75,9 @@ GetOptions ('help' => \$bHelp,
             'quiet' => \$bQuiet,
             'log-level=s' => \$strLogLevel,
             'html' => \$bHtml,
-            'html-root=s' => \$strHtmlRoot,
             'pdf' => \$bPDF,
             'no-exe', \$bNoExe,
             'use-cached', \$bUseCached,
-            'project-name=s', \$strProjectName,
-            'pdf-project-name=s', \$strPdfProjectName,
             'var=s@', $oVariableOverride)
     or pod2usage(2);
 
@@ -187,7 +180,6 @@ if ($bHtml || $bPDF)
                 "${strBasePath}/xml",
                 "${strOutputPath}/html",
                 "${strBasePath}/resource/html/default.css",
-                $strHtmlRoot,
                 !$bNoExe
             );
     }
