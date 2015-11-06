@@ -72,6 +72,7 @@ my $strHtmlRoot = '/';                              # Root html page
 my $bNoExe = false;                                 # Should commands be executed when buildng help? (for testing only)
 my $bPDF = false;                                   # Generate the PDF file
 my $bUseCached = false;                             # Use cached data to generate the docs (for testing code changes only)
+my $oVariableOverride = {};                         # Override variables
 
 GetOptions ('help' => \$bHelp,
             'version' => \$bVersion,
@@ -83,7 +84,8 @@ GetOptions ('help' => \$bHelp,
             'no-exe', \$bNoExe,
             'use-cached', \$bUseCached,
             'project-name=s', \$strProjectName,
-            'pdf-project-name=s', \$strPdfProjectName)
+            'pdf-project-name=s', \$strPdfProjectName,
+            'var=s@', $oVariableOverride)
     or pod2usage(2);
 
 # Display version and exit if requested
@@ -145,7 +147,7 @@ sub docProcess
 }
 
 # Load the manifest
-my $oManifest = new BackRestDoc::Common::DocManifest();
+my $oManifest = new BackRestDoc::Common::DocManifest($oVariableOverride);
 
 # Generate the markdown
 docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oManifest);
@@ -200,7 +202,8 @@ if ($bHtml || $bPDF)
     }
 
     # Only generate the PDF file when requested
-    $oManifest->{oVariable}->{project} = $strPdfProjectName;
+    # $oManifest->variableSet()
+    # ${$oManifest->{oVariable}}{project} = $strPdfProjectName;
 
     my $oLatex =
         new BackRestDoc::Latex::DocLatex

@@ -59,11 +59,13 @@ sub new
     # Assign function parameters, defaults, and log debug info
     (
         my $strOperation,
+        my $oVariableOverride,
         $self->{strBasePath}
     ) =
         logDebugParam
         (
             OP_DOC_MANIFEST_NEW, \@_,
+            {name => 'oVariableOverride', required => false},
             {name => 'strBasePath', required => false}
         );
 
@@ -100,7 +102,7 @@ sub new
                 my $strKey = $oVariable->fieldGet('variable-name');
                 my $strValue = $oVariable->fieldGet('variable-value');
 
-                $self->variableSet($strKey, $strValue);
+                $self->variableSet($strKey, defined($$oVariableOverride{$strKey}) ? $$oVariableOverride{$strKey} : $strValue);
 
                 logDebugMisc
                 (
@@ -181,14 +183,14 @@ sub new
             my $strKey = $oVariable->paramGet('key');
             my $strValue = $oVariable->valueGet();
 
-            $self->variableSet($strKey, $strValue);
+            $self->variableSet($strKey, defined($$oVariableOverride{$strKey}) ? $$oVariableOverride{$strKey} : $strValue);
 
-                logDebugMisc
-                (
-                    $strOperation, '    load manifest variable',
-                    {name => 'strKey', value => $strKey},
-                    {name => 'strValue', value => $strValue}
-                );
+            logDebugMisc
+            (
+                $strOperation, '    load manifest variable',
+                {name => 'strKey', value => $strKey},
+                {name => 'strValue', value => $strValue}
+            );
         }
     }
 
@@ -243,8 +245,9 @@ sub variableSet
     my $self = shift;
     my $strKey = shift;
     my $strValue = shift;
+    my $bForce = shift;
 
-    if (defined(${$self->{oVariable}}{$strKey}))
+    if (defined(${$self->{oVariable}}{$strKey}) && (!defined($bForce) || !$bForce))
     {
         confess &log(ERROR, "${strKey} variable is already defined");
     }

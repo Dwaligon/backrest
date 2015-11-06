@@ -177,7 +177,7 @@ sub new
     if (defined($self->{strRenderOutKey}))
     {
         # Get the reference if this is the backrest project
-        if ($self->{oManifest}->variableGet('project') eq 'pgBackRest')
+        if ($self->{oManifest}->variableGet('project-exe') eq 'pg_backrest')
         {
             $self->{oReference} = new BackRestDoc::Common::DocConfig(${$self->{oManifest}->sourceGet('reference')}{doc}, $self);
         }
