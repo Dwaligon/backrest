@@ -260,12 +260,13 @@ sub sectionProcess
                 "\\end{lstlisting}\n";
         }
         # Add code block
-        # elsif ($oChild->nameGet() eq 'code-block')
-        # {
-        #     $oSectionBodyElement->
-        #         addNew(HTML_DIV, 'code-block',
-        #                {strContent => $oChild->valueGet()});
-        # }
+        elsif ($oChild->nameGet() eq 'code-block')
+        {
+            $strLatex .=
+                "\\newline\n\\begin\{lstlisting\}\n" .
+                trim($oChild->valueGet()) . "\n" .
+                "\\end{lstlisting}\n";
+        }
         # Add descriptive text
         elsif ($oChild->nameGet() eq 'p')
         {

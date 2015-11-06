@@ -71,13 +71,13 @@ sub new
         {
             my $oParser = XML::Checker::Parser->new(ErrorContext => 2, Style => 'Tree');
 
-            if (-e dirname($self->{strFileName}) . '/dtd')
+            if (-e dirname($0) . '/dtd')
             {
-                $oParser->set_sgml_search_path(dirname($self->{strFileName}) . '/dtd')
+                $oParser->set_sgml_search_path(dirname($0) . '/dtd')
             }
             else
             {
-                $oParser->set_sgml_search_path(dirname($self->{strFileName}) . '/xml/dtd');
+                $oParser->set_sgml_search_path(dirname($0) . '/xml/dtd');
             }
 
             my $oTree;
@@ -146,7 +146,7 @@ sub parse
 
     my %oOut;
     my $iIndex = 0;
-    my $bText = $strName eq 'text' || $strName eq 'li' || $strName eq 'code-block' || $strName eq 'p' || $strName eq 'title' ||
+    my $bText = $strName eq 'text' || $strName eq 'li' || $strName eq 'p' || $strName eq 'title' ||
                 $strName eq 'summary';
 
     # Store the node name
@@ -272,7 +272,7 @@ sub build
             my $oSub = $$oDoc{children}[$iIndex];
             my $strName = $$oSub{name};
 
-            if ($strName eq 'text' || $strName eq 'code-block')
+            if ($strName eq 'text')
             {
                 $$oOut{field}{text} = $oSub;
             }

@@ -99,6 +99,7 @@ my $oRenderTag =
         'br-setting' => ['\textnormal{\texttt{', '}}'],
         'pg-option' => ['\textnormal{\texttt{', '}}'],
         'pg-setting' => ['\textnormal{\texttt{', '}}'],
+        'code' => ['\textnormal{\texttt{', '}}'],
         # 'code' => ['\texttt{', '}'],
         # 'code-block' => ['', ''],
         # 'exe' => [undef, ''],
@@ -176,14 +177,15 @@ sub new
 
     if (defined($self->{strRenderOutKey}))
     {
+        # Copy page data to self
+        my $oRenderOut = $self->{oManifest}->renderOutGet($self->{strType} eq 'latex' ? 'pdf' : $self->{strType}, $self->{strRenderOutKey});
+
         # Get the reference if this is the backrest project
-        if ($self->{oManifest}->variableGet('project-exe') eq 'pg_backrest')
+        if (defined($self->{oManifest}->variableGet('project-exe')) &&
+            $self->{oManifest}->variableGet('project-exe') eq 'pg_backrest')
         {
             $self->{oReference} = new BackRestDoc::Common::DocConfig(${$self->{oManifest}->sourceGet('reference')}{doc}, $self);
         }
-
-        # Copy page data to self
-        my $oRenderOut = $self->{oManifest}->renderOutGet(RENDER_TYPE_HTML, $self->{strRenderOutKey});
 
         if (defined($$oRenderOut{source}) && $$oRenderOut{source} eq 'reference')
         {
@@ -204,8 +206,6 @@ sub new
         {
             $self->{oDoc} = ${$self->{oManifest}->sourceGet($self->{strRenderOutKey})}{doc};
         }
-
-        # $self->{oRenderOut} = $oRenderOut;
     }
 
     # Return from function and log return values if any

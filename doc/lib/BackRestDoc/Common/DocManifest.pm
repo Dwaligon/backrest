@@ -60,23 +60,23 @@ sub new
     (
         my $strOperation,
         my $oVariableOverride,
-        $self->{strBasePath}
+        $self->{strDocPath}
     ) =
         logDebugParam
         (
             OP_DOC_MANIFEST_NEW, \@_,
             {name => 'oVariableOverride', required => false},
-            {name => 'strBasePath', required => false}
+            {name => 'strDocPath', required => false}
         );
 
     # Set the base path if it was not passed in
-    if (!defined($self->{strBasePath}))
+    if (!defined($self->{strDocPath}))
     {
-        $self->{strBasePath} = abs_path(dirname($0));
+        $self->{strDocPath} = abs_path(dirname($0));
     }
 
     # Load the manifest
-    $self->{oManifestXml} = new BackRestDoc::Common::Doc("$self->{strBasePath}/manifest.xml");
+    $self->{oManifestXml} = new BackRestDoc::Common::Doc("$self->{strDocPath}/manifest.xml");
 
     # Iterate the sources
     $self->{oManifest} = {};
@@ -92,7 +92,7 @@ sub new
             {name => 'strKey', value => $strKey}
         );
 
-        $$oSourceHash{doc} = new BackRestDoc::Common::Doc("$self->{strBasePath}/xml/${strKey}.xml");
+        $$oSourceHash{doc} = new BackRestDoc::Common::Doc("$self->{strDocPath}/xml/${strKey}.xml");
 
         # Read variables from source
         if (defined($$oSourceHash{doc}->nodeGet('variable-list', false)))

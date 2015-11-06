@@ -86,9 +86,9 @@
 <!ELEMENT option-description EMPTY>
     <!ATTLIST option-description key CDATA #REQUIRED>
 
-<!ELEMENT section (title,((p|execute-list|backrest-config|postgres-config|option-description)+|(p*, section+)|p*))>
+<!ELEMENT section (title,((p|execute-list|backrest-config|postgres-config|option-description|code-block)+|(p*, section+)|p*))>
     <!ATTLIST section id CDATA #REQUIRED>
-<!ELEMENT title (#PCDATA|b|i|bi|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
+<!ELEMENT title (#PCDATA|b|i|bi|ul|ol|id|code|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
                  pg-option|pg-setting|link|user)*>
 
 <!ELEMENT default (#PCDATA)>
@@ -130,6 +130,8 @@
 <!ELEMENT id (#PCDATA)>
 <!ELEMENT code (#PCDATA)>
 <!ELEMENT code-block (#PCDATA|exe)*>
+    <!ATTLIST code-block title CDATA #REQUIRED>
+
 <!ELEMENT file (#PCDATA)>
 <!ELEMENT path (#PCDATA)>
 <!ELEMENT cmd (#PCDATA)>
