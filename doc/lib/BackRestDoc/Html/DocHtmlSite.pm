@@ -25,6 +25,7 @@ use lib dirname($0) . '/../test/lib';
 use BackRestTest::Common::ExecuteTest;
 
 use BackRestDoc::Common::DocConfig;
+use BackRestDoc::Common::DocManifest;
 use BackRestDoc::Html::DocHtmlPage;
 
 ####################################################################################################################################
@@ -51,7 +52,7 @@ sub new
     # Assign function parameters, defaults, and log debug info
     (
         my $strOperation,
-        $self->{oRender},
+        $self->{oManifest},
         $self->{oReference},
         $self->{strXmlPath},
         $self->{strHtmlPath},
@@ -62,7 +63,7 @@ sub new
         logDebugParam
         (
             OP_DOC_HTML_SITE_NEW, \@_,
-            {name => 'oRender'},
+            {name => 'oManifest'},
             {name => 'oReference'},
             {name => 'strXmlPath'},
             {name => 'strHtmlPath'},
@@ -83,74 +84,10 @@ sub new
             or confess &log(ERROR, "unable to create path $self->{strHtmlPath}");
     }
 
-    # Create the footer
-    $self->{strFooter} = 'Copyright © 2015' . (strftime('%Y', localtime) ne '2015' ?  '-' . strftime('%Y', localtime) : '') .
-                         ', The PostgreSQL Global Development Group, <a href="{[github-url-license]}">MIT License</a>.  Updated ' .
-                         strftime('%B ', localtime) . trim(strftime('%e,', localtime)) . strftime(' %Y.', localtime);
-
-    # Insert pages into the site hash
-    $self->{oSite} =
-    {
-        'common' =>
-        {
-            'oRender' => $self->{oRender},
-            'oReference' => $self->{oReference},
-            'strFooter' => $self->{strFooter}
-        },
-
-        'page' =>
-        {
-            'index' =>
-            {
-                strMenuTitle => 'Home',
-                oDoc => new BackRestDoc::Common::Doc("$self->{strXmlPath}/index.xml")
-            },
-
-            'command' =>
-            {
-                strMenuTitle => 'Commands',
-                oDoc => $self->{oReference}->helpCommandDocGet()
-            },
-
-            'configuration' =>
-            {
-                strMenuTitle => 'Configuration',
-                oDoc => $self->{oReference}->helpConfigDocGet()
-            # }
-            },
-
-            'user-guide' =>
-            {
-                strMenuTitle => 'User Guide',
-                oDoc => new BackRestDoc::Common::Doc("$self->{strXmlPath}/user-guide.xml")
-            }
-        }
-    };
-
-    # Create common variables
-    ${$self->{var}}{backrest} = $self->{oRender}->{strProjectName};
-    ${$self->{var}}{version} = $VERSION;
-    ${$self->{var}}{'backrest-exe'} = $self->{oRender}->{strExeName};
-    ${$self->{var}}{'postgres'} = 'PostgreSQL';
-    ${$self->{var}}{'backrest-url-root'} = $self->{strHtmlRoot};
-    ${$self->{var}}{'dash'} = '-';
-
-    # Read variables from pages
-    foreach my $strPageId (sort(keys(${$self->{oSite}}{page})))
-    {
-        my $oPage = ${$self->{oSite}}{page}{$strPageId};
-
-        if (defined($$oPage{oDoc}->nodeGet('variable-list', false)))
-        {
-            foreach my $oVariable ($$oPage{oDoc}->nodeGet('variable-list')->nodeList('variable'))
-            {
-                my $strName = $oVariable->fieldGet('variable-name');
-                my $strValue = $oVariable->fieldGet('variable-value');
-
-                ${$self->{var}}{$strName} = $self->variableReplace($strValue);
-            }
-        }
-    }
+    $self->{oManifest}->variableSet('footer',
+        'Copyright © 2015' . (strftime('%Y', localtime) ne '2015' ?  '-' . strftime('%Y', localtime) : '') .
+        ', The PostgreSQL Global Development Group, <a href="{[github-url-license]}">MIT License</a>.  Updated ' .
+        strftime('%B ', localtime) . trim(strftime('%e,', localtime)) . strftime(' %Y.', localtime));
 
     # Return from function and log return values if any
     return logDebugReturn
@@ -158,63 +95,6 @@ sub new
         $strOperation,
         {name => 'self', value => $self}
     );
-}
-
-####################################################################################################################################
-# variableReplace
-#
-# Replace variables in the string.
-####################################################################################################################################
-sub variableReplace
-{
-    my $self = shift;
-    my $strBuffer = shift;
-
-    if (!defined($strBuffer))
-    {
-        return undef;
-    }
-
-    foreach my $strName (sort(keys(%{$self->{var}})))
-    {
-        my $strValue = $self->{var}{$strName};
-
-        $strBuffer =~ s/\{\[$strName\]\}/$strValue/g;
-    }
-
-    return $strBuffer;
-}
-
-####################################################################################################################################
-# variableSet
-#
-# Set a variable to be replaced later.
-####################################################################################################################################
-sub variableSet
-{
-    my $self = shift;
-    my $strKey = shift;
-    my $strValue = shift;
-
-    if (defined(${$self->{var}}{$strKey}))
-    {
-        confess &log(ERROR, "${strKey} variable is already defined");
-    }
-
-    ${$self->{var}}{$strKey} = $strValue;
-}
-
-####################################################################################################################################
-# variableGet
-#
-# Get the current value of a variable.
-####################################################################################################################################
-sub variableGet
-{
-    my $self = shift;
-    my $strKey = shift;
-
-    return ${$self->{var}}{$strKey};
 }
 
 ####################################################################################################################################
@@ -234,14 +114,12 @@ sub process
     copy($self->{strCssFile}, $strCssFileDestination)
         or confess &log(ERROR, "unable to copy $self->{strCssFile} to ${strCssFileDestination}");
 
-    # Render pages
-    my $oSite = $self->{oSite};
-
-    foreach my $strPageId (sort(keys($$oSite{'page'})))
+    foreach my $strPageId ($self->{oManifest}->renderOutList(RENDER_TYPE_HTML))
     {
         # Save the html page
         fileStringWrite("$self->{strHtmlPath}/${strPageId}.html",
-                        $self->variableReplace((new BackRestDoc::Html::DocHtmlPage($self, $strPageId, $self->{bExe}))->process()),
+                        $self->{oManifest}->variableReplace((new BackRestDoc::Html::DocHtmlPage($self->{oManifest},
+                            $strPageId, $self->{bExe}))->process()),
                         false);
     }
 

@@ -145,29 +145,25 @@ sub new
     # Assign function parameters, defaults, and log debug info
     (
         my $strOperation,
-        $self->{strType},
-        $self->{strProjectName},
-        $self->{strExeName}
+        $self->{strType}
     ) =
         logDebugParam
         (
             OP_DOC_RENDER_NEW, \@_,
-            {name => 'strType'},
-            {name => 'strProjectName'},
-            {name => 'strExeName'}
+            {name => 'strType'}
         );
 
-    $$oRenderTag{markdown}{backrest}[0] = $self->{strProjectName};
-    $$oRenderTag{markdown}{exe}[0] = $self->{strExeName};
+    $$oRenderTag{markdown}{backrest}[0] = "{[project]}";
+    $$oRenderTag{markdown}{exe}[0] = "{[project-exe]}";
 
-    $$oRenderTag{text}{backrest}[0] = $self->{strProjectName};
-    $$oRenderTag{text}{exe}[0] = $self->{strExeName};
+    $$oRenderTag{text}{backrest}[0] = "{[project]}";
+    $$oRenderTag{text}{exe}[0] = "{[project-exe]}";
 
-    $$oRenderTag{latex}{backrest}[0] = $self->{strProjectName};
-    $$oRenderTag{latex}{exe}[0] = "\\textnormal\{\\texttt\{$self->{strExeName}\}\}";
+    $$oRenderTag{latex}{backrest}[0] = "{[project-exe]}";
+    $$oRenderTag{latex}{exe}[0] = "\\textnormal\{\\texttt\{[project-exe]}}\}\}";
 
-    $$oRenderTag{html}{backrest}[0] = "<span class=\"backrest\">$self->{strProjectName}</span>";
-    $$oRenderTag{html}{exe}[0] = "<span class=\"file\">$self->{strExeName}</span>";
+    $$oRenderTag{html}{backrest}[0] = "<span class=\"backrest\">{[project]}</span>";
+    $$oRenderTag{html}{exe}[0] = "<span class=\"file\">{[project-exe]}</span>";
 
     # Return from function and log return values if any
     return logDebugReturn
@@ -203,7 +199,6 @@ sub process
         );
 
     my $strType = $self->{strType};
-    my $strProjectName = $self->{strProjectName};
 
     my $strBuffer = "";
     my $bList = $oDoc->nameGet() =~ /.*-bullet-list$/;
@@ -246,7 +241,7 @@ sub process
                 $strBuffer .= 'v' . $oDoc->paramGet('version') . ': ';
             }
 
-            $strBuffer .= ($iDepth == 1 ? "${strProjectName}<br/>" : '') . $strTitle;
+            $strBuffer .= ($iDepth == 1 ? "{[project]}<br/>" : '') . $strTitle;
 
             if (defined($oDoc->paramGet('date', false)))
             {

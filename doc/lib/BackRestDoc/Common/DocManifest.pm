@@ -8,6 +8,8 @@ use warnings FATAL => qw(all);
 use Carp qw(confess);
 
 use Cwd qw(abs_path);
+use Exporter qw(import);
+    our @EXPORT = qw();
 use File::Basename qw(dirname);
 use Scalar::Util qw(blessed);
 
@@ -22,6 +24,8 @@ use BackRest::FileCommon;
 use constant OP_DOC_MANIFEST                                        => 'DocManifest';
 
 use constant OP_DOC_MANIFEST_NEW                                    => OP_DOC_MANIFEST . '->new';
+use constant OP_DOC_MANIFEST_RENDER_OUT_GET                         => OP_DOC_MANIFEST . '->renderOutGet';
+use constant OP_DOC_MANIFEST_RENDER_OUT_LIST                        => OP_DOC_MANIFEST . '->renderOutList';
 use constant OP_DOC_MANIFEST_SOURCE_GET                             => OP_DOC_MANIFEST . '->sourceGet';
 
 ####################################################################################################################################
@@ -37,7 +41,9 @@ use constant RENDER_FILE                                            => 'file';
 
 use constant RENDER_TYPE                                            => 'type';
 use constant RENDER_TYPE_HTML                                       => 'html';
+    push @EXPORT, qw(RENDER_TYPE_HTML);
 use constant RENDER_TYPE_PDF                                        => 'pdf';
+    push @EXPORT, qw(RENDER_TYPE_PDF);
 
 ####################################################################################################################################
 # CONSTRUCTOR
@@ -75,10 +81,37 @@ sub new
 
     foreach my $oSource ($self->{oManifestXml}->nodeGet('source-list')->nodeList('source'))
     {
+        my $oSourceHash = {};
         my $strKey = $oSource->paramGet('key');
-        &log(INFO, "    loading source ${strKey}");
 
-        ${$self->{oManifest}}{source}{$strKey}{oDoc} = new BackRestDoc::Common::Doc("$self->{strBasePath}/xml/${strKey}.xml");
+        logDebugMisc
+        (
+            $strOperation, 'load source',
+            {name => 'strKey', value => $strKey}
+        );
+
+        $$oSourceHash{doc} = new BackRestDoc::Common::Doc("$self->{strBasePath}/xml/${strKey}.xml");
+
+        # Read variables from source
+        if (defined($$oSourceHash{doc}->nodeGet('variable-list', false)))
+        {
+            foreach my $oVariable ($$oSourceHash{doc}->nodeGet('variable-list')->nodeList('variable'))
+            {
+                my $strKey = $oVariable->fieldGet('variable-name');
+                my $strValue = $oVariable->fieldGet('variable-value');
+
+                $self->variableSet($strKey, $strValue);
+
+                logDebugMisc
+                (
+                    $strOperation, '    load source variable',
+                    {name => 'strKey', value => $strKey},
+                    {name => 'strValue', value => $strValue}
+                );
+            }
+        }
+
+        ${$self->{oManifest}}{source}{$strKey} = $oSourceHash;
     }
 
     # Iterate the renderers
@@ -140,6 +173,27 @@ sub new
         ${$self->{oManifest}}{render}{$strType} = $oRenderHash;
     }
 
+    # Read variables from manifest
+    if (defined($self->{oManifestXml}->nodeGet('variable-list', false)))
+    {
+        foreach my $oVariable ($self->{oManifestXml}->nodeGet('variable-list')->nodeList('variable'))
+        {
+            my $strKey = $oVariable->paramGet('key');
+            my $strValue = $oVariable->valueGet();
+
+            $self->variableSet($strKey, $strValue);
+
+                logDebugMisc
+                (
+                    $strOperation, '    load manifest variable',
+                    {name => 'strKey', value => $strKey},
+                    {name => 'strValue', value => $strValue}
+                );
+        }
+    }
+
+    # use Data::Dumper; confess Dumper($self->{oVariable});
+
     # Return from function and log return values if any
     return logDebugReturn
     (
@@ -149,18 +203,72 @@ sub new
 }
 
 ####################################################################################################################################
+# variableReplace
+#
+# Replace variables in the string.
+####################################################################################################################################
+sub variableReplace
+{
+    my $self = shift;
+    my $strBuffer = shift;
+
+    if (!defined($strBuffer))
+    {
+        return undef;
+    }
+
+    foreach my $strName (sort(keys(%{$self->{oVariable}})))
+    {
+        my $strValue = $self->{oVariable}{$strName};
+
+        $strBuffer =~ s/\{\[$strName\]\}/$strValue/g;
+    }
+
+    return $strBuffer;
+}
+
+####################################################################################################################################
+# variableSet
+#
+# Set a variable to be replaced later.
+####################################################################################################################################
+sub variableSet
+{
+    my $self = shift;
+    my $strKey = shift;
+    my $strValue = shift;
+
+    if (defined(${$self->{oVariable}}{$strKey}))
+    {
+        confess &log(ERROR, "${strKey} variable is already defined");
+    }
+
+    ${$self->{oVariable}}{$strKey} = $self->variableReplace($strValue);
+}
+
+####################################################################################################################################
+# variableGet
+#
+# Get the current value of a variable.
+####################################################################################################################################
+sub variableGet
+{
+    my $self = shift;
+    my $strKey = shift;
+
+    return ${$self->{oVariable}}{$strKey};
+}
+
+####################################################################################################################################
 # sourceGet
 ####################################################################################################################################
 sub sourceGet
 {
-    my $class = shift;       # Class name
-
-    # Create the class hash
-    my $self = {};
-    bless $self, $class;
+    my $self = shift;
 
     # Assign function parameters, defaults, and log debug info
-    my (
+    my
+    (
         $strOperation,
         $strSource
     ) =
@@ -180,6 +288,76 @@ sub sourceGet
     (
         $strOperation,
         {name => 'oSource', value => ${$self->{oManifest}}{source}{$strSource}}
+    );
+}
+
+####################################################################################################################################
+# renderOutList
+####################################################################################################################################
+sub renderOutList
+{
+    my $self = shift;
+
+    # Assign function parameters, defaults, and log debug info
+    my
+    (
+        $strOperation,
+        $strType
+    ) =
+        logDebugParam
+        (
+            OP_DOC_MANIFEST_RENDER_OUT_LIST, \@_,
+            {name => 'strType'}
+        );
+
+    my @stryRenderOut;
+
+    if (defined(${$self->{oManifest}}{render}{$strType}))
+    {
+        @stryRenderOut = sort(keys(${$self->{oManifest}}{render}{$strType}{out}));
+    }
+
+    # Return from function and log return values if any
+    return logDebugReturn
+    (
+        $strOperation,
+        {name => 'stryRenderOut', value => \@stryRenderOut}
+    );
+}
+
+####################################################################################################################################
+# renderOutGet
+####################################################################################################################################
+sub renderOutGet
+{
+    my $self = shift;
+
+    # Assign function parameters, defaults, and log debug info
+    my
+    (
+        $strOperation,
+        $strType,
+        $strKey
+    ) =
+        logDebugParam
+        (
+            OP_DOC_MANIFEST_RENDER_OUT_GET, \@_,
+            {name => 'strType', trace => true},
+            {name => 'strKey', trace => true}
+        );
+
+    # use Data::Dumper; print Dumper(${$self->{oManifest}}{render});
+
+    if (!defined(${$self->{oManifest}}{render}{$strType}{out}{$strKey}))
+    {
+        confess &log(ERROR, "render out ${strKey} does not exist");
+    }
+
+    # Return from function and log return values if any
+    return logDebugReturn
+    (
+        $strOperation,
+        {name => 'oRenderOut', value => ${$self->{oManifest}}{render}{$strType}{out}{$strKey}}
     );
 }
 

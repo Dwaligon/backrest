@@ -21,7 +21,7 @@
         </variable>
         <variable>
             <variable-name>backrest-config-demo</variable-name>
-            <variable-value>/etc/{[backrest-exe]}.conf</variable-value>
+            <variable-value>/etc/{[project-exe]}.conf</variable-value>
         </variable>
         <variable>
             <variable-name>postgres-config-demo</variable-name>
@@ -78,7 +78,7 @@
             <exe-user>root</exe-user>
         </execute>
         <execute>
-            <exe-cmd>rm {[perl-bin-path]}/{[backrest-exe]}</exe-cmd>
+            <exe-cmd>rm {[perl-bin-path]}/{[project-exe]}</exe-cmd>
             <exe-user>root</exe-user>
             <exe-err-suppress/>
         </execute>
@@ -197,11 +197,11 @@
                 <exe-user>root</exe-user>
             </execute>
             <execute>
-                <exe-cmd>cp ~/backrest-release-{[version]}/bin/{[backrest-exe]} {[perl-bin-path]}/{[backrest-exe]}</exe-cmd>
+                <exe-cmd>cp ~/backrest-release-{[version]}/bin/{[project-exe]} {[perl-bin-path]}/{[project-exe]}</exe-cmd>
                 <exe-user>root</exe-user>
             </execute>
             <execute>
-                <exe-cmd>chmod 755 {[perl-bin-path]}/{[backrest-exe]}</exe-cmd>
+                <exe-cmd>chmod 755 {[perl-bin-path]}/{[project-exe]}</exe-cmd>
                 <exe-user>root</exe-user>
             </execute>
         </execute-list>
@@ -212,7 +212,7 @@
             <title>Make sure the installation worked</title>
 
             <execute>
-                <exe-cmd>{[backrest-exe]}</exe-cmd>
+                <exe-cmd>{[project-exe]}</exe-cmd>
                 <exe-user>vagrant</exe-user>
                 <exe-output/>
             </execute>
@@ -310,7 +310,7 @@
             <postgres-config file="{[postgres-config-demo]}">
                 <title>Configure <postgres/> settings</title>
 
-                <postgres-config-option key="archive_command">'{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} archive-push %p'</postgres-config-option>
+                <postgres-config-option key="archive_command">'{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} archive-push %p'</postgres-config-option>
                 <postgres-config-option key="archive_mode">on</postgres-config-option>
                 <postgres-config-option key="wal_level">archive</postgres-config-option>
             </postgres-config>
@@ -354,7 +354,7 @@
                 <title>Backup the {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} backup</exe-cmd>
                     <exe-output/>
                 </execute>
             </execute-list>
@@ -367,7 +367,7 @@
                 <title>Differential backup of the {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=diff
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=diff
                         {[dash]}-log-level-console=info backup</exe-cmd>
                     <exe-output/>
                 </execute>
@@ -381,7 +381,7 @@
                 <title>Get info for the {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} info</exe-cmd>
+                    <exe-cmd>{[project-exe]} info</exe-cmd>
                     <exe-output/>
                     <exe-highlight>(oldest|latest) backup label</exe-highlight>
                 </execute>
@@ -436,7 +436,7 @@
                 <title>Restore the {[postgres-cluster-demo]} cluster and start <postgres/></title>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} restore</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} restore</exe-cmd>
                 </execute>
 
                 <execute>
@@ -466,7 +466,7 @@
                 <title>Incremental backup of the {[postgres-cluster-demo]} cluster with the regularly scheduled checkpoint</title>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
                         {[dash]}-log-level-console=info backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>backup begins after the next regular checkpoint completes</exe-highlight>
@@ -489,7 +489,7 @@
                 <title>Incremental backup of the {[postgres-cluster-demo]} cluster with an immediate checkpoint</title>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
                         {[dash]}-log-level-console=info backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>backup begins after the requested immediate checkpoint completes</exe-highlight>
@@ -514,7 +514,7 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
                         {[dash]}-log-level-console=info backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>ERROR:</exe-highlight>
@@ -533,7 +533,7 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
                         {[dash]}-log-level-console=info backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>ERROR:</exe-highlight>
@@ -559,7 +559,7 @@
                 <title>Perform an incremental backup</title>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
                         {[dash]}-log-level-console=info backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>cluster is already in backup mode|backup begins after the requested immediate checkpoint completes</exe-highlight>
@@ -647,7 +647,7 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --delta
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --delta
                         --type=time "--target={[time-recovery-timestamp]}" restore</exe-cmd>
                 </execute>
 
@@ -713,7 +713,7 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
                 </execute>
 
                 <execute>
@@ -726,7 +726,7 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --delta
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --delta
                          --type=time "--target={[time-recovery-timestamp]}" restore</exe-cmd>
                 </execute>
 
@@ -770,7 +770,7 @@
 
                 <execute>
                     <exe-cmd>
-                        {[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --delta
+                        {[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --delta
                             --type=time "--target={[time-recovery-timestamp]}"
                             --set={[backup-last]} restore
                     </exe-cmd>
@@ -811,7 +811,7 @@
             <title>Get detailed information</title>
 
             <execute>
-                <exe-cmd>{[backrest-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-output=json info</exe-cmd>
+                <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-output=json info</exe-cmd>
                 <exe-output/>
             </execute>
         </execute-list>

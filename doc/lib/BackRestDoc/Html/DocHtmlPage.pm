@@ -24,6 +24,7 @@ use BackRest::FileCommon;
 use lib dirname($0) . '/../test/lib';
 use BackRestTest::Common::ExecuteTest;
 
+use BackRestDoc::Common::DocManifest;
 use BackRestDoc::Html::DocHtmlBuilder;
 use BackRestDoc::Html::DocHtmlElement;
 
@@ -55,26 +56,51 @@ sub new
     # Assign function parameters, defaults, and log debug info
     (
         my $strOperation,
-        $self->{oSite},
-        $self->{strPageId},
+        $self->{oManifest},
+        $self->{strRenderOutKey},
         $self->{bExe}
     ) =
         logDebugParam
         (
             OP_DOC_HTML_PAGE_NEW, \@_,
             {name => 'oSite'},
-            {name => 'strPageId'},
+            {name => 'strRenderOutKey'},
             {name => 'bExe', default => true}
         );
-    #
-    # use Data::Dumper;
-    # confess Dumper(${$self->{oSite}->{oSite}}{common}{oRender});
+
+    my $oManifest = $self->{oManifest};
+    $self->{oRender} = new BackRestDoc::Common::DocRender('html');
+
+    # Get the reference if this is the backrest project
+    if ($oManifest->variableGet('project') eq 'pgBackRest')
+    {
+        $self->{oReference} = new BackRestDoc::Common::DocConfig(${$oManifest->sourceGet('reference')}{doc}, $self->{oRender});
+    }
 
     # Copy page data to self
-    $self->{oPage} = ${$self->{oSite}->{oSite}}{page}{$self->{strPageId}};
-    $self->{oDoc} = ${$self->{oPage}}{'oDoc'};
-    $self->{oRender} = ${$self->{oSite}->{oSite}}{common}{oRender};
-    $self->{oReference} = ${$self->{oSite}->{oSite}}{common}{oReference};
+    my $oRenderOut = $oManifest->renderOutGet(RENDER_TYPE_HTML, $self->{strRenderOutKey});
+
+    if (defined($$oRenderOut{source}) && $$oRenderOut{source} eq 'reference')
+    {
+        if ($self->{strRenderOutKey} eq 'configuration')
+        {
+            $self->{oDoc} = $self->{oReference}->helpConfigDocGet();
+        }
+        elsif ($self->{strRenderOutKey} eq 'command')
+        {
+            $self->{oDoc} = $self->{oReference}->helpCommandDocGet();
+        }
+        else
+        {
+            confess &log(ERROR, "cannot render $self->{strRenderOutKey} from source $$oRenderOut{source}");
+        }
+    }
+    else
+    {
+        $self->{oDoc} = ${$oManifest->sourceGet($self->{strRenderOutKey})}{doc};
+    }
+
+    $self->{oRenderOut} = $oRenderOut;
 
     # Return from function and log return values if any
     return logDebugReturn
@@ -126,7 +152,7 @@ sub execute
     }
 
     $strUser = defined($strUser) ? $strUser : 'postgres';
-    $strCommand = $self->{oSite}->variableReplace(
+    $strCommand = $self->{oManifest}->variableReplace(
         ($strUser eq 'vagrant' ? '' : 'sudo ' . ($strUser eq 'root' ? '' : "-u ${strUser} ")) . $strCommand);
 
     # Add continuation chars and proper spacing
@@ -162,7 +188,7 @@ sub execute
 
             if (defined($strExeVar))
             {
-                $self->{oSite}->variableSet($strExeVar, trim($oExec->{strOutLog}));
+                $self->{oManifest}->variableSet($strExeVar, trim($oExec->{strOutLog}));
             }
 
             if (defined($iExeExpectedError))
@@ -176,9 +202,9 @@ sub execute
         }
     }
 
-    if (defined($strExeVar) && !defined($self->{oSite}->variableGet($strExeVar)))
+    if (defined($strExeVar) && !defined($self->{oManifest}->variableGet($strExeVar)))
     {
-        $self->{oSite}->variableSet($strExeVar, '[Unset Variable]');
+        $self->{oManifest}->variableSet($strExeVar, '[Unset Variable]');
     }
 
     # Return from function and log return values if any
@@ -206,11 +232,11 @@ sub process
     my $oPage = $self->{oDoc};
 
     # Initialize page
-    my $strTitle = ${$self->{oRender}}{strProjectName} .
+    my $strTitle = "{[project]}" .
                    (defined($oPage->paramGet('title', false)) ? ' ' . $oPage->paramGet('title') : '');
     my $strSubTitle = $oPage->paramGet('subtitle', false);
 
-    my $oHtmlBuilder = new BackRestDoc::Html::DocHtmlBuilder("${$self->{oRender}}{strProjectName} - Reliable PostgreSQL Backup",
+    my $oHtmlBuilder = new BackRestDoc::Html::DocHtmlBuilder("{[project]} - Reliable PostgreSQL Backup",
                                                              $strTitle . (defined($strSubTitle) ? " - ${strSubTitle}" : ''));
 
     # Execute cleanup commands
@@ -241,24 +267,22 @@ sub process
     # Generate menu
     my $oMenuBody = $oHtmlBuilder->bodyGet()->addNew(HTML_DIV, 'page-menu')->addNew(HTML_DIV, 'menu-body');
 
-    if ($self->{strPageId} ne 'index')
+    if ($self->{strRenderOutKey} ne 'index')
     {
-        my $oPage = ${$self->{oSite}->{oSite}}{page}{'index'};
-
         $oMenuBody->
             addNew(HTML_DIV, 'menu')->
-                addNew(HTML_A, 'menu-link', {strContent => $$oPage{strMenuTitle}, strRef => '{[backrest-url-root]}'});
+                addNew(HTML_A, 'menu-link', {strContent => ${$self->{oRenderOut}}{menu}, strRef => '{[project-url-root]}'});
     }
 
-    foreach my $strPageId(sort(keys(${$self->{oSite}->{oSite}}{page})))
+    foreach my $strRenderOutKey ($self->{oManifest}->renderOutList(RENDER_TYPE_HTML))
     {
-        if ($strPageId ne $self->{strPageId} && $strPageId ne 'index')
+        if ($strRenderOutKey ne $self->{strRenderOutKey} && $strRenderOutKey ne 'index')
         {
-            my $oPage = ${$self->{oSite}->{oSite}}{page}{$strPageId};
+            my $oRenderOut = $self->{oManifest}->renderOutGet(RENDER_TYPE_HTML, $strRenderOutKey);
 
             $oMenuBody->
                 addNew(HTML_DIV, 'menu')->
-                    addNew(HTML_A, 'menu-link', {strContent => $$oPage{strMenuTitle}, strRef => "${strPageId}.html"});
+                    addNew(HTML_A, 'menu-link', {strContent => $$oRenderOut{menu}, strRef => "${strRenderOutKey}.html"});
         }
     }
 
@@ -296,7 +320,7 @@ sub process
 
     my $oPageFooter = $oHtmlBuilder->bodyGet()->
         addNew(HTML_DIV, 'page-footer',
-               {strContent => ${$self->{oSite}->{oSite}}{common}{strFooter}});
+               {strContent => '{[footer]}'});
 
     # Return from function and log return values if any
     return logDebugReturn
@@ -420,7 +444,7 @@ sub sectionProcess
 
                     if (defined($strOutput))
                     {
-                        my $strHighLight = $self->{oSite}->variableReplace($oExecute->fieldGet('exe-highlight', false));
+                        my $strHighLight = $self->{oManifest}->variableReplace($oExecute->fieldGet('exe-highlight', false));
                         my $bHighLightOld;
                         my $bHighLightFound = false;
                         my $strHighLightOutput;
@@ -553,7 +577,7 @@ sub backrestConfigProcess
         );
 
     # Get filename
-    my $strFile = $self->{oSite}->variableReplace($oConfig->paramGet('file'));
+    my $strFile = $self->{oManifest}->variableReplace($oConfig->paramGet('file'));
 
     &log(INFO, ('    ' x $iDepth) . 'process backrest config: ' . $strFile);
 
@@ -561,7 +585,7 @@ sub backrestConfigProcess
     {
         my $strSection = $oOption->fieldGet('backrest-config-option-section');
         my $strKey = $oOption->fieldGet('backrest-config-option-key');
-        my $strValue = $self->{oSite}->variableReplace(trim($oOption->fieldGet('backrest-config-option-value'), false));
+        my $strValue = $self->{oManifest}->variableReplace(trim($oOption->fieldGet('backrest-config-option-value'), false));
 
         if (!defined($strValue))
         {
@@ -637,7 +661,7 @@ sub postgresConfigProcess
         );
 
     # Get filename
-    my $strFile = $self->{oSite}->variableReplace($oConfig->paramGet('file'));
+    my $strFile = $self->{oManifest}->variableReplace($oConfig->paramGet('file'));
 
     if (!defined(${$self->{'pg-config'}}{$strFile}{base}) && $self->{bExe})
     {
@@ -662,7 +686,7 @@ sub postgresConfigProcess
     foreach my $oOption ($oConfig->nodeList('postgres-config-option'))
     {
         my $strKey = $oOption->paramGet('key');
-        my $strValue = $self->{oSite}->variableReplace(trim($oOption->valueGet()));
+        my $strValue = $self->{oManifest}->variableReplace(trim($oOption->valueGet()));
 
         if ($strValue eq '')
         {

@@ -126,7 +126,7 @@ sub docProcess
         $strOperation,
         $strXmlIn,
         $strMdOut,
-        $oHtmlSite
+        $oManifest
     ) =
         logDebugParam
         (
@@ -140,16 +140,16 @@ sub docProcess
     my $oDoc = new BackRestDoc::Common::Doc($strXmlIn);
 
     # Write markdown
-    my $oRender = new BackRestDoc::Common::DocRender('markdown', $strProjectName, $strExeName);
-    $oRender->save($strMdOut, $oHtmlSite->variableReplace($oRender->process($oDoc)));
+    my $oRender = new BackRestDoc::Common::DocRender('markdown');
+    $oRender->save($strMdOut, $oManifest->variableReplace($oRender->process($oDoc)));
 }
-
-my $oRender = new BackRestDoc::Common::DocRender('text', $strProjectName, $strExeName);
-my $oDocConfig = new BackRestDoc::Common::DocConfig(new BackRestDoc::Common::Doc("${strBasePath}/xml/reference.xml"), $oRender);
-$oDocConfig->helpDataWrite();
 
 # Load the manifest
 my $oManifest = new BackRestDoc::Common::DocManifest();
+
+my $oRender = new BackRestDoc::Common::DocRender('text');
+my $oDocConfig = new BackRestDoc::Common::DocConfig(new BackRestDoc::Common::Doc("${strBasePath}/xml/reference.xml"), $oRender);
+$oDocConfig->helpDataWrite($oManifest);
 
 # Only generate the HTML/PDF when requested
 if ($bHtml || $bPDF)
@@ -176,7 +176,7 @@ if ($bHtml || $bPDF)
         $oHtmlSite =
             new BackRestDoc::Html::DocHtmlSite
             (
-                new BackRestDoc::Common::DocRender('html', $strProjectName, $strExeName),
+                $oManifest,
                 $oDocConfig,
                 "${strBasePath}/xml",
                 "${strOutputPath}/html",
@@ -186,8 +186,8 @@ if ($bHtml || $bPDF)
             );
     }
 
-    docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oHtmlSite);
-    docProcess("${strBasePath}/xml/change-log.xml", "${strBasePath}/../CHANGELOG.md", $oHtmlSite);
+    docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oManifest);
+    docProcess("${strBasePath}/xml/change-log.xml", "${strBasePath}/../CHANGELOG.md", $oManifest);
 
     # Generate HTML
     $oHtmlSite->process();
@@ -198,24 +198,24 @@ if ($bHtml || $bPDF)
         store($oHtmlSite, $strSiteFile);
     }
 
-    # Only generate the PDF file when requested
-    $oHtmlSite->{var}->{backrest} = $strPdfProjectName;
-
-    my $oLatex =
-        new BackRestDoc::Latex::DocLatex
-        (
-            $oHtmlSite->{var},
-            $oHtmlSite->{oSite},
-            new BackRestDoc::Common::DocRender('latex', $strPdfProjectName, $strExeName),
-            $oDocConfig,
-            "${strBasePath}/xml",
-            "${strOutputPath}/latex",
-            "${strBasePath}/resource/latex/preamble.tex",
-            !$bNoExe
-        );
-
-    if ($bPDF)
-    {
-        $oLatex->process();
-    }
+    # # Only generate the PDF file when requested
+    # $oHtmlSite->{var}->{backrest} = $strPdfProjectName;
+    #
+    # my $oLatex =
+    #     new BackRestDoc::Latex::DocLatex
+    #     (
+    #         $oHtmlSite->{var},
+    #         $oHtmlSite->{oSite},
+    #         new BackRestDoc::Common::DocRender('latex'),
+    #         $oDocConfig,
+    #         "${strBasePath}/xml",
+    #         "${strOutputPath}/latex",
+    #         "${strBasePath}/resource/latex/preamble.tex",
+    #         !$bNoExe
+    #     );
+    #
+    # if ($bPDF)
+    # {
+    #     $oLatex->process();
+    # }
 }

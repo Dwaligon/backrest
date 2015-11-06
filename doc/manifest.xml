@@ -3,10 +3,10 @@
 <doc>
     <!-- System-wide variables  -->
     <variable-list>
-        <variable key="backrest">pgBackRest</variable>
+        <variable key="project">pgBackRest</variable>
         <variable key="version">0.87</variable>
-        <variable key="backrest-exe">pg_backrest</variable>
-        <variable key="backrest-url-root">/</variable>
+        <variable key="project-exe">pg_backrest</variable>
+        <variable key="project-url-root">/</variable>
         <variable key="postgres">PostgreSQL</variable>
         <variable key="dash">-</variable>
     </variable-list>

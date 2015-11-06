@@ -1,0 +1,1339 @@
+<opt strClass="BackRestDoc::Common::Doc" strFileName="/backrest/doc/xml/user-guide.xml" strName="root">
+  <oDoc name="doc" value="">
+    <children name="variable-list" value="">
+      <children name="variable" value="">
+        <field variable-name="perl-lib-path" variable-value="/usr/lib/perl5" />
+      </children>
+      <children name="variable" value="">
+        <field variable-name="perl-bin-path" variable-value="/usr/bin" />
+      </children>
+      <children name="variable" value="">
+        <field variable-name="backrest-repo-path" variable-value="/var/lib/backrest" />
+      </children>
+      <children name="variable" value="">
+        <field variable-name="postgres-cluster-demo" variable-value="demo" />
+      </children>
+      <children name="variable" value="">
+        <field variable-name="backrest-config-demo" variable-value="/etc/.conf" />
+      </children>
+      <children name="variable" value="">
+        <field variable-name="postgres-config-demo" variable-value="/etc/postgresql/9.4/{[postgres-cluster-demo]}/postgresql.conf" />
+      </children>
+      <children name="variable" value="">
+        <field variable-name="db-path" variable-value="/var/lib/postgresql/9.4/{[postgres-cluster-demo]}" />
+      </children>
+      <children name="variable" value="">
+        <field variable-name="cmd-backup-last" variable-value="ls -1 /var/lib/backrest/backup/demo | tail -3 | head -1" />
+      </children>
+      <children name="variable" value="">
+        <field variable-name="test-table-data" variable-value="Very important data" />
+      </children>
+    </children>
+    <children name="cleanup" value="">
+      <children name="execute" value="">
+        <field exe-cmd="pg_dropcluster {[dash]}-stop 9.4 {[postgres-cluster-demo]}" exe-err-suppress="1" />
+      </children>
+      <children name="execute" value="">
+        <field exe-cmd="apt-get remove -y libdbd-pg-perl libdbi-perl libnet-daemon-perl
+                libplrpc-perl" exe-user="root" />
+      </children>
+      <children name="execute" value="">
+        <field exe-cmd="chmod 777 /home/vagrant" exe-user="root" />
+      </children>
+      <children name="execute" value="">
+        <field exe-cmd="rm {[backrest-config-demo]}" exe-err-suppress="1" exe-user="root" />
+      </children>
+      <children name="execute" value="">
+        <field exe-cmd="chmod 777 /etc" exe-user="root" />
+      </children>
+      <children name="execute" value="">
+        <field exe-cmd="rm -rf {[backrest-repo-path]}" exe-user="root" />
+      </children>
+      <children name="execute" value="">
+        <field exe-cmd="rm -rf {[perl-lib-path]}/BackRest" exe-user="root" />
+      </children>
+      <children name="execute" value="">
+        <field exe-cmd="rm {[perl-bin-path]}/" exe-err-suppress="1" exe-user="root" />
+      </children>
+      <children name="execute" value="">
+        <field exe-cmd="rm -rf /home/vagrant/backrest-release-{[version]}" exe-user="root" />
+      </children>
+      <children name="execute" value="">
+        <field exe-cmd="mkdir /home/vagrant/backrest-release-{[version]}" exe-user="vagrant" />
+      </children>
+      <children name="execute" value="">
+        <field exe-cmd="cp -r /backrest/bin /home/vagrant/backrest-release-{[version]}" exe-user="vagrant" />
+      </children>
+      <children name="execute" value="">
+        <field exe-cmd="cp -r /backrest/lib /home/vagrant/backrest-release-{[version]}" exe-user="vagrant" />
+      </children>
+    </children>
+    <children name="section" value="">
+      <children name="title" value="">
+        <field name="title">
+          <children>Introduction</children>
+        </field>
+      </children>
+      <children name="p" value="">
+        <field name="p">
+          <children>This user guide is intended to be followed sequentially from beginning to end &amp;mdash; each section depends on the last.  For example the </children>
+          <children name="link" value="Backup">
+            <param page="#backup" />
+          </children>
+          <children> section relies on setup that is performed in the </children>
+          <children name="link" value="Quick Start">
+            <param page="#quickstart" />
+          </children>
+          <children> section.  Once you have </children>
+          <children name="backrest" />
+          <children> up and running it possible to skip around but it is recommended to follow the user guide in order the first time through.</children>
+        </field>
+      </children>
+      <children name="p" value="">
+        <field name="p">
+          <children>Although the examples are targeted at Ubuntu and </children>
+          <children name="postgres" />
+          <children> 9.4 they will also work fine on Debian and it should be fairly easy to apply this guide to any Unix distribution and </children>
+          <children name="postgres" />
+          <children> version.  The only OS-specific commands are those to create, start, stop, and drop </children>
+          <children name="postgres" />
+          <children> clusters.  The </children>
+          <children name="backrest" />
+          <children> commands will be the same on any Unix system though the locations to install Perl libraries and executables may vary.  Configuring archiving is different on </children>
+          <children name="postgres" />
+          <children> versions &amp;lt;= 8.4 and configuration information can be found in the </children>
+          <children name="postgres" />
+          <children> documentation.</children>
+        </field>
+      </children>
+      <children name="p" value="">
+        <field name="p">
+          <children>A somewhat novel approach is taken to documentation in this user guide.  Each command is run on a virtual machine when the documentation is built from the XML source.  This means you can have a high confidence that the commands work correctly in the order presented.  Output is captured and displayed below the command when appropriate.  If the output is not included it is because it was deemed not relevant or was considered a distraction from the narrative.</children>
+        </field>
+      </children>
+      <children name="p" value="">
+        <field name="p">
+          <children>All commands are intended to be run as an unprivileged user that has sudo privileges for both the </children>
+          <children name="user" value="root" />
+          <children> and </children>
+          <children name="user" value="postgres" />
+          <children> users.  It's also possible to run the commands directly as their respective users without modification and in that case the </children>
+          <children name="cmd" value="sudo" />
+          <children> commands can be stripped off.</children>
+        </field>
+      </children>
+      <field></field>
+      <param id="introduction" />
+    </children>
+    <children name="section" value="">
+      <children name="title" value="">
+        <field name="title">
+          <children>Concepts</children>
+        </field>
+      </children>
+      <children name="p" value="">
+        <field name="p">
+          <children>The following concepts are defined as they are relevant to </children>
+          <children name="backrest" />
+          <children>, </children>
+          <children name="postgres" />
+          <children>, and this user guide.</children>
+        </field>
+      </children>
+      <children name="section" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Backup</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>A backup is a consistent copy of a database cluster that can be restored to recover from a hardware failure, to perform Point-In-Time Recovery, or to bring up a new replica.</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children name="b" value="Full Backup" />
+            <children>: </children>
+            <children name="backrest" />
+            <children> copies the entire contents of the database cluster to the backup server. The first backup of the database cluster is always a Full Backup. </children>
+            <children name="backrest" />
+            <children> is always able to restore a full backup directly. The full backup does not depend on any files outside of the full backup for consistency.</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children name="b" value="Differential Backup" />
+            <children>: </children>
+            <children name="backrest" />
+            <children> copies only those database cluster files that have changed since the last full backup. </children>
+            <children name="backrest" />
+            <children> restores a differential backup by copying all of the files in the chosen differential backup and the appropriate unchanged files from the previous full backup. The advantage of a differential backup is that it requires less disk space than a full backup, however, the differential backup and the full backup must both be valid to restore the differential backup.</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children name="b" value="Incremental Backup" />
+            <children>: </children>
+            <children name="backrest" />
+            <children> copies only those database cluster file that have changed since the last backup (which can be another incremental backup, a differential backup, or a full backup). As an incremental backup only includes those files changed since the prior backup, they are generally much smaller than full or differential backups. As with the differential backup, the incremental backup depends on other backups to be valid to restore the incremental backup. Since the incremental backup includes only those files since the last backup, all prior incremental backups back to the prior differential, the prior differential backup, and the prior full backup must all be valid to perform a restore of the incremental backup. If no differential backup exists then all prior incremental backups back to the prior full backup, which must exist, and the full backup itself must be valid to restore the incremental backup.</children>
+          </field>
+        </children>
+        <field></field>
+        <param id="backup" />
+      </children>
+      <children name="section" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Restore</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>A restore is the act of copying a backup to a system where it will be started as a live database cluster.  A restore requires the backup files and one or more WAL segments in order to work correctly.</children>
+          </field>
+        </children>
+        <field></field>
+        <param id="restore" />
+      </children>
+      <children name="section" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Write Ahead Log (WAL)</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>WAL is the mechanism by which </children>
+            <children name="postgres" />
+            <children> ensures that no committed changes are lost. Transactions are written sequentially to the WAL and a transaction is considered to be committed when those writes are flushed to disk. Afterwards, a background process writes the changes into the main database cluster files (also known as the heap). In the event of a crash, the WAL is replayed to make the database consistent.</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>WAL is conceptually infinite but in practice is broken up into individual 16MB files called segments.  WAL segments follow the naming convention </children>
+            <children name="id" value="0000000100000A1E000000FE" />
+            <children> where the first 8 hexadecimal digits represent the timeline and the next 16 digits are the logical sequence number (LSN).</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>A valid backup will always include </children>
+            <children name="i" value="at least" />
+            <children> one WAL segment even if no writes were made to the database between backups.</children>
+          </field>
+        </children>
+        <field></field>
+        <param id="wal" />
+      </children>
+      <field></field>
+      <param id="concept" />
+    </children>
+    <children name="section" value="">
+      <children name="title" value="">
+        <field name="title">
+          <children>Installation</children>
+        </field>
+      </children>
+      <children name="p" value="">
+        <field name="p">
+          <children name="backrest" />
+          <children> is written in Perl which is included with Ubuntu by default.  A few additional modules are required which are all available as packages.</children>
+        </field>
+      </children>
+      <children name="execute-list" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Install required Perl modules</children>
+          </field>
+        </children>
+        <children name="execute" value="">
+          <field actual-command="sudo apt-get install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl" actual-output="Output suppressed for testing" exe-cmd="apt-get install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl" exe-output="1" exe-user="root" />
+        </children>
+      </children>
+      <children name="p" value="">
+        <field name="p">
+          <children>No Debian/Ubuntu packages are currently available for </children>
+          <children name="backrest" />
+          <children> but it is easy to download the source and install manually.</children>
+        </field>
+      </children>
+      <children name="execute-list" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Download version </children>
+            <children name="id" value="{[version]}" />
+            <children> of </children>
+            <children name="backrest" />
+          </field>
+        </children>
+        <children name="execute" value="">
+          <field actual-command="wget -O - \
+    https://github.com/pgmasters/backrest/archive/release/0.90.tar.gz | \
+    tar zxv -C ~" exe-cmd="wget -O -
+                    https://github.com/pgmasters/backrest/archive/release/{[version]}.tar.gz |
+                    tar zxv -C ~" exe-skip="1" exe-user="vagrant" />
+        </children>
+      </children>
+      <children name="execute-list" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Install </children>
+            <children name="backrest" />
+          </field>
+        </children>
+        <children name="execute" value="">
+          <field actual-command="sudo cp -r ~/backrest-release-0.90/lib/BackRest /usr/lib/perl5" exe-cmd="cp -r ~/backrest-release-{[version]}/lib/BackRest {[perl-lib-path]}" exe-user="root" />
+        </children>
+        <children name="execute" value="">
+          <field actual-command="sudo find /usr/lib/perl5/BackRest -type f -exec chmod 644 {} +" exe-cmd="find /usr/lib/perl5/BackRest -type f -exec chmod 644 {} +" exe-user="root" />
+        </children>
+        <children name="execute" value="">
+          <field actual-command="sudo find /usr/lib/perl5/BackRest -type d -exec chmod 755 {} +" exe-cmd="find /usr/lib/perl5/BackRest -type d -exec chmod 755 {} +" exe-user="root" />
+        </children>
+        <children name="execute" value="">
+          <field actual-command="sudo cp ~/backrest-release-0.90/bin/pg_backrest /usr/bin/pg_backrest" exe-cmd="cp ~/backrest-release-{[version]}/bin/ {[perl-bin-path]}/" exe-user="root" />
+        </children>
+        <children name="execute" value="">
+          <field actual-command="sudo chmod 755 /usr/bin/pg_backrest" exe-cmd="chmod 755 {[perl-bin-path]}/" exe-user="root" />
+        </children>
+      </children>
+      <children name="p" value="">
+        <field name="p">
+          <children name="backrest" />
+          <children> should now be properly installed but it is best to check.  If any dependencies were missed then you will get an error when running </children>
+          <children name="backrest" />
+          <children> from the command line.</children>
+        </field>
+      </children>
+      <children name="execute-list" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Make sure the installation worked</children>
+          </field>
+        </children>
+        <children name="execute" value="">
+          <field actual-command="pg_backrest" actual-output="Output suppressed for testing" exe-cmd="" exe-output="1" exe-user="vagrant" />
+        </children>
+      </children>
+      <field></field>
+      <param id="installation" />
+    </children>
+    <children name="section" value="">
+      <children name="title" value="">
+        <field name="title">
+          <children>Quick Start</children>
+        </field>
+      </children>
+      <children name="p" value="">
+        <field name="p">
+          <children>The Quick Start section will cover basic configuration of </children>
+          <children name="backrest" />
+          <children> and </children>
+          <children name="postgres" />
+          <children> and introduce the </children>
+          <children name="cmd" value="backup" />
+          <children>, </children>
+          <children name="cmd" value="restore" />
+          <children>, and </children>
+          <children name="cmd" value="info" />
+          <children> commands.</children>
+        </field>
+      </children>
+      <children name="section" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Setup Demo Cluster</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>You'll need to create a demo cluster to run the example commands in this user guide. This step is optional, but you may need to adjust commands in the user guide to work with your environment if you choose not to create the demo cluster.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Create and start the demo cluster</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo pg_createcluster 9.4 demo --start" actual-output="Output suppressed for testing" exe-cmd="pg_createcluster 9.4 {[postgres-cluster-demo]} {[dash]}-start" exe-output="1" exe-user="root" />
+          </children>
+        </children>
+        <field></field>
+        <param id="setup-demo-cluster" />
+      </children>
+      <children name="section" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Configure Cluster Stanza</children>
+          </field>
+        </children>
+        <children name="option-description" value="">
+          <param key="stanza" />
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Demo describes the purpose of this cluster accurately so that will also make a good stanza name.</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children name="backrest" />
+            <children> needs to know where the base data directory for the </children>
+            <children name="postgres" />
+            <children> cluster is located.  The path can be requested from </children>
+            <children name="postgres" />
+            <children> directly but in a recovery scenario the </children>
+            <children name="postgres" />
+            <children> process will not be available.  During backups the value supplied to </children>
+            <children name="backrest" />
+            <children> will be compared against the path that </children>
+            <children name="postgres" />
+            <children> is running on and they must be equal or the backup will return an error.  Make sure that </children>
+            <children name="br-option" value="db-path" />
+            <children> is exactly equal to </children>
+            <children name="pg-option" value="data_directory" />
+            <children> in </children>
+            <children name="file" value="postgresql.conf" />
+            <children>.</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>By default Ubuntu stores clusters in </children>
+            <children name="path" value="/var/lib/postgresql/[version]/[cluster]" />
+            <children> so it is easy to determine the correct path for the data directory.</children>
+          </field>
+        </children>
+        <children name="backrest-config" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Configure the </children>
+              <children name="postgres" />
+              <children> cluster data directory</children>
+            </field>
+          </children>
+          <children name="backrest-config-option" value="">
+            <field backrest-config-option-key="db-path" backrest-config-option-section="demo" backrest-config-option-value="{[db-path]}" />
+          </children>
+          <field actual-config="[demo]
+db-path=/var/lib/postgresql/9.4/demo
+" />
+          <param file="{[backrest-config-demo]}" />
+        </children>
+        <field></field>
+        <param id="configure-stanza" />
+      </children>
+      <children name="section" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Create the Repository</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>For this simple configuration the repository will be stored on the same host as the </children>
+            <children name="postgres" />
+            <children> server.  This is the simplest configuration and is useful in cases where external backup software is employed to backup the database host.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Create the </children>
+              <children name="backrest" />
+              <children> repository</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo mkdir /var/lib/backrest" exe-cmd="mkdir {[backrest-repo-path]}" exe-user="root" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo chmod 750 /var/lib/backrest" exe-cmd="chmod 750 {[backrest-repo-path]}" exe-user="root" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo chown postgres:postgres /var/lib/backrest" exe-cmd="chown postgres:postgres {[backrest-repo-path]}" exe-user="root" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>The repository path must be configured so </children>
+            <children name="backrest" />
+            <children> knows where to find it.</children>
+          </field>
+        </children>
+        <children name="backrest-config" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Configure the </children>
+              <children name="backrest" />
+              <children> repository path</children>
+            </field>
+          </children>
+          <children name="backrest-config-option" value="">
+            <field backrest-config-option-key="repo-path" backrest-config-option-section="global:general" backrest-config-option-value="{[backrest-repo-path]}" />
+          </children>
+          <field actual-config="[demo]
+db-path=/var/lib/postgresql/9.4/demo
+
+[global:general]
+repo-path=/var/lib/backrest
+" />
+          <param file="{[backrest-config-demo]}" />
+        </children>
+        <field></field>
+        <param id="create-repository" />
+      </children>
+      <children name="section" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Configure Archiving</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Backing up a running </children>
+            <children name="postgres" />
+            <children> cluster requires WAL archiving to be enabled.</children>
+          </field>
+        </children>
+        <children name="postgres-config" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Configure </children>
+              <children name="postgres" />
+              <children> settings</children>
+            </field>
+          </children>
+          <children name="postgres-config-option" value="' {[dash]}-stanza={[postgres-cluster-demo]} archive-push %p'">
+            <param key="archive_command" />
+          </children>
+          <children name="postgres-config-option" value="on">
+            <param key="archive_mode" />
+          </children>
+          <children name="postgres-config-option" value="archive">
+            <param key="wal_level" />
+          </children>
+          <field actual-config="archive_command = 'pg_backrest --stanza=demo archive-push %p'
+archive_mode = on
+wal_level = archive" />
+          <param file="{[postgres-config-demo]}" />
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>The </children>
+            <children name="pg-option" value="wal_level" />
+            <children> setting must be set to </children>
+            <children name="pg-setting" value="archive" />
+            <children> at a minimum but </children>
+            <children name="pg-setting" value="hot_standby" />
+            <children> and </children>
+            <children name="pg-setting" value="logical" />
+            <children> also work fine for backups.  Setting </children>
+            <children name="pg-option" value="wal_level" />
+            <children> to </children>
+            <children name="pg-setting" value="hot_standy" />
+            <children> is a good idea even if you do not currently run a hot standby since one can be added later without restarting the primary cluster.</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>The </children>
+            <children name="postgres" />
+            <children> cluster must be restarted after making these changes and before performing a backup.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Restart the {[postgres-cluster-demo]} cluster</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_ctlcluster 9.4 demo restart" exe-cmd="pg_ctlcluster 9.4 {[postgres-cluster-demo]} restart" />
+          </children>
+        </children>
+        <field></field>
+        <param id="configure-archiving" />
+      </children>
+      <children name="section" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Perform a Backup</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>To perform a backup of the </children>
+            <children name="postgres" />
+            <children> cluster run </children>
+            <children name="backrest" />
+            <children> with the </children>
+            <children name="cmd" value="backup" />
+            <children> command.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Backup the {[postgres-cluster-demo]} cluster</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_backrest --stanza=demo backup" actual-output="Output suppressed for testing" exe-cmd=" {[dash]}-stanza={[postgres-cluster-demo]} backup" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>By default </children>
+            <children name="backrest" />
+            <children> will attempt to perform an incremental backup.  However, an incremental backup must be based on a full backup and since no full backup existed </children>
+            <children name="backrest" />
+            <children> ran a full backup instead.</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>The </children>
+            <children name="br-option" value="type" />
+            <children> option can be used to specify and full or differential backup.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Differential backup of the {[postgres-cluster-demo]} cluster</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_backrest --stanza=demo --type=diff \
+    --log-level-console=info backup" actual-output="Output suppressed for testing" exe-cmd=" {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=diff
+                        {[dash]}-log-level-console=info backup" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>This time there was no warning because a full backup already existed.  Like incremental backups, differential backups must be based on a full backup.  An incremental backup can be performed by running the </children>
+            <children name="cmd" value="backup" />
+            <children> command with </children>
+            <children name="br-setting" value="{[dash]}-type=incr" />
+            <children>.</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Use the </children>
+            <children name="cmd" value="info" />
+            <children> command to get information about backups.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Get info for the {[postgres-cluster-demo]} cluster</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_backrest info" actual-output="Output suppressed for testing" exe-cmd=" info" exe-highlight="(oldest|latest) backup label" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>The oldest and newest backups are shown in the info output.  The oldest backup will </children>
+            <children name="i" value="always" />
+            <children> be a full backup (indicated by an </children>
+            <children name="id" value="F" />
+            <children> at the end of the label) but the newest backup can be full, differential (ends with </children>
+            <children name="id" value="D" />
+            <children>), or incremental (ends with </children>
+            <children name="id" value="I" />
+            <children>).</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>More information about the </children>
+            <children name="cmd" value="backup" />
+            <children> command can be found in the </children>
+            <children name="link" value="Backup">
+              <param page="#backup" />
+            </children>
+            <children> section.</children>
+          </field>
+        </children>
+        <field></field>
+        <param id="perform-backup" />
+      </children>
+      <children name="section" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Restore a Backup</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Backups can protect you from a number of disaster scenarios, the most common of which are hardware failure and data corruption.  The easiest way to simulate data corruption is to remove an important </children>
+            <children name="postgres" />
+            <children> cluster file.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Stop the {[postgres-cluster-demo]} cluster and delete the </children>
+              <children name="file" value="pg_control" />
+              <children> file</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_ctlcluster 9.4 demo stop" exe-cmd="pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres rm /var/lib/postgresql/9.4/demo/global/pg_control" exe-cmd="rm {[db-path]}/global/pg_control" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Starting the cluster without this important file will result in an error.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Attempt to start the corrupted {[postgres-cluster-demo]} cluster</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_ctlcluster 9.4 demo start" actual-output="Output suppressed for testing" exe-cmd="pg_ctlcluster 9.4 {[postgres-cluster-demo]} start" exe-err-expect="1" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>To restore a backup of the </children>
+            <children name="postgres" />
+            <children> cluster run </children>
+            <children name="backrest" />
+            <children> with the </children>
+            <children name="cmd" value="restore" />
+            <children> command. The cluster needs to be stopped (in this case it is already stopped) and all files must be removed from the </children>
+            <children name="postgres" />
+            <children> data directory.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Remove old files from {[postgres-cluster-demo]} cluster</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres find /var/lib/postgresql/9.4/demo -mindepth 1 -delete" exe-cmd="find {[db-path]} -mindepth 1 -delete" />
+          </children>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Restore the {[postgres-cluster-demo]} cluster and start </children>
+              <children name="postgres" />
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_backrest --stanza=demo restore" exe-cmd=" {[dash]}-stanza={[postgres-cluster-demo]} restore" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_ctlcluster 9.4 demo start" exe-cmd="pg_ctlcluster 9.4 {[postgres-cluster-demo]} start" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>This time the cluster started successfully since the restore replaced the missing </children>
+            <children name="file" value="pg_control" />
+            <children> file.</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>More information about the </children>
+            <children name="cmd" value="restore" />
+            <children> command can be found in the </children>
+            <children name="link" value="Restore">
+              <param page="#restore" />
+            </children>
+            <children> section.</children>
+          </field>
+        </children>
+        <field></field>
+        <param id="perform-restore" />
+      </children>
+      <field></field>
+      <param id="quickstart" />
+    </children>
+    <children name="section" value="">
+      <children name="title" value="">
+        <field name="title">
+          <children>Backup</children>
+        </field>
+      </children>
+      <children name="p" value="">
+        <field name="p">
+          <children>The Backup section introduces additional </children>
+          <children name="cmd" value="backup" />
+          <children> command features.</children>
+        </field>
+      </children>
+      <children name="section" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Fast Start Option</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>By default </children>
+            <children name="backrest" />
+            <children> will wait for the next regularly scheduled checkpoint before starting a backup.  Depending on the </children>
+            <children name="pg-option" value="checkpoint_timeout" />
+            <children> and </children>
+            <children name="pg-option" value="checkpoint_segments" />
+            <children> settings in </children>
+            <children name="postgres" />
+            <children> it may be quite some time before a checkpoint completes and the backup can begin.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Incremental backup of the {[postgres-cluster-demo]} cluster with the regularly scheduled checkpoint</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_backrest --stanza=demo --type=incr \
+    --log-level-console=info backup" actual-output="Output suppressed for testing" exe-cmd=" {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        {[dash]}-log-level-console=info backup" exe-highlight="backup begins after the next regular checkpoint completes" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>By setting </children>
+            <children name="br-setting" value="start-fast" />
+            <children> on the command-line or in </children>
+            <children name="file" value="{[backrest-config-demo]}" />
+            <children> an immediate checkpoint is requested and the backup will start more quickly. This is convenient for testing and for ad-hoc backups.  For instance, if a backup is being taken at the beginning of a release window it makes no sense to wait for a checkpoint.  Since regularly scheduled backups generally only happen once per day it is unlikely that enabling the </children>
+            <children name="br-option" value="start-fast" />
+            <children> in </children>
+            <children name="file" value="{[backrest-config-demo]}" />
+            <children> will negatively affect performance, however for high-volume transactional systems you may want to pass </children>
+            <children name="br-setting" value="{[dash]}-start-fast" />
+            <children> on the command-line instead.</children>
+          </field>
+        </children>
+        <children name="backrest-config" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Enable the </children>
+              <children name="br-option" value="start-fast" />
+              <children> option</children>
+            </field>
+          </children>
+          <children name="backrest-config-option" value="">
+            <field backrest-config-option-key="start-fast" backrest-config-option-section="global:backup" backrest-config-option-value="y" />
+          </children>
+          <field actual-config="[demo]
+db-path=/var/lib/postgresql/9.4/demo
+
+[global:backup]
+start-fast=y
+
+[global:general]
+repo-path=/var/lib/backrest
+" />
+          <param file="{[backrest-config-demo]}" />
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Incremental backup of the {[postgres-cluster-demo]} cluster with an immediate checkpoint</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_backrest --stanza=demo --type=incr \
+    --log-level-console=info backup" actual-output="Output suppressed for testing" exe-cmd=" {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        {[dash]}-log-level-console=info backup" exe-highlight="backup begins after the requested immediate checkpoint completes" exe-output="1" />
+          </children>
+        </children>
+        <field></field>
+        <param id="option-start-fast" />
+      </children>
+      <children name="section" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Automatic Stop Option</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Sometimes </children>
+            <children name="backrest" />
+            <children> will exit unexpectedly and the backup in progress on the </children>
+            <children name="postgres" />
+            <children> cluster will not be properly stopped.  </children>
+            <children name="backrest" />
+            <children> exits as quickly as possible when an error occurs so that the cause can be reported accurately and is not masked by another problem that could happen during a more extensive cleanup.</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Here an error in intentionally caused by removing repository permissions.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Revoke write privileges in the </children>
+              <children name="backrest" />
+              <children> repository and attempt a backup</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo chmod 550 /var/lib/backrest/temp" exe-cmd="chmod 550 {[backrest-repo-path]}/temp" exe-user="root" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_backrest --stanza=demo --type=incr \
+    --log-level-console=info backup" actual-output="Output suppressed for testing" exe-cmd=" {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        {[dash]}-log-level-console=info backup" exe-err-expect="199" exe-highlight="ERROR:" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Even when the permissions are fixed </children>
+            <children name="backrest" />
+            <children> will still be unable to perform a backup because the </children>
+            <children name="postgres" />
+            <children> cluster is stuck in backup mode.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Restore write privileges in the </children>
+              <children name="backrest" />
+              <children> repository and attempt a backup</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo chmod 750 /var/lib/backrest/temp" exe-cmd="chmod 750 {[backrest-repo-path]}/temp" exe-user="root" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_backrest --stanza=demo --type=incr \
+    --log-level-console=info backup" actual-output="Output suppressed for testing" exe-cmd=" {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        {[dash]}-log-level-console=info backup" exe-err-expect="132" exe-highlight="ERROR:" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Enabling the </children>
+            <children name="br-option" value="stop-auto" />
+            <children> option allows </children>
+            <children name="backrest" />
+            <children> to stop the current backup if it detects that no other </children>
+            <children name="backrest" />
+            <children> backup process is running.</children>
+          </field>
+        </children>
+        <children name="backrest-config" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Enable the </children>
+              <children name="br-option" value="stop-auto" />
+              <children> option</children>
+            </field>
+          </children>
+          <children name="backrest-config-option" value="">
+            <field backrest-config-option-key="stop-auto" backrest-config-option-section="global:backup" backrest-config-option-value="y" />
+          </children>
+          <field actual-config="[demo]
+db-path=/var/lib/postgresql/9.4/demo
+
+[global:backup]
+start-fast=y
+stop-auto=y
+
+[global:general]
+repo-path=/var/lib/backrest
+" />
+          <param file="{[backrest-config-demo]}" />
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Now </children>
+            <children name="backrest" />
+            <children> will stop the old backup and start a new one so the process completes successfully.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Perform an incremental backup</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_backrest --stanza=demo --type=incr \
+    --log-level-console=info backup" actual-output="Output suppressed for testing" exe-cmd=" {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        {[dash]}-log-level-console=info backup" exe-highlight="cluster is already in backup mode|backup begins after the requested immediate checkpoint completes" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Although useful this feature may not be appropriate when another third-party backup solution is being used to take online backups as </children>
+            <children name="backrest" />
+            <children> will not recognize that the other software is running and may terminate a backup started by that software.  However, it would be unusual to run more than one third-party backup solution at the same time so this is not likely to be a problem.</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Note that </children>
+            <children name="id" value="pg_dump" />
+            <children> and </children>
+            <children name="id" value="pg_base_backup" />
+            <children> do not take online backups so are not affected.  It is safe to run them in conjunction with </children>
+            <children name="backrest" />
+            <children>.</children>
+          </field>
+        </children>
+        <field></field>
+        <param id="option-stop-auto" />
+      </children>
+      <field></field>
+      <param id="backup" />
+    </children>
+    <children name="section" value="">
+      <children name="title" value="">
+        <field name="title">
+          <children>Restore</children>
+        </field>
+      </children>
+      <children name="p" value="">
+        <field name="p">
+          <children>The Restore section introduces additional </children>
+          <children name="cmd" value="restore" />
+          <children> command features.</children>
+        </field>
+      </children>
+      <children name="section" value="">
+        <children name="title" value="">
+          <field name="title">
+            <children>Point-in-Time Recovery (PITR)</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>The </children>
+            <children name="link" value="restore example">
+              <param page="#quickstart-perform-restore" />
+            </children>
+            <children> in </children>
+            <children name="link" value="Quick Start">
+              <param page="#quickstart" />
+            </children>
+            <children> performed default recovery, which is to play all the way to the end of the WAL stream.  In the case of a hardware failure this is probably the most appropriate action but for data corruption scenarios (whether machine or human in origin) there is a better alternative called Point-in-Time Recovery (PITR).</children>
+          </field>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>PITR allows the WAL to be played from the last backup to a specified time, transaction id, or recovery point.  For common recovery scenarios time-based recovery is arguably the most useful.  A common recovery scenario is to restore a table or data was accidentally dropped or deleted.  Recovering a dropped table is more dramatic so that's the example given here but deleted data would be recovered in exactly the same way.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Create table with very important data</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres psql -c &quot;begin; \
+    create table important_table (message text); \
+    insert into important_table values ('Very important data'); \
+    commit; \
+    select * from important_table&quot;;" actual-output="Output suppressed for testing" exe-cmd="
+                        psql -c &quot;begin;
+                                 create table important_table (message text);
+                                 insert into important_table values ('{[test-table-data]}');
+                                 commit;
+                                 select * from important_table&quot;;
+                    " exe-highlight="{[test-table-data]}" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>It is important to represent the time as reckoned by </children>
+            <children name="postgres" />
+            <children> and to include timezone offsets.  This reduces the possibility of unintended timezone conversions and an unexpected recovery result.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Get the time from </children>
+              <children name="postgres" />
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres psql -Atc &quot;select current_timestamp&quot;" actual-output="Output suppressed for testing" exe-cmd="
+                        psql -Atc &quot;select current_timestamp&quot;
+                    " exe-output="1" exe-var="time-recovery-timestamp" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Now that the time has been recorded the table is dropped.  In practice finding the exact time that the table was dropped is a lot harder than in this example.  It may not be possible to find the exact time, but some forensic work should be able to get you close.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Drop the important table</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres psql -c &quot;begin; \
+    drop table important_table; \
+    commit; \
+    select * from important_table;&quot;" actual-output="Output suppressed for testing" exe-cmd="psql -c &quot;begin;
+                                      drop table important_table;
+                                      commit;
+                                      select * from important_table;&quot;" exe-err-expect="1" exe-highlight="does not exist" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Now the restore can be performed with time-based recovery to </children>
+            <children name="id" value="{[time-recovery-timestamp]}" />
+            <children> to bring back the missing table.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Stop </children>
+              <children name="postgres" />
+              <children>, restore the {[postgres-cluster-demo]} cluster to </children>
+              <children name="id" value="{[time-recovery-timestamp]}" />
+              <children>, and display </children>
+              <children name="file" value="recovery.conf" />
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_ctlcluster 9.4 demo stop" exe-cmd="pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop" />
+          </children>
+          <children name="execute" value="">
+            <field exe-cmd="rm /var/log/postgresql/postgresql-9.4-{[postgres-cluster-demo]}.log" exe-no-show="1" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_backrest --stanza=demo --delta \
+    --type=time &quot;--target=[Unset Variable]&quot; restore" exe-cmd=" {[dash]}-stanza={[postgres-cluster-demo]} --delta
+                        --type=time &quot;--target={[time-recovery-timestamp]}&quot; restore" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres cat /var/lib/postgresql/9.4/demo/recovery.conf" actual-output="Output suppressed for testing" exe-cmd="cat /var/lib/postgresql/9.4/{[postgres-cluster-demo]}/recovery.conf" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>The </children>
+            <children name="file" value="recovery.conf" />
+            <children> file has been automatically generated by </children>
+            <children name="backrest" />
+            <children> so </children>
+            <children name="postgres" />
+            <children> can be started immediately. Once </children>
+            <children name="postgres" />
+            <children> has finished recovery the table will exist again and can be queried.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Start </children>
+              <children name="postgres" />
+              <children> and check that the important table exists</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_ctlcluster 9.4 demo start" exe-cmd="pg_ctlcluster 9.4 {[postgres-cluster-demo]} start" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres psql -c &quot;select * from important_table&quot;" actual-output="Output suppressed for testing" exe-cmd="psql -c &quot;select * from important_table&quot;" exe-highlight="{[test-table-data]}" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>The </children>
+            <children name="postgres" />
+            <children> log also contains valuable information.  It will indicate the time and transaction where the recovery stopped and also give the time of the last transaction to be applied.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Examine the </children>
+              <children name="postgres" />
+              <children> log output</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres cat /var/log/postgresql/postgresql-9.4-demo.log" actual-output="Output suppressed for testing" exe-cmd="cat /var/log/postgresql/postgresql-9.4-{[postgres-cluster-demo]}.log" exe-highlight="recovery stopping before|last completed transaction|starting point-in-time recovery" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>This example was rigged to give the correct result.  If a backup after the required time is chosen then </children>
+            <children name="postgres" />
+            <children> will not be able to recover the lost table. </children>
+            <children name="postgres" />
+            <children> can only play forward, not backward.  To demonstrate this the important table must be dropped (again).</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Drop the important table (again)</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres psql -c &quot;begin; \
+    drop table important_table; \
+    commit; \
+    select * from important_table;&quot;" actual-output="Output suppressed for testing" exe-cmd="psql -c &quot;begin;
+                                      drop table important_table;
+                                      commit;
+                                      select * from important_table;&quot;" exe-err-expect="1" exe-highlight="does not exist" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Now take a new backup and attempt recovery from the new backup.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Perform a backup then attempt recovery from that backup</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field exe-cmd="{[cmd-backup-last]}" exe-no-show="1" exe-var="backup-last" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_backrest --stanza=demo --type=incr backup" exe-cmd=" {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_ctlcluster 9.4 demo stop" exe-cmd="pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop" />
+          </children>
+          <children name="execute" value="">
+            <field exe-cmd="rm /var/log/postgresql/postgresql-9.4-{[postgres-cluster-demo]}.log" exe-no-show="1" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_backrest --stanza=demo --delta \
+    --type=time &quot;--target=[Unset Variable]&quot; restore" exe-cmd=" {[dash]}-stanza={[postgres-cluster-demo]} --delta
+                         --type=time &quot;--target={[time-recovery-timestamp]}&quot; restore" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_ctlcluster 9.4 demo start" exe-cmd="pg_ctlcluster 9.4 {[postgres-cluster-demo]} start" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres psql -c &quot;select * from important_table&quot;" actual-output="Output suppressed for testing" exe-cmd="psql -c &quot;select * from important_table&quot;" exe-err-expect="1" exe-highlight="does not exist" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Looking at the log output it's not obvious that recovery failed to restore the table.  The key is to look for the presence of the </children>
+            <children name="quote" value="recovery stopping before..." />
+            <children> and </children>
+            <children name="quote" value="last completed transaction..." />
+            <children> log messages.  If they are not present then the recovery to the specified point-in-time was not successful.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Examine the </children>
+              <children name="postgres" />
+              <children> log output to discover the recovery was not successful</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres cat /var/log/postgresql/postgresql-9.4-demo.log" actual-output="Output suppressed for testing" exe-cmd="cat /var/log/postgresql/postgresql-9.4-{[postgres-cluster-demo]}.log" exe-highlight="starting point-in-time recovery" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Using an earlier backup will allow </children>
+            <children name="postgres" />
+            <children> to play forward to the correct time again.  The default behavior for restore is to use the most recent backup but an earlier backup can be specified with the </children>
+            <children name="br-option" value="--set" />
+            <children> option.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Stop </children>
+              <children name="postgres" />
+              <children>, restore from the previous backup, and start </children>
+              <children name="postgres" />
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_ctlcluster 9.4 demo stop" exe-cmd="pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop" />
+          </children>
+          <children name="execute" value="">
+            <field exe-cmd="rm /var/log/postgresql/postgresql-9.4-{[postgres-cluster-demo]}.log" exe-no-show="1" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_backrest --stanza=demo --delta \
+    --type=time &quot;--target=[Unset Variable]&quot; \
+    --set=[Unset Variable] restore" exe-cmd="
+                         {[dash]}-stanza={[postgres-cluster-demo]} --delta
+                            --type=time &quot;--target={[time-recovery-timestamp]}&quot;
+                            --set={[backup-last]} restore
+                    " />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres pg_ctlcluster 9.4 demo start" exe-cmd="pg_ctlcluster 9.4 {[postgres-cluster-demo]} start" />
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres psql -c &quot;select * from important_table&quot;" actual-output="Output suppressed for testing" exe-cmd="psql -c &quot;select * from important_table&quot;" exe-highlight="{[test-table-data]}" exe-output="1" />
+          </children>
+        </children>
+        <children name="p" value="">
+          <field name="p">
+            <children>Now the the log output will contain the expected </children>
+            <children name="quote" value="recovery stopping before..." />
+            <children> and </children>
+            <children name="quote" value="last completed transaction..." />
+            <children> messages showing that the recovery was successful.</children>
+          </field>
+        </children>
+        <children name="execute-list" value="">
+          <children name="title" value="">
+            <field name="title">
+              <children>Examine the </children>
+              <children name="postgres" />
+              <children> log output for log messages indicating success</children>
+            </field>
+          </children>
+          <children name="execute" value="">
+            <field actual-command="sudo -u postgres cat /var/log/postgresql/postgresql-9.4-demo.log" actual-output="Output suppressed for testing" exe-cmd="cat /var/log/postgresql/postgresql-9.4-{[postgres-cluster-demo]}.log" exe-highlight="recovery stopping before|last completed transaction|starting point-in-time recovery" exe-output="1" />
+          </children>
+        </children>
+        <field></field>
+        <param id="pitr" />
+      </children>
+      <field></field>
+      <param id="restore" />
+    </children>
+    <param subtitle="Ubuntu 12.04 &amp; 14.04 / {[postgres]} 9.4" title="User Guide" />
+  </oDoc>
+</opt>
