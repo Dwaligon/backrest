@@ -71,7 +71,7 @@
     \lhead[]{TABLE OF CONTENTS}
 }
 
-\lfoot[]{[pdf-title]\\
+\lfoot[]{{[pdf-title]}\\
          Version {[version]}}
 \cfoot[]{\ \\-\ \thepage\ -}
 \rfoot[]{Crunchy Data Solutions, Inc.\\\today}
@@ -85,16 +85,13 @@
 % ----------------------------------------------------------------------------------------------------------------------------------
 \begin{document}
 
-
 % Create the title page
 % ----------------------------------------------------------------------------------------------------------------------------------
-\title{{[pdf-title]}}
-
 \makeatletter
     \begin{titlepage}
         \begin{center}
             {\large \ }\\[18ex]
-            {\huge \bfseries \@title}\\[1ex]
+            {\huge \bfseries {[pdf-title]}}\\[1ex]
             {\large \bfseries Version {[version]}}\\[4ex]
             {\large {[pdf-subtitle]}}\\[12ex]
             \includegraphics[width=6in]{{[crunchy-logo]}}\\[12ex]
