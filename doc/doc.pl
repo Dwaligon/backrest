@@ -67,7 +67,7 @@ my $strLogLevel = 'info';                           # Log level for tests
 my $bHtml = false;                                  # Generate full html documentation
 my $bNoExe = false;                                 # Should commands be executed when buildng help? (for testing only)
 my $bPDF = false;                                   # Generate the PDF file
-my $bUseCached = false;                             # Use cached data to generate the docs (for testing code changes only)
+my $bUseCache = false;                              # Use cached data to generate the docs (for testing code changes only)
 my $oVariableOverride = {};                         # Override variables
 
 GetOptions ('help' => \$bHelp,
@@ -77,7 +77,7 @@ GetOptions ('help' => \$bHelp,
             'html' => \$bHtml,
             'pdf' => \$bPDF,
             'no-exe', \$bNoExe,
-            'use-cached', \$bUseCached,
+            'use-cache', \$bUseCache,
             'var=s@', $oVariableOverride)
     or pod2usage(2);
 
@@ -96,7 +96,7 @@ if ($bHelp || $bVersion)
 }
 
 # Set no-exe if use-cached
-if ($bUseCached)
+if ($bUseCache)
 {
     $bNoExe = true;
 }
@@ -167,7 +167,7 @@ if ($bHtml || $bPDF)
     # !!! This should be replaced with a more generic site object in the future
     my $oHtmlSite;
 
-    if ($bUseCached && -e $strSiteFile)
+    if ($bUseCache && -e $strSiteFile)
     {
         $oHtmlSite = retrieve($strSiteFile);
     }
@@ -187,7 +187,7 @@ if ($bHtml || $bPDF)
     # Generate HTML
     $oHtmlSite->process();
 
-    if (!$bUseCached)
+    if (!$bUseCache)
     {
         $oHtmlSite->{bExe} = false;
         store($oHtmlSite, $strSiteFile);
