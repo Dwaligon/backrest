@@ -15,6 +15,8 @@ use lib dirname($0) . '/../lib';
 use BackRest::Common::Log;
 use BackRest::Common::String;
 
+use BackRestDoc::Common::DocManifest;
+
 ####################################################################################################################################
 # Operation constants
 ####################################################################################################################################
@@ -145,14 +147,21 @@ sub new
     # Assign function parameters, defaults, and log debug info
     (
         my $strOperation,
-        $self->{strType}
+        $self->{strType},
+        $self->{oManifest},
+        $self->{strRenderOutKey},
+        $self->{bExe}
     ) =
         logDebugParam
         (
             OP_DOC_RENDER_NEW, \@_,
-            {name => 'strType'}
+            {name => 'strType'},
+            {name => 'oManifest'},
+            {name => 'strRenderOutKey', required => false},
+            {name => 'bExe', default => true}
         );
 
+    # Initialize project tags
     $$oRenderTag{markdown}{backrest}[0] = "{[project]}";
     $$oRenderTag{markdown}{exe}[0] = "{[project-exe]}";
 
@@ -164,6 +173,40 @@ sub new
 
     $$oRenderTag{html}{backrest}[0] = "<span class=\"backrest\">{[project]}</span>";
     $$oRenderTag{html}{exe}[0] = "<span class=\"file\">{[project-exe]}</span>";
+
+    if (defined($self->{strRenderOutKey}))
+    {
+        # Get the reference if this is the backrest project
+        if ($self->{oManifest}->variableGet('project') eq 'pgBackRest')
+        {
+            $self->{oReference} = new BackRestDoc::Common::DocConfig(${$self->{oManifest}->sourceGet('reference')}{doc}, $self);
+        }
+
+        # Copy page data to self
+        my $oRenderOut = $self->{oManifest}->renderOutGet(RENDER_TYPE_HTML, $self->{strRenderOutKey});
+
+        if (defined($$oRenderOut{source}) && $$oRenderOut{source} eq 'reference')
+        {
+            if ($self->{strRenderOutKey} eq 'configuration')
+            {
+                $self->{oDoc} = $self->{oReference}->helpConfigDocGet();
+            }
+            elsif ($self->{strRenderOutKey} eq 'command')
+            {
+                $self->{oDoc} = $self->{oReference}->helpCommandDocGet();
+            }
+            else
+            {
+                confess &log(ERROR, "cannot render $self->{strRenderOutKey} from source $$oRenderOut{source}");
+            }
+        }
+        else
+        {
+            $self->{oDoc} = ${$self->{oManifest}->sourceGet($self->{strRenderOutKey})}{doc};
+        }
+
+        # $self->{oRenderOut} = $oRenderOut;
+    }
 
     # Return from function and log return values if any
     return logDebugReturn

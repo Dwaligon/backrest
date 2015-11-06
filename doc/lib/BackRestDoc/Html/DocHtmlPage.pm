@@ -2,6 +2,7 @@
 # DOC HTML PAGE MODULE
 ####################################################################################################################################
 package BackRestDoc::Html::DocHtmlPage;
+use parent 'BackRestDoc::Common::DocRender';
 
 use strict;
 use warnings FATAL => qw(all);
@@ -47,60 +48,25 @@ sub new
 {
     my $class = shift;       # Class name
 
-    # Create the class hash
-    my $self = {};
-    bless $self, $class;
-
-    $self->{strClass} = $class;
-
     # Assign function parameters, defaults, and log debug info
+    my
     (
-        my $strOperation,
-        $self->{oManifest},
-        $self->{strRenderOutKey},
-        $self->{bExe}
+        $strOperation,
+        $oManifest,
+        $strRenderOutKey,
+        $bExe
     ) =
         logDebugParam
         (
             OP_DOC_HTML_PAGE_NEW, \@_,
-            {name => 'oSite'},
+            {name => 'oManifest'},
             {name => 'strRenderOutKey'},
-            {name => 'bExe', default => true}
+            {name => 'bExe'}
         );
 
-    my $oManifest = $self->{oManifest};
-    $self->{oRender} = new BackRestDoc::Common::DocRender('html');
-
-    # Get the reference if this is the backrest project
-    if ($oManifest->variableGet('project') eq 'pgBackRest')
-    {
-        $self->{oReference} = new BackRestDoc::Common::DocConfig(${$oManifest->sourceGet('reference')}{doc}, $self->{oRender});
-    }
-
-    # Copy page data to self
-    my $oRenderOut = $oManifest->renderOutGet(RENDER_TYPE_HTML, $self->{strRenderOutKey});
-
-    if (defined($$oRenderOut{source}) && $$oRenderOut{source} eq 'reference')
-    {
-        if ($self->{strRenderOutKey} eq 'configuration')
-        {
-            $self->{oDoc} = $self->{oReference}->helpConfigDocGet();
-        }
-        elsif ($self->{strRenderOutKey} eq 'command')
-        {
-            $self->{oDoc} = $self->{oReference}->helpCommandDocGet();
-        }
-        else
-        {
-            confess &log(ERROR, "cannot render $self->{strRenderOutKey} from source $$oRenderOut{source}");
-        }
-    }
-    else
-    {
-        $self->{oDoc} = ${$oManifest->sourceGet($self->{strRenderOutKey})}{doc};
-    }
-
-    $self->{oRenderOut} = $oRenderOut;
+    # Create the class hash
+    my $self = $class->SUPER::new(RENDER_TYPE_HTML, $oManifest, $strRenderOutKey, $bExe);
+    bless $self, $class;
 
     # Return from function and log return values if any
     return logDebugReturn
@@ -269,9 +235,11 @@ sub process
 
     if ($self->{strRenderOutKey} ne 'index')
     {
+        my $oRenderOut = $self->{oManifest}->renderOutGet(RENDER_TYPE_HTML, 'index');
+
         $oMenuBody->
             addNew(HTML_DIV, 'menu')->
-                addNew(HTML_A, 'menu-link', {strContent => ${$self->{oRenderOut}}{menu}, strRef => '{[project-url-root]}'});
+                addNew(HTML_A, 'menu-link', {strContent => $$oRenderOut{menu}, strRef => '{[project-url-root]}'});
     }
 
     foreach my $strRenderOutKey ($self->{oManifest}->renderOutList(RENDER_TYPE_HTML))
@@ -362,7 +330,6 @@ sub sectionProcess
 
     # Working variables
     $strAnchor = (defined($strAnchor) ? "${strAnchor}-" : '') . $oSection->paramGet('id');
-    my $oRender = $self->{oRender};
 
     # Create the section toc element
     my $oSectionTocElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "section${iDepth}-toc");
@@ -374,7 +341,7 @@ sub sectionProcess
     $oSectionElement->addNew(HTML_A, undef, {strId => $strAnchor});
 
     # Add the section title to section and toc
-    my $strSectionTitle = $oRender->processText($oSection->nodeGet('title')->textGet());
+    my $strSectionTitle = $self->processText($oSection->nodeGet('title')->textGet());
 
     $oSectionElement->
         addNew(HTML_DIV, "section${iDepth}-title",
@@ -392,7 +359,7 @@ sub sectionProcess
     {
         $oSectionElement->
             addNew(HTML_DIV, "section-intro",
-                   {strContent => $oRender->processText($oSection->textGet())});
+                   {strContent => $self->processText($oSection->textGet())});
     }
 
     # Add the section body
@@ -413,7 +380,7 @@ sub sectionProcess
 
             $oSectionBodyExecute->
                 addNew(HTML_DIV, "execute-title",
-                       {strContent => $oRender->processText($oChild->nodeGet('title')->textGet()) . ':'});
+                       {strContent => $self->processText($oChild->nodeGet('title')->textGet()) . ':'});
 
             my $oExecuteBodyElement = $oSectionBodyExecute->addNew(HTML_DIV, "execute-body");
 
@@ -503,7 +470,7 @@ sub sectionProcess
         {
             $oSectionBodyElement->
                 addNew(HTML_DIV, 'section-body-text',
-                       {strContent => $oRender->processText($oChild->textGet())});
+                       {strContent => $self->processText($oChild->textGet())});
         }
         # Add option descriptive text
         elsif ($oChild->nameGet() eq 'option-description')
@@ -518,7 +485,7 @@ sub sectionProcess
 
             $oSectionBodyElement->
                 addNew(HTML_DIV, 'section-body-text',
-                       {strContent => $oRender->processText($oDescription)});
+                       {strContent => $self->processText($oDescription)});
         }
         # Add/remove backrest config options
         elsif ($oChild->nameGet() eq 'backrest-config')
@@ -614,7 +581,7 @@ sub backrestConfigProcess
 
     $oConfigElement->
         addNew(HTML_DIV, "config-title",
-               {strContent => $self->{oRender}->processText($oConfig->nodeGet('title')->textGet()) . ':'});
+               {strContent => $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
 
     my $oConfigBodyElement = $oConfigElement->addNew(HTML_DIV, "config-body");
 
@@ -730,7 +697,7 @@ sub postgresConfigProcess
 
     $oConfigElement->
         addNew(HTML_DIV, "config-title",
-               {strContent => $self->{oRender}->processText($oConfig->nodeGet('title')->textGet()) . ':'});
+               {strContent => $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
 
     my $oConfigBodyElement = $oConfigElement->addNew(HTML_DIV, "config-body");
 
