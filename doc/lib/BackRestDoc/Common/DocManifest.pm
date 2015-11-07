@@ -24,6 +24,7 @@ use BackRest::FileCommon;
 use constant OP_DOC_MANIFEST                                        => 'DocManifest';
 
 use constant OP_DOC_MANIFEST_NEW                                    => OP_DOC_MANIFEST . '->new';
+use constant OP_DOC_MANIFEST_RENDER_GET                             => OP_DOC_MANIFEST . '->renderGet';
 use constant OP_DOC_MANIFEST_RENDER_OUT_GET                         => OP_DOC_MANIFEST . '->renderOutGet';
 use constant OP_DOC_MANIFEST_RENDER_OUT_LIST                        => OP_DOC_MANIFEST . '->renderOutList';
 use constant OP_DOC_MANIFEST_SOURCE_GET                             => OP_DOC_MANIFEST . '->sourceGet';
@@ -301,6 +302,39 @@ sub sourceGet
 }
 
 ####################################################################################################################################
+# renderGet
+####################################################################################################################################
+sub renderGet
+{
+    my $self = shift;
+
+    # Assign function parameters, defaults, and log debug info
+    my
+    (
+        $strOperation,
+        $strType
+    ) =
+        logDebugParam
+        (
+            OP_DOC_MANIFEST_RENDER_GET, \@_,
+            {name => 'strType', trace => true}
+        );
+
+    # Check that the render exists
+    if (!defined(${$self->{oManifest}}{render}{$strType}))
+    {
+        confess &log(ERROR, "render type ${strType} does not exist");
+    }
+
+    # Return from function and log return values if any
+    return logDebugReturn
+    (
+        $strOperation,
+        {name => 'oRenderOut', value => ${$self->{oManifest}}{render}{$strType}}
+    );
+}
+
+####################################################################################################################################
 # renderOutList
 ####################################################################################################################################
 sub renderOutList
@@ -319,6 +353,7 @@ sub renderOutList
             {name => 'strType'}
         );
 
+    # Check that the render output exists
     my @stryRenderOut;
 
     if (defined(${$self->{oManifest}}{render}{$strType}))

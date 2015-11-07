@@ -100,6 +100,8 @@ sub process
     # Assign function parameters, defaults, and log debug info
     my $strOperation = logDebugParam(OP_DOC_LATEX_PROCESS);
 
+    my $oRender = $self->{oManifest}->renderGet(RENDER_TYPE_PDF);
+
     # Copy the logo
     copy('/backrest/doc/resource/latex/crunchy-logo.eps', "$self->{strLatexPath}/logo.eps")
         or confess &log(ERROR, "unable to copy logo");
@@ -117,7 +119,7 @@ sub process
 
     $strLatex .= "\n% " . ('-' x 130) . "\n% End document\n% " . ('-' x 130) . "\n\\end{document}\n";
 
-    my $strLatexFileName = "$self->{strLatexPath}/pgBackrest-UserGuide.tex";
+    my $strLatexFileName = $self->{oManifest}->variableReplace("$self->{strLatexPath}/" . $$oRender{file} . '.tex');
 
     fileStringWrite($strLatexFileName, $strLatex, false);
 
