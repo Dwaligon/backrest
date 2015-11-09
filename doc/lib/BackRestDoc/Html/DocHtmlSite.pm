@@ -80,10 +80,13 @@ sub new
             or confess &log(ERROR, "unable to create path $self->{strHtmlPath}");
     }
 
-    $self->{oManifest}->variableSet('footer',
-        'Copyright © 2015' . (strftime('%Y', localtime) ne '2015' ?  '-' . strftime('%Y', localtime) : '') .
-        ', The PostgreSQL Global Development Group, <a href="{[github-url-license]}">MIT License</a>.  Updated ' .
-        strftime('%B ', localtime) . trim(strftime('%e,', localtime)) . strftime(' %Y.', localtime));
+    if (!defined($self->{oManifest}->variableGet('footer')))
+    {
+        $self->{oManifest}->variableSet('footer',
+            'Copyright © 2015' . (strftime('%Y', localtime) ne '2015' ?  '-' . strftime('%Y', localtime) : '') .
+            ', The PostgreSQL Global Development Group, <a href="{[github-url-license]}">MIT License</a>.  Updated ' .
+            strftime('%B ', localtime) . trim(strftime('%e,', localtime)) . strftime(' %Y.', localtime));
+    }
 
     # Return from function and log return values if any
     return logDebugReturn

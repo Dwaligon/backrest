@@ -141,8 +141,25 @@ sub docProcess
     $oRender->save($strMdOut, $oManifest->variableReplace($oRender->process($oDoc)));
 }
 
+# Create the out path if it does not exist
+if (!-e $strOutputPath)
+{
+    mkdir($strOutputPath)
+        or confess &log(ERROR, "unable to create path ${strOutputPath}");
+}
+
 # Load the manifest
-my $oManifest = new BackRestDoc::Common::DocManifest($oVariableOverride, $strDocPath);
+my $oManifest;
+my $strManifestCache = "${strOutputPath}/manifest.cache";
+
+if ($bUseCache && -e $strManifestCache)
+{
+    $oManifest = retrieve($strManifestCache);
+}
+else
+{
+    $oManifest = new BackRestDoc::Common::DocManifest($oVariableOverride, $strDocPath);
+}
 
 # Generate the markdown
 docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oManifest);
@@ -154,54 +171,23 @@ my $oDocConfig = new BackRestDoc::Common::DocConfig(new BackRestDoc::Common::Doc
 $oDocConfig->helpDataWrite($oManifest);
 
 # Only generate the HTML/PDF when requested
-if ($bHtml || $bPDF)
+if ($bHtml)
 {
-    my $strSiteFile = "${strOutputPath}/site.storable";
+    my $oHtmlSite =
+        new BackRestDoc::Html::DocHtmlSite
+        (
+            $oManifest,
+            "${strBasePath}/xml",
+            "${strOutputPath}/html",
+            "${strBasePath}/resource/html/default.css",
+            !$bNoExe
+        );
 
-    # Create the out path if it does not exist
-    if (!-e $strOutputPath)
-    {
-        mkdir($strOutputPath)
-            or confess &log(ERROR, "unable to create path ${strOutputPath}");
-    }
+    $oHtmlSite->process();
+}
 
-    # !!! Create Html Site Object to perform variable replacements on markdown and test
-    # !!! This should be replaced with a more generic site object in the future
-    my $oHtmlSite;
-
-    if ($bUseCache && -e $strSiteFile)
-    {
-        $oHtmlSite = retrieve($strSiteFile);
-    }
-    else
-    {
-        $oHtmlSite =
-            new BackRestDoc::Html::DocHtmlSite
-            (
-                $oManifest,
-                "${strBasePath}/xml",
-                "${strOutputPath}/html",
-                "${strBasePath}/resource/html/default.css",
-                !$bNoExe
-            );
-    }
-
-    # Generate HTML
-    if ($bHtml)
-    {
-        $oHtmlSite->process();
-    }
-
-    if (!$bUseCache)
-    {
-        $oHtmlSite->{bExe} = false;
-        store($oHtmlSite, $strSiteFile);
-    }
-
-    # Only generate the PDF file when requested
-    # $oManifest->variableSet()
-    # ${$oManifest->{oVariable}}{project} = $strPdfProjectName;
-
+if ($bPDF)
+{
     my $oLatex =
         new BackRestDoc::Latex::DocLatex
         (
@@ -212,8 +198,10 @@ if ($bHtml || $bPDF)
             !$bNoExe
         );
 
-    if ($bPDF)
-    {
-        $oLatex->process();
-    }
+    $oLatex->process();
+}
+
+if (!$bUseCache)
+{
+    store($oManifest, $strManifestCache);
 }
