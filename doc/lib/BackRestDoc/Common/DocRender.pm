@@ -179,8 +179,7 @@ sub new
         my $oRenderOut = $self->{oManifest}->renderOutGet($self->{strType} eq 'latex' ? 'pdf' : $self->{strType}, $self->{strRenderOutKey});
 
         # Get the reference if this is the backrest project
-        if (defined($self->{oManifest}->variableGet('project-exe')) &&
-            $self->{oManifest}->variableGet('project-exe') eq 'pg_backrest')
+        if ($self->{oManifest}->isBackRest())
         {
             $self->{oReference} = new BackRestDoc::Common::DocConfig(${$self->{oManifest}->sourceGet('reference')}{doc}, $self);
         }

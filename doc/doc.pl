@@ -162,11 +162,16 @@ else
 # If no outputs were given
 if (@stryOutput == 0)
 {
-    @stryOutput = ('markdown', 'help', 'html', 'pdf');
+    @stryOutput = $oManifest->renderList();
 }
 
 for my $strOutput (@stryOutput)
 {
+    if (!($strOutput eq 'help' && $oManifest->isBackRest()))
+    {
+        $oManifest->renderGet($strOutput);
+    }
+
     &log(INFO, "render ${strOutput} output");
 
     if ($strOutput eq 'markdown')
@@ -175,11 +180,13 @@ for my $strOutput (@stryOutput)
         docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oManifest);
         docProcess("${strBasePath}/xml/change-log.xml", "${strBasePath}/../CHANGELOG.md", $oManifest);
     }
-    elsif ($strOutput eq 'help')
+    elsif ($strOutput eq 'help' && $oManifest->isBackRest())
     {
         # Generate the command-line help
         my $oRender = new BackRestDoc::Common::DocRender('text', $oManifest);
-        my $oDocConfig = new BackRestDoc::Common::DocConfig(new BackRestDoc::Common::Doc("${strBasePath}/xml/reference.xml"), $oRender);
+        my $oDocConfig =
+            new BackRestDoc::Common::DocConfig(
+                new BackRestDoc::Common::Doc("${strBasePath}/xml/reference.xml"), $oRender);
         $oDocConfig->helpDataWrite($oManifest);
     }
     elsif ($strOutput eq 'html')
@@ -209,10 +216,6 @@ for my $strOutput (@stryOutput)
             );
 
         $oLatex->process();
-    }
-    else
-    {
-        confess &log(ERROR, "invalid output type ${strOutput}");
     }
 }
 

@@ -25,6 +25,7 @@ use constant OP_DOC_MANIFEST                                        => 'DocManif
 
 use constant OP_DOC_MANIFEST_NEW                                    => OP_DOC_MANIFEST . '->new';
 use constant OP_DOC_MANIFEST_RENDER_GET                             => OP_DOC_MANIFEST . '->renderGet';
+use constant OP_DOC_MANIFEST_RENDER_LIST                            => OP_DOC_MANIFEST . '->renderList';
 use constant OP_DOC_MANIFEST_RENDER_OUT_GET                         => OP_DOC_MANIFEST . '->renderOutGet';
 use constant OP_DOC_MANIFEST_RENDER_OUT_LIST                        => OP_DOC_MANIFEST . '->renderOutList';
 use constant OP_DOC_MANIFEST_SOURCE_GET                             => OP_DOC_MANIFEST . '->sourceGet';
@@ -206,6 +207,18 @@ sub new
 }
 
 ####################################################################################################################################
+# isBackRest
+#
+# Until all the backrest specific code can be abstracted, this function will identify when BackRest docs are being built.
+####################################################################################################################################
+sub isBackRest
+{
+    my $self = shift;
+
+    return($self->variableTest('project-exe', 'pg_backrest'));
+}
+
+####################################################################################################################################
 # variableReplace
 #
 # Replace variables in the string.
@@ -270,6 +283,35 @@ sub variableGet
 }
 
 ####################################################################################################################################
+# variableTest
+#
+# Test that a variable is defined or has an expected value.
+####################################################################################################################################
+sub variableTest
+{
+    my $self = shift;
+    my $strKey = shift;
+    my $strExpectedValue = shift;
+
+    # Get the variable
+    my $strValue = ${$self->{oVariable}}{$strKey};
+
+    # Return false if it is not defined
+    if (!defined($strValue))
+    {
+        return false;
+    }
+
+    # Return false if it does not equal the expected value
+    if (defined($strExpectedValue) && $strValue ne $strExpectedValue)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+####################################################################################################################################
 # sourceGet
 ####################################################################################################################################
 sub sourceGet
@@ -298,6 +340,32 @@ sub sourceGet
     (
         $strOperation,
         {name => 'oSource', value => ${$self->{oManifest}}{source}{$strSource}}
+    );
+}
+
+####################################################################################################################################
+# renderList
+####################################################################################################################################
+sub renderList
+{
+    my $self = shift;
+
+    # Assign function parameters, defaults, and log debug info
+    my ($strOperation) = logDebugParam(OP_DOC_MANIFEST_RENDER_LIST);
+
+    # Check that the render output exists
+    my @stryRender;
+
+    if (defined(${$self->{oManifest}}{render}))
+    {
+        @stryRender = sort(keys(${$self->{oManifest}}{render}));
+    }
+
+    # Return from function and log return values if any
+    return logDebugReturn
+    (
+        $strOperation,
+        {name => 'stryRender', value => \@stryRender}
     );
 }
 
