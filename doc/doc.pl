@@ -144,14 +144,14 @@ sub docProcess
 # Load the manifest
 my $oManifest = new BackRestDoc::Common::DocManifest($oVariableOverride, $strDocPath);
 
-# # Generate the markdown
-# docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oManifest);
-# docProcess("${strBasePath}/xml/change-log.xml", "${strBasePath}/../CHANGELOG.md", $oManifest);
-#
-# # Generate the command-line help
-# my $oRender = new BackRestDoc::Common::DocRender('text', $oManifest);
-# my $oDocConfig = new BackRestDoc::Common::DocConfig(new BackRestDoc::Common::Doc("${strBasePath}/xml/reference.xml"), $oRender);
-# $oDocConfig->helpDataWrite($oManifest);
+# Generate the markdown
+docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oManifest);
+docProcess("${strBasePath}/xml/change-log.xml", "${strBasePath}/../CHANGELOG.md", $oManifest);
+
+# Generate the command-line help
+my $oRender = new BackRestDoc::Common::DocRender('text', $oManifest);
+my $oDocConfig = new BackRestDoc::Common::DocConfig(new BackRestDoc::Common::Doc("${strBasePath}/xml/reference.xml"), $oRender);
+$oDocConfig->helpDataWrite($oManifest);
 
 # Only generate the HTML/PDF when requested
 if ($bHtml || $bPDF)
@@ -187,10 +187,7 @@ if ($bHtml || $bPDF)
     }
 
     # Generate HTML
-    if ($bHtml)
-    {
-        $oHtmlSite->process();
-    }
+    $oHtmlSite->process();
 
     if (!$bUseCache)
     {
