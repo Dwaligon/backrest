@@ -2,7 +2,7 @@
 # DOC LATEX SECTION MODULE
 ####################################################################################################################################
 package BackRestDoc::Latex::DocLatexSection;
-use parent 'BackRestDoc::Common::DocRender';
+use parent 'BackRestDoc::Common::DocExecute';
 
 use strict;
 use warnings FATAL => qw(all);
@@ -69,37 +69,6 @@ sub new
     );
 }
 
-# ####################################################################################################################################
-# # variableReplace
-# #
-# # Replace variables in the string.
-# ####################################################################################################################################
-# sub variableReplace
-# {
-#     my $self = shift;
-#     my $strBuffer = shift;
-#     my $bVerbatim = shift;
-#
-#     if (!defined($strBuffer))
-#     {
-#         return undef;
-#     }
-#
-#     foreach my $strName (sort(keys(%{$self->{var}})))
-#     {
-#         my $strValue = $self->{var}{$strName};
-#
-#         if (!defined($bVerbatim) || !$bVerbatim)
-#         {
-#             $strValue =~ s/\_/\\_/g;
-#         }
-#
-#         $strBuffer =~ s/\{\[$strName\]\}/$strValue/g;
-#     }
-#
-#     return $strBuffer;
-# }
-
 ####################################################################################################################################
 # process
 #
@@ -121,23 +90,11 @@ sub process
                    (defined($oPage->paramGet('title', false)) ? ' ' . $oPage->paramGet('title') : '');
     my $strSubTitle = $oPage->paramGet('subtitle', false);
 
-    #    #
-    # # Generate header
-    # my $oPageHeader = $oHtmlBuilder->bodyGet()->addNew(HTML_DIV, 'page-header');
-    #
-    # $oPageHeader->
-    #     addNew(HTML_DIV, 'page-header-title',
-    #            {strContent => $strTitle});
-
     # Render sections
     foreach my $oSection ($oPage->nodeList('section'))
     {
         $strLatex .= (defined($strLatex) ? "\n" : '') . $self->sectionProcess($oSection, undef, 1);
     }
-
-    # my $oPageFooter = $oHtmlBuilder->bodyGet()->
-    #     addNew(HTML_DIV, 'page-footer',
-    #            {strContent => ${$self->{oSite}->{oSite}}{common}{strFooter}});
 
     # Return from function and log return values if any
     return logDebugReturn
@@ -195,14 +152,11 @@ sub sectionProcess
             {
                 my $bExeShow = defined($oExecute->fieldGet('exe-no-show', false)) ? false : true;
                 my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
+                my ($strCommand, $strOutput) = $self->execute($oExecute, $iDepth + 1);
 
                 if ($bExeShow)
                 {
-                    my $strCommand = $oExecute->fieldGet('actual-command');
-
                     $strLatex .= "${strCommand}\n";
-
-                    my $strOutput = $oExecute->fieldGet('actual-output', false);
 
                     if (defined($strOutput))
                     {
@@ -285,13 +239,8 @@ sub sectionProcess
 
             $strLatex .= "\n" . $self->processText($oDescription) . "\n";
         }
-        # Add/remove backrest config options
-        elsif ($oChild->nameGet() eq 'backrest-config')
-        {
-            $strLatex .= $self->configProcess($oChild, $iDepth);
-        }
-        # Add/remove postgres config options
-        elsif ($oChild->nameGet() eq 'postgres-config')
+        # Add/remove config options
+        elsif ($oChild->nameGet() eq 'backrest-config' || $oChild->nameGet() eq 'postgres-config')
         {
             $strLatex .= $self->configProcess($oChild, $iDepth);
         }
@@ -303,7 +252,7 @@ sub sectionProcess
         # Skip children that have already been processed and error on others
         elsif ($oChild->nameGet() ne 'title')
         {
-            confess &log(ASSERT, 'unable to find child type ' . $oChild->nameGet());
+            confess &log(ASSERT, 'unable to process child type ' . $oChild->nameGet());
         }
     }
 
@@ -336,8 +285,21 @@ sub configProcess
             {name => 'iDepth'}
         );
 
+    # Working variables
+    my $strFile;
+    my $strConfig;
+
+    if ($oConfig->nameGet() eq 'backrest-config')
+    {
+        ($strFile, $strConfig) = $self->backrestConfig($oConfig, $iDepth);
+    }
+    else
+    {
+        ($strFile, $strConfig) = $self->postgresConfig($oConfig, $iDepth);
+    }
+
     # Get filename
-    my $strFile = $self->variableReplace($oConfig->paramGet('file'));
+    $strFile = $self->variableReplace($oConfig->paramGet('file'));
 
     &log(INFO, ('    ' x $iDepth) . 'process backrest config: ' . $strFile);
 
@@ -346,54 +308,6 @@ sub configProcess
         # "${strFile}:\n\n" .
         $oConfig->fieldGet('actual-config') .
         "\\end{lstlisting}\n";
-
-    # foreach my $oOption ($oConfig->nodeList('backrest-config-option'))
-    # {
-    #     my $strSection = $oOption->fieldGet('backrest-config-option-section');
-    #     my $strKey = $oOption->fieldGet('backrest-config-option-key');
-    #     my $strValue = $self->variableReplace(trim($oOption->fieldGet('backrest-config-option-value'), false));
-    #
-    #     if (!defined($strValue))
-    #     {
-    #         delete(${$self->{config}}{$strFile}{$strSection}{$strKey});
-    #
-    #         if (keys(${$self->{config}}{$strFile}{$strSection}) == 0)
-    #         {
-    #             delete(${$self->{config}}{$strFile}{$strSection});
-    #         }
-    #
-    #         &log(INFO, ('    ' x ($iDepth + 1)) . "reset ${strSection}->${strKey}");
-    #     }
-    #     else
-    #     {
-    #         ${$self->{config}}{$strFile}{$strSection}{$strKey} = $strValue;
-    #         &log(INFO, ('    ' x ($iDepth + 1)) . "set ${strSection}->${strKey} = ${strValue}");
-    #     }
-    # }
-    #
-    # # Save the ini file
-    # executeTest("sudo chmod 777 $strFile", {bSuppressError => true});
-    # iniSave($strFile, $self->{config}{$strFile}, true);
-    #
-    # # Generate config element
-    # my $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");
-    #
-    # $oConfigElement->
-    #     addNew(HTML_DIV, "config-title",
-    #            {strContent => $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
-    #
-    # my $oConfigBodyElement = $oConfigElement->addNew(HTML_DIV, "config-body");
-    #
-    # $oConfigBodyElement->
-    #     addNew(HTML_DIV, "config-body-title",
-    #            {strContent => "${strFile}:"});
-    #
-    # $oConfigBodyElement->
-    #     addNew(HTML_DIV, "config-body-output",
-    #            {strContent => fileStringRead($strFile)});
-    #
-    # executeTest("sudo chown postgres:postgres $strFile");
-    # executeTest("sudo chmod 640 $strFile");
 
     # Return from function and log return values if any
     return logDebugReturn

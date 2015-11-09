@@ -32,7 +32,7 @@
             <render-source key="command" source="reference" menu="Commands"/>
         </render>
 
-        <render type="pdf" file="{[backrest]}-UserGuide-{[version]}">
+        <render type="pdf" file="{[project]}-UserGuide-{[version]}">
             <render-source key="user-guide"/>
         </render>
     </render-list>

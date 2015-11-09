@@ -151,15 +151,13 @@ sub new
         $self->{strType},
         $self->{oManifest},
         $self->{strRenderOutKey},
-        $self->{bExe}
     ) =
         logDebugParam
         (
             OP_DOC_RENDER_NEW, \@_,
             {name => 'strType'},
             {name => 'oManifest'},
-            {name => 'strRenderOutKey', required => false},
-            {name => 'bExe', default => true}
+            {name => 'strRenderOutKey', required => false}
         );
 
     # Initialize project tags

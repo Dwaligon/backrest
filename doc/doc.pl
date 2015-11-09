@@ -187,7 +187,10 @@ if ($bHtml || $bPDF)
     }
 
     # Generate HTML
-    $oHtmlSite->process();
+    if ($bHtml)
+    {
+        $oHtmlSite->process();
+    }
 
     if (!$bUseCache)
     {

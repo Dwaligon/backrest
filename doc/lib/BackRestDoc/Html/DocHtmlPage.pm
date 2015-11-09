@@ -2,7 +2,7 @@
 # DOC HTML PAGE MODULE
 ####################################################################################################################################
 package BackRestDoc::Html::DocHtmlPage;
-use parent 'BackRestDoc::Common::DocRender';
+use parent 'BackRestDoc::Common::DocExecute';
 
 use strict;
 use warnings FATAL => qw(all);
@@ -16,14 +16,9 @@ use File::Copy;
 use Storable qw(dclone);
 
 use lib dirname($0) . '/../lib';
-use BackRest::Common::Ini;
 use BackRest::Common::Log;
 use BackRest::Common::String;
 use BackRest::Config::ConfigHelp;
-use BackRest::FileCommon;
-
-use lib dirname($0) . '/../test/lib';
-use BackRestTest::Common::ExecuteTest;
 
 use BackRestDoc::Common::DocManifest;
 use BackRestDoc::Html::DocHtmlBuilder;
@@ -35,7 +30,6 @@ use BackRestDoc::Html::DocHtmlElement;
 use constant OP_DOC_HTML_PAGE                                       => 'DocHtmlPage';
 
 use constant OP_DOC_HTML_PAGE_BACKREST_CONFIG_PROCESS               => OP_DOC_HTML_PAGE . '->backrestConfigProcess';
-use constant OP_DOC_HTML_PAGE_EXECUTE                               => OP_DOC_HTML_PAGE . '->execute';
 use constant OP_DOC_HTML_PAGE_NEW                                   => OP_DOC_HTML_PAGE . '->new';
 use constant OP_DOC_HTML_PAGE_POSTGRES_CONFIG_PROCESS               => OP_DOC_HTML_PAGE . '->postgresConfigProcess';
 use constant OP_DOC_HTML_PAGE_PROCESS                               => OP_DOC_HTML_PAGE . '->process';
@@ -77,112 +71,6 @@ sub new
 }
 
 ####################################################################################################################################
-# execute
-####################################################################################################################################
-sub execute
-{
-    my $self = shift;
-
-    # Assign function parameters, defaults, and log debug info
-    my
-    (
-        $strOperation,
-        $oCommand,
-        $iIndent
-    ) =
-        logDebugParam
-        (
-            OP_DOC_HTML_PAGE_EXECUTE, \@_,
-            {name => 'oCommand'},
-            {name => 'iIndent', default => 1}
-        );
-
-    # Working variables
-    my $strOutput;
-
-    # Command variables
-    my $strCommand = trim($oCommand->fieldGet('exe-cmd'));
-    my $strUser = $oCommand->fieldGet('exe-user', false);
-    my $bSuppressError = defined($oCommand->fieldGet('exe-err-suppress', false)) ? $oCommand->fieldGet('exe-err-suppress') : false;
-    my $bSuppressStdErr = defined($oCommand->fieldGet('exe-err-suppress-stderr', false)) ?
-                              $oCommand->fieldGet('exe-err-suppress-stderr') : false;
-    my $bExeSkip = defined($oCommand->fieldGet('exe-skip', false)) ? $oCommand->fieldGet('exe-skip') : false;
-    my $bExeOutput = defined($oCommand->fieldGet('exe-output', false)) ? $oCommand->fieldGet('exe-output') : false;
-    my $bExeRetry = defined($oCommand->fieldGet('exe-retry', false)) ? $oCommand->fieldGet('exe-retry') : false;
-    my $strExeVar = defined($oCommand->fieldGet('exe-var', false)) ? $oCommand->fieldGet('exe-var') : undef;
-    my $iExeExpectedError = defined($oCommand->fieldGet('exe-err-expect', false)) ? $oCommand->fieldGet('exe-err-expect') : undef;
-
-    if ($bExeRetry)
-    {
-        sleep(1);
-    }
-
-    $strUser = defined($strUser) ? $strUser : 'postgres';
-    $strCommand = $self->{oManifest}->variableReplace(
-        ($strUser eq 'vagrant' ? '' : 'sudo ' . ($strUser eq 'root' ? '' : "-u ${strUser} ")) . $strCommand);
-
-    # Add continuation chars and proper spacing
-    $strCommand =~ s/[ ]*\n[ ]*/ \\\n    /smg;
-
-    # Make sure that no lines are greater than 80 chars
-    foreach my $strLine (split("\n", $strCommand))
-    {
-        if (length(trim($strLine)) > 80)
-        {
-            confess &log(ERROR, "command has a line > 80 characters:\n${strCommand}");
-        }
-    }
-
-    &log(INFO, ('    ' x $iIndent) . "execute: $strCommand");
-
-    if (!$bExeSkip)
-    {
-        if ($self->{bExe})
-        {
-            my $oExec = new BackRestTest::Common::ExecuteTest($strCommand,
-                                                              {bSuppressError => $bSuppressError,
-                                                               bSuppressStdErr => $bSuppressStdErr,
-                                                               iExpectedExitStatus => $iExeExpectedError});
-            $oExec->begin();
-            $oExec->end();
-
-            if ($bExeOutput && defined($oExec->{strOutLog}) && $oExec->{strOutLog} ne '')
-            {
-                $strOutput = trim($oExec->{strOutLog});
-                $strOutput =~ s/^[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-6][0-9]:[0-6][0-9]\.[0-9]{3} T[0-9]{2}  //smg;
-            }
-
-            if (defined($strExeVar))
-            {
-                $self->{oManifest}->variableSet($strExeVar, trim($oExec->{strOutLog}));
-            }
-
-            if (defined($iExeExpectedError))
-            {
-                $strOutput .= trim($oExec->{strErrorLog});
-            }
-        }
-        elsif ($bExeOutput)
-        {
-            $strOutput = 'Output suppressed for testing';
-        }
-    }
-
-    if (defined($strExeVar) && !defined($self->{oManifest}->variableGet($strExeVar)))
-    {
-        $self->{oManifest}->variableSet($strExeVar, '[Unset Variable]');
-    }
-
-    # Return from function and log return values if any
-    return logDebugReturn
-    (
-        $strOperation,
-        {name => '$strCommand', value => $strCommand, trace => true},
-        {name => '$strOutput', value => $strOutput, trace => true}
-    );
-}
-
-####################################################################################################################################
 # process
 #
 # Generate the site html
@@ -204,17 +92,6 @@ sub process
 
     my $oHtmlBuilder = new BackRestDoc::Html::DocHtmlBuilder("{[project]} - Reliable PostgreSQL Backup",
                                                              $strTitle . (defined($strSubTitle) ? " - ${strSubTitle}" : ''));
-
-    # Execute cleanup commands
-    if ($self->{bExe} && defined($self->{oDoc}->nodeGet('cleanup', false)))
-    {
-        &log(INFO, "do cleanup");
-
-        foreach my $oExecute ($oPage->nodeGet('cleanup')->nodeList('execute'))
-        {
-            $self->execute($oExecute);
-        }
-    }
 
     # Generate header
     my $oPageHeader = $oHtmlBuilder->bodyGet()->addNew(HTML_DIV, 'page-header');
@@ -388,18 +265,8 @@ sub sectionProcess
             {
                 my $bExeShow = defined($oExecute->fieldGet('exe-no-show', false)) ? false : true;
                 my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
-                my $strCommand;
-                my $strOutput;
 
-                if (defined($oExecute->fieldGet('actual-command', false)))
-                {
-                    $strCommand = $oExecute->fieldGet('actual-command');
-                    $strOutput = $oExecute->fieldGet('actual-output', false);
-                }
-                else
-                {
-                    ($strCommand, $strOutput) = $self->execute($oExecute, $iDepth + 1);
-                }
+                my ($strCommand, $strOutput) = $self->execute($oExecute, $iDepth + 1);
 
                 if ($bExeShow)
                 {
@@ -509,7 +376,7 @@ sub sectionProcess
         # Skip children that have already been processed and error on others
         elsif ($oChild->nameGet() ne 'title')
         {
-            confess &log(ASSERT, 'unable to find child type ' . $oChild->nameGet());
+            confess &log(ASSERT, 'unable to process child type ' . $oChild->nameGet());
         }
     }
 
@@ -543,38 +410,7 @@ sub backrestConfigProcess
             {name => 'iDepth'}
         );
 
-    # Get filename
-    my $strFile = $self->{oManifest}->variableReplace($oConfig->paramGet('file'));
-
-    &log(INFO, ('    ' x $iDepth) . 'process backrest config: ' . $strFile);
-
-    foreach my $oOption ($oConfig->nodeList('backrest-config-option'))
-    {
-        my $strSection = $oOption->fieldGet('backrest-config-option-section');
-        my $strKey = $oOption->fieldGet('backrest-config-option-key');
-        my $strValue = $self->{oManifest}->variableReplace(trim($oOption->fieldGet('backrest-config-option-value'), false));
-
-        if (!defined($strValue))
-        {
-            delete(${$self->{config}}{$strFile}{$strSection}{$strKey});
-
-            if (keys(${$self->{config}}{$strFile}{$strSection}) == 0)
-            {
-                delete(${$self->{config}}{$strFile}{$strSection});
-            }
-
-            &log(INFO, ('    ' x ($iDepth + 1)) . "reset ${strSection}->${strKey}");
-        }
-        else
-        {
-            ${$self->{config}}{$strFile}{$strSection}{$strKey} = $strValue;
-            &log(INFO, ('    ' x ($iDepth + 1)) . "set ${strSection}->${strKey} = ${strValue}");
-        }
-    }
-
-    # Save the ini file
-    executeTest("sudo chmod 777 $strFile", {bSuppressError => true});
-    iniSave($strFile, $self->{config}{$strFile}, true);
+    my ($strFile, $strConfig) = $self->backrestConfig($oConfig, $iDepth);
 
     # Generate config element
     my $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");
@@ -591,12 +427,7 @@ sub backrestConfigProcess
 
     $oConfigBodyElement->
         addNew(HTML_DIV, "config-body-output",
-               {strContent => fileStringRead($strFile)});
-
-    $oConfig->fieldSet('actual-config', fileStringRead($strFile));
-
-    executeTest("sudo chown postgres:postgres $strFile");
-    executeTest("sudo chmod 640 $strFile");
+               {strContent => $strConfig});
 
     # Return from function and log return values if any
     return logDebugReturn
@@ -627,70 +458,7 @@ sub postgresConfigProcess
             {name => 'iDepth'}
         );
 
-    # Get filename
-    my $strFile = $self->{oManifest}->variableReplace($oConfig->paramGet('file'));
-
-    if (!defined(${$self->{'pg-config'}}{$strFile}{base}) && $self->{bExe})
-    {
-        ${$self->{'pg-config'}}{$strFile}{base} = fileStringRead($strFile);
-    }
-
-    my $oConfigHash = $self->{'pg-config'}{$strFile};
-    my $oConfigHashNew;
-
-    if (!defined($$oConfigHash{old}))
-    {
-        $oConfigHashNew = {};
-        $$oConfigHash{old} = {}
-    }
-    else
-    {
-        $oConfigHashNew = dclone($$oConfigHash{old});
-    }
-
-    &log(INFO, ('    ' x $iDepth) . 'process postgres config: ' . $strFile);
-
-    foreach my $oOption ($oConfig->nodeList('postgres-config-option'))
-    {
-        my $strKey = $oOption->paramGet('key');
-        my $strValue = $self->{oManifest}->variableReplace(trim($oOption->valueGet()));
-
-        if ($strValue eq '')
-        {
-            delete($$oConfigHashNew{$strKey});
-
-            &log(INFO, ('    ' x ($iDepth + 1)) . "reset ${strKey}");
-        }
-        else
-        {
-            $$oConfigHashNew{$strKey} = $strValue;
-            &log(INFO, ('    ' x ($iDepth + 1)) . "set ${strKey} = ${strValue}");
-        }
-    }
-
-    # Generate config text
-    my $strConfig;
-
-    foreach my $strKey (sort(keys(%$oConfigHashNew)))
-    {
-        if (defined($strConfig))
-        {
-            $strConfig .= "\n";
-        }
-
-        $strConfig .= "${strKey} = $$oConfigHashNew{$strKey}";
-    }
-
-    # Save the conf file
-    if ($self->{bExe})
-    {
-        executeTest("sudo chown vagrant $strFile");
-
-        fileStringWrite($strFile, $$oConfigHash{base} .
-                        (defined($strConfig) ? "\n# pgBackRest Configuration\n${strConfig}" : ''));
-
-        executeTest("sudo chown postgres $strFile");
-    }
+    my ($strFile, $strConfig) = $self->postgresConfig($oConfig, $iDepth);
 
     # Generate config element
     my $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");
@@ -708,8 +476,6 @@ sub postgresConfigProcess
     $oConfigBodyElement->
         addNew(HTML_DIV, "config-body-output",
                {strContent => defined($strConfig) ? $strConfig : '<No PgBackRest Settings>'});
-
-    $$oConfigHash{old} = $oConfigHashNew;
 
     $oConfig->fieldSet('actual-config', $strConfig);
 

@@ -609,7 +609,7 @@ sub paramSet
         (
             OP_DOC_PARAM_SET, \@_,
             {name => 'strName', trace => true},
-            {name => 'strValue', trace => true},
+            {name => 'strValue', required => false, trace => true},
             {name => 'strType', default => 'param', trace => true}
         );
 
@@ -629,6 +629,18 @@ sub fieldGet
     my $self = shift;
 
     return $self->paramGet(shift, shift, shift, 'field');
+}
+
+####################################################################################################################################
+# fieldGet
+#
+# Test if a field exists.
+####################################################################################################################################
+sub fieldTest
+{
+    my $self = shift;
+
+    return $self->paramGet(shift, false, undef, 'field');
 }
 
 ####################################################################################################################################

@@ -793,6 +793,7 @@
                         <summary>Recover along a timeline.</summary>
 
                         <text>See <setting>recovery_target_timeline</setting> in the <postgres/> docs for more information.</text>
+
                         <example>3</example>
                     </option>
 
@@ -804,13 +805,16 @@
 
                         Note: The <setting>restore_command</setting> option will be automatically generated but can be overridden with this option.  Be careful about specifying your own <setting>restore_command</setting> as <backrest/> is designed to handle this for you.  Target Recovery options (recovery_target_name, recovery_target_time, etc.) are generated automatically by <backrest/> and should not be set with this option.
 
-                        Recovery settings can also be set in the <setting>restore:recovery-option</setting> section of pg_backrest.conf.  For example:
+                        Recovery settings can also be set in the <setting>restore:recovery-option</setting> section of pg_backrest.conf.
+                        <!-- For example:
+
                         <code-block title="">
                             [restore:recovery-option]
                             primary_conn_info=db.mydomain.com
                             standby_mode=on
-                        </code-block>
+                        </code-block> -->
                         Since <backrest/> does not start <postgres/> after writing the <file>recovery.conf</file> file, it is always possible to edit/check <file>recovery.conf</file> before manually restarting.</text>
+
                         <example>primary_conninfo=db.mydomain.com</example>
                     </option>
 
@@ -821,6 +825,7 @@
                         <text>Moves a tablespace to a new location during the restore.  This is useful when tablespace locations are not the same on a replica, or an upgraded system has different mount points.
 
                         Since <postgres/> 9.2 tablespace locations are not stored in pg_tablespace so moving tablespaces can be done with impunity.  However, moving a tablespace to the <setting>data_directory</setting> is not recommended and may cause problems.  For more information on moving tablespaces http://www.databasesoup.com/2013/11/moving-tablespaces.html is a good resource.</text>
+
                         <example>ts_01=/db/ts_01</example>
                     </option>
                 </option-list>
