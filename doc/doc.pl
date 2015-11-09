@@ -64,22 +64,20 @@ my $bHelp = false;                                  # Display usage
 my $bVersion = false;                               # Display version
 my $bQuiet = false;                                 # Sets log level to ERROR
 my $strLogLevel = 'info';                           # Log level for tests
-my $bHtml = false;                                  # Generate full html documentation
 my $bNoExe = false;                                 # Should commands be executed when buildng help? (for testing only)
-my $bPDF = false;                                   # Generate the PDF file
 my $bUseCache = false;                              # Use cached data to generate the docs (for testing code changes only)
 my $oVariableOverride = {};                         # Override variables
 my $strDocPath;                                     # Document path to render
+my @stryOutput;                                     # Output types
 
 GetOptions ('help' => \$bHelp,
             'version' => \$bVersion,
             'quiet' => \$bQuiet,
             'log-level=s' => \$strLogLevel,
-            'html' => \$bHtml,
-            'pdf' => \$bPDF,
+            'out=s@' => \@stryOutput,
             'no-exe', \$bNoExe,
             'use-cache', \$bUseCache,
-            'var=s@', $oVariableOverride,
+            'var=s%', $oVariableOverride,
             'doc-path=s', \$strDocPath)
     or pod2usage(2);
 
@@ -97,7 +95,7 @@ if ($bHelp || $bVersion)
     exit 0;
 }
 
-# Set no-exe if use-cached
+# Set no-exe if use-cache is set
 if ($bUseCache)
 {
     $bNoExe = true;
@@ -106,7 +104,7 @@ if ($bUseCache)
 # Set console log level
 if ($bQuiet)
 {
-    $strLogLevel = 'off';
+    $strLogLevel = 'error';
 }
 
 logLevelSet(undef, uc($strLogLevel));
@@ -161,46 +159,64 @@ else
     $oManifest = new BackRestDoc::Common::DocManifest($oVariableOverride, $strDocPath);
 }
 
-# Generate the markdown
-docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oManifest);
-docProcess("${strBasePath}/xml/change-log.xml", "${strBasePath}/../CHANGELOG.md", $oManifest);
-
-# Generate the command-line help
-my $oRender = new BackRestDoc::Common::DocRender('text', $oManifest);
-my $oDocConfig = new BackRestDoc::Common::DocConfig(new BackRestDoc::Common::Doc("${strBasePath}/xml/reference.xml"), $oRender);
-$oDocConfig->helpDataWrite($oManifest);
-
-# Only generate the HTML/PDF when requested
-if ($bHtml)
+# If no outputs were given
+if (@stryOutput == 0)
 {
-    my $oHtmlSite =
-        new BackRestDoc::Html::DocHtmlSite
-        (
-            $oManifest,
-            "${strBasePath}/xml",
-            "${strOutputPath}/html",
-            "${strBasePath}/resource/html/default.css",
-            !$bNoExe
-        );
-
-    $oHtmlSite->process();
+    @stryOutput = ('markdown', 'help', 'html', 'pdf');
 }
 
-if ($bPDF)
+for my $strOutput (@stryOutput)
 {
-    my $oLatex =
-        new BackRestDoc::Latex::DocLatex
-        (
-            $oManifest,
-            "${strBasePath}/xml",
-            "${strOutputPath}/latex",
-            "${strBasePath}/resource/latex/preamble.tex",
-            !$bNoExe
-        );
+    &log(INFO, "render ${strOutput} output");
 
-    $oLatex->process();
+    if ($strOutput eq 'markdown')
+    {
+        # Generate the markdown
+        docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oManifest);
+        docProcess("${strBasePath}/xml/change-log.xml", "${strBasePath}/../CHANGELOG.md", $oManifest);
+    }
+    elsif ($strOutput eq 'help')
+    {
+        # Generate the command-line help
+        my $oRender = new BackRestDoc::Common::DocRender('text', $oManifest);
+        my $oDocConfig = new BackRestDoc::Common::DocConfig(new BackRestDoc::Common::Doc("${strBasePath}/xml/reference.xml"), $oRender);
+        $oDocConfig->helpDataWrite($oManifest);
+    }
+    elsif ($strOutput eq 'html')
+    {
+        my $oHtmlSite =
+            new BackRestDoc::Html::DocHtmlSite
+            (
+                $oManifest,
+                "${strBasePath}/xml",
+                "${strOutputPath}/html",
+                "${strBasePath}/resource/html/default.css",
+                !$bNoExe
+            );
+
+        $oHtmlSite->process();
+    }
+    elsif ($strOutput eq 'pdf')
+    {
+        my $oLatex =
+            new BackRestDoc::Latex::DocLatex
+            (
+                $oManifest,
+                "${strBasePath}/xml",
+                "${strOutputPath}/latex",
+                "${strBasePath}/resource/latex/preamble.tex",
+                !$bNoExe
+            );
+
+        $oLatex->process();
+    }
+    else
+    {
+        confess &log(ERROR, "invalid output type ${strOutput}");
+    }
 }
 
+# Cache the manifest (mostly useful for testing rendering changes in the code)
 if (!$bUseCache)
 {
     store($oManifest, $strManifestCache);

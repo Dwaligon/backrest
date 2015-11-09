@@ -127,7 +127,7 @@ sub sectionProcess
             {name => 'iDepth'}
         );
 
-    &log(INFO, ('    ' x ($iDepth - 1)) . 'process section: ' . $oSection->paramGet('id'));
+    &log($iDepth == 1 ? INFO : DEBUG, ('    ' x ($iDepth + 1)) . 'process section: ' . $oSection->paramGet('id'));
 
     # Create the section
     my $strSectionTitle = $self->processText($oSection->nodeGet('title')->textGet());
@@ -140,7 +140,7 @@ sub sectionProcess
 
     foreach my $oChild ($oSection->nodeList())
     {
-        &log(INFO, ('    ' x $iDepth) . 'process child ' . $oChild->nameGet());
+        &log(DEBUG, ('    ' x ($iDepth + 2)) . 'process child ' . $oChild->nameGet());
 
         # Execute a command
         if ($oChild->nameGet() eq 'execute-list')
@@ -152,7 +152,7 @@ sub sectionProcess
             {
                 my $bExeShow = defined($oExecute->fieldGet('exe-no-show', false)) ? false : true;
                 my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
-                my ($strCommand, $strOutput) = $self->execute($oExecute, $iDepth + 1);
+                my ($strCommand, $strOutput) = $self->execute($oExecute, $iDepth + 3);
 
                 if ($bExeShow)
                 {
@@ -242,7 +242,7 @@ sub sectionProcess
         # Add/remove config options
         elsif ($oChild->nameGet() eq 'backrest-config' || $oChild->nameGet() eq 'postgres-config')
         {
-            $strLatex .= $self->configProcess($oChild, $iDepth);
+            $strLatex .= $self->configProcess($oChild, $iDepth + 3);
         }
         # Add a subsection
         elsif ($oChild->nameGet() eq 'section')
@@ -289,6 +289,7 @@ sub configProcess
     my $strFile;
     my $strConfig;
 
+    # Generate the config
     if ($oConfig->nameGet() eq 'backrest-config')
     {
         ($strFile, $strConfig) = $self->backrestConfig($oConfig, $iDepth);
@@ -298,15 +299,15 @@ sub configProcess
         ($strFile, $strConfig) = $self->postgresConfig($oConfig, $iDepth);
     }
 
-    # Get filename
-    $strFile = $self->variableReplace($oConfig->paramGet('file'));
+    # Replace _ in filename
+    $strFile = $self->variableReplace($strFile);
+    # $strFile = $self->variableReplace($strFile);
 
-    &log(INFO, ('    ' x $iDepth) . 'process backrest config: ' . $strFile);
-
+    # Render the config
     my $strLatex =
-        "\n\\begin\{lstlisting\}[title=\{" . $self->processText($oConfig->nodeGet('title')->textGet()) . " in \\textnormal\{\\texttt\{${strFile}\}\}:}]\n" .
-        # "${strFile}:\n\n" .
-        $oConfig->fieldGet('actual-config') .
+        "\n\\begin\{lstlisting\}[title=\{" . $self->processText($oConfig->nodeGet('title')->textGet()) .
+            " in \\textnormal\{\\texttt\{${strFile}\}\}:}]\n" .
+        ${strConfig} .
         "\\end{lstlisting}\n";
 
     # Return from function and log return values if any

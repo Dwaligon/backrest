@@ -198,7 +198,7 @@ sub sectionProcess
             {name => 'iDepth'}
         );
 
-    &log(INFO, ('    ' x ($iDepth - 1)) . 'process section: ' . $oSection->paramGet('id'));
+    &log($iDepth == 1 ? INFO : DEBUG, ('    ' x ($iDepth + 1)) . 'process section: ' . $oSection->paramGet('id'));
 
     if ($iDepth > 3)
     {
@@ -247,7 +247,7 @@ sub sectionProcess
 
     foreach my $oChild ($oSection->nodeList())
     {
-        &log(INFO, ('    ' x $iDepth) . 'process child ' . $oChild->nameGet());
+        &log(DEBUG, ('    ' x ($iDepth + 2)) . 'process child ' . $oChild->nameGet());
 
         # Execute a command
         if ($oChild->nameGet() eq 'execute-list')
@@ -266,7 +266,7 @@ sub sectionProcess
                 my $bExeShow = defined($oExecute->fieldGet('exe-no-show', false)) ? false : true;
                 my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
 
-                my ($strCommand, $strOutput) = $self->execute($oExecute, $iDepth + 1);
+                my ($strCommand, $strOutput) = $self->execute($oExecute, $iDepth + 3);
 
                 if ($bExeShow)
                 {
@@ -357,12 +357,12 @@ sub sectionProcess
         # Add/remove backrest config options
         elsif ($oChild->nameGet() eq 'backrest-config')
         {
-            $oSectionBodyElement->add($self->backrestConfigProcess($oChild, $iDepth));
+            $oSectionBodyElement->add($self->backrestConfigProcess($oChild, $iDepth + 3));
         }
         # Add/remove postgres config options
         elsif ($oChild->nameGet() eq 'postgres-config')
         {
-            $oSectionBodyElement->add($self->postgresConfigProcess($oChild, $iDepth));
+            $oSectionBodyElement->add($self->postgresConfigProcess($oChild, $iDepth + 3));
         }
         # Add a subsection
         elsif ($oChild->nameGet() eq 'section')
@@ -410,9 +410,10 @@ sub backrestConfigProcess
             {name => 'iDepth'}
         );
 
+    # Generate the config
     my ($strFile, $strConfig) = $self->backrestConfig($oConfig, $iDepth);
 
-    # Generate config element
+    # Render the config
     my $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");
 
     $oConfigElement->
@@ -458,9 +459,10 @@ sub postgresConfigProcess
             {name => 'iDepth'}
         );
 
+    # Generate the config
     my ($strFile, $strConfig) = $self->postgresConfig($oConfig, $iDepth);
 
-    # Generate config element
+    # Render the config
     my $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");
 
     $oConfigElement->

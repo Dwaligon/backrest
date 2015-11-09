@@ -67,7 +67,7 @@ sub new
     # Execute cleanup commands
     if ($self->{bExe} && defined($self->{oDoc}->nodeGet('cleanup', false)))
     {
-        &log(INFO, "do cleanup");
+        &log(DEBUG, "do cleanup");
 
         foreach my $oExecute ($self->{oDoc}->nodeGet('cleanup')->nodeList('execute'))
         {
@@ -148,7 +148,7 @@ sub execute
             }
         }
 
-        &log(INFO, ('    ' x $iIndent) . "execute: $strCommand");
+        &log(DEBUG, ('    ' x $iIndent) . "execute: $strCommand");
 
         if (!$bExeSkip)
         {
@@ -229,15 +229,15 @@ sub backrestConfig
 
     if ($oConfig->fieldTest('actual-file'))
     {
-        $strFile = $oConfig->fieldTest('actual-file');
-        $strConfig = $oConfig->fieldTest('actual-config');
+        $strFile = $oConfig->fieldGet('actual-file');
+        $strConfig = $oConfig->fieldGet('actual-config');
     }
     else
     {
         # Get filename
         $strFile = $self->{oManifest}->variableReplace($oConfig->paramGet('file'));
 
-        &log(INFO, ('    ' x $iDepth) . 'process backrest config: ' . $strFile);
+        &log(DEBUG, ('    ' x $iDepth) . 'process backrest config: ' . $strFile);
 
         foreach my $oOption ($oConfig->nodeList('backrest-config-option'))
         {
@@ -254,12 +254,12 @@ sub backrestConfig
                     delete(${$self->{config}}{$strFile}{$strSection});
                 }
 
-                &log(INFO, ('    ' x ($iDepth + 1)) . "reset ${strSection}->${strKey}");
+                &log(DEBUG, ('    ' x ($iDepth + 1)) . "reset ${strSection}->${strKey}");
             }
             else
             {
                 ${$self->{config}}{$strFile}{$strSection}{$strKey} = $strValue;
-                &log(INFO, ('    ' x ($iDepth + 1)) . "set ${strSection}->${strKey} = ${strValue}");
+                &log(DEBUG, ('    ' x ($iDepth + 1)) . "set ${strSection}->${strKey} = ${strValue}");
             }
         }
 
@@ -306,15 +306,14 @@ sub postgresConfig
             {name => 'iDepth'}
         );
 
-
     # Working variables
     my $strFile;
     my $strConfig;
 
     if ($oConfig->fieldTest('actual-file'))
     {
-        $strFile = $oConfig->fieldTest('actual-file');
-        $strConfig = $oConfig->fieldTest('actual-config');
+        $strFile = $oConfig->fieldGet('actual-file');
+        $strConfig = $oConfig->fieldGet('actual-config');
     }
     else
     {
@@ -339,7 +338,7 @@ sub postgresConfig
             $oConfigHashNew = dclone($$oConfigHash{old});
         }
 
-        &log(INFO, ('    ' x $iDepth) . 'process postgres config: ' . $strFile);
+        &log(DEBUG, ('    ' x $iDepth) . 'process postgres config: ' . $strFile);
 
         foreach my $oOption ($oConfig->nodeList('postgres-config-option'))
         {
@@ -350,12 +349,12 @@ sub postgresConfig
             {
                 delete($$oConfigHashNew{$strKey});
 
-                &log(INFO, ('    ' x ($iDepth + 1)) . "reset ${strKey}");
+                &log(DEBUG, ('    ' x ($iDepth + 1)) . "reset ${strKey}");
             }
             else
             {
                 $$oConfigHashNew{$strKey} = $strValue;
-                &log(INFO, ('    ' x ($iDepth + 1)) . "set ${strKey} = ${strValue}");
+                &log(DEBUG, ('    ' x ($iDepth + 1)) . "set ${strKey} = ${strValue}");
             }
         }
 

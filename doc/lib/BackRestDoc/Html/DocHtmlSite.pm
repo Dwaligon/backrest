@@ -115,6 +115,8 @@ sub process
 
     foreach my $strPageId ($self->{oManifest}->renderOutList(RENDER_TYPE_HTML))
     {
+        &log(INFO, "    render out: ${strPageId}");
+
         # Save the html page
         fileStringWrite("$self->{strHtmlPath}/${strPageId}.html",
                         $self->{oManifest}->variableReplace((new BackRestDoc::Html::DocHtmlPage($self->{oManifest},

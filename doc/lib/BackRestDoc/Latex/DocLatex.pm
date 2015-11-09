@@ -110,6 +110,8 @@ sub process
 
     foreach my $strPageId ($self->{oManifest}->renderOutList(RENDER_TYPE_PDF))
     {
+        &log(INFO, "    render out: ${strPageId}");
+
         my $oDocLatexSection =
             new BackRestDoc::Latex::DocLatexSection($self->{oManifest}, $strPageId, $self->{bExe});
 

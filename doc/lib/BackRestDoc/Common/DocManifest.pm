@@ -225,12 +225,12 @@ sub variableReplace
     {
         my $strValue = $self->{oVariable}{$strName};
 
-        if (defined($strType) && $strType eq 'latex')
-        {
-            $strValue =~ s/\_/\\_/g;
-        }
-
         $strBuffer =~ s/\{\[$strName\]\}/$strValue/g;
+    }
+
+    if (defined($strType) && $strType eq 'latex')
+    {
+        $strBuffer =~ s/[^\\]\_/\\\_/g;
     }
 
     return $strBuffer;
