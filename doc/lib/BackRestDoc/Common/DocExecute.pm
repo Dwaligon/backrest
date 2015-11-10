@@ -110,8 +110,8 @@ sub execute
 
     if ($oCommand->fieldTest('actual-command'))
     {
-        $strCommand = $oCommand->fieldTest('actual-command');
-        $strOutput = $oCommand->fieldTest('actual-output', false);
+        $strCommand = $oCommand->fieldGet('actual-command');
+        $strOutput = $oCommand->fieldGet('actual-output', false);
     }
     else
     {
