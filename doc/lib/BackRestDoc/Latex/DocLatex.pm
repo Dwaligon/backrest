@@ -125,8 +125,12 @@ sub process
 
     fileStringWrite($strLatexFileName, $strLatex, false);
 
-    executeTest("pdflatex -output-directory=$self->{strLatexPath} -shell-escape $strLatexFileName");
-    executeTest("pdflatex -output-directory=$self->{strLatexPath} -shell-escape $strLatexFileName");
+    my $strBinPath = "/usr/local/texlive/2015/bin/x86_64-linux";
+
+    executeTest("${strBinPath}/pdflatex -output-directory=$self->{strLatexPath} -shell-escape $strLatexFileName",
+                {bSuppressStdErr => true});
+    executeTest("${strBinPath}/pdflatex -output-directory=$self->{strLatexPath} -shell-escape $strLatexFileName",
+                {bSuppressStdErr => true});
 
     # Return from function and log return values if any
     logDebugReturn($strOperation);

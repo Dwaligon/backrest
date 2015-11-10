@@ -134,9 +134,22 @@ sub sectionProcess
     $strSection .= (defined($strSection) ? ', ' : '') . "'${strSectionTitle}' " . ('Sub' x ($iDepth - 1)) . "Section";
 
     my $strLatex =
-        "% ${strSection}\n% " . ('-' x 130) . "\n" .
-        "\\" . ($iDepth > 1 ? ('sub' x ($iDepth - 1)) : '') .
-        "section\{${strSectionTitle}\}\n";
+        "% ${strSection}\n% " . ('-' x 130) . "\n\\";
+
+    if ($iDepth <= 3)
+    {
+        $strLatex .= ($iDepth > 1 ? ('sub' x ($iDepth - 1)) : '') . "section";
+    }
+    elsif ($iDepth == 4)
+    {
+        $strLatex .= 'paragraph';
+    }
+    else
+    {
+        confess &log(ASSERT, "section depth of ${iDepth} exceeds maximum");
+    }
+
+    $strLatex .= "\{${strSectionTitle}\}\n";
 
     foreach my $oChild ($oSection->nodeList())
     {
@@ -230,13 +243,7 @@ sub sectionProcess
             my $strWidth = '{' . ($oHeader->paramTest('width') ? $oHeader->paramGet('width') : '\textwidth') . '}';
 
             # Build the table header
-            $strLatex .= "\\vspace{1em}\\newline\n";
-
-            if ($oChild->nodeGet("title", false))
-            {
-                $strLatex .= "\\textit{" . $self->processText($oChild->nodeGet("title")->textGet()) . ":}" .
-                             "\\vspace{.4em}\\newline\n";
-            }
+            $strLatex .= "\\vspace{1em}\n";
 
             $strLatex .= "\\begin{tabularx}${strWidth}{\@{\\extracolsep{\\fill}} | ";
 
@@ -284,9 +291,15 @@ sub sectionProcess
                 $strLatex .= $strAlignCode . ' | ';
             }
 
-            $strLatex .= "}\n\\hline\n";
+            $strLatex .= "}\n";
+
+            if ($oChild->nodeGet("title", false))
+            {
+                $strLatex .= "\\caption{" . $self->processText($oChild->nodeGet("title")->textGet()) . ":}\\\\\n";
+            }
 
             # $strLatex .= "\\begin{tabulary}{\\textwidth}{LLLL}\n\\toprule\n";
+            $strLatex .= "\\hline\n";
 
             my $strLine;
 

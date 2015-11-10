@@ -40,6 +40,15 @@
 \usepackage{tabularx}
 \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
 
+\usepackage{ltablex}
+
+\usepackage{titlesec}
+\setcounter{secnumdepth}{4}
+
+\titleformat{\paragraph}
+{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+\titlespacing*{\paragraph}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
 % Define source code highlighting
 % ----------------------------------------------------------------------------------------------------------------------------------
 \newcommand{\Hilight}{\makebox[0pt][l]{\color{cyan}\rule[-4pt]{0.65\linewidth}{14pt}}}
@@ -110,7 +119,7 @@
 
 % Generate TOC
 % ----------------------------------------------------------------------------------------------------------------------------------
-% \setcounter{tocdepth}{1}
+\setcounter{tocdepth}{4}
 \topskip0in
 \thispagestyle{plain}
 \renewcommand\contentsname{Table of Contents}
