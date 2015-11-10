@@ -418,6 +418,7 @@
                 <execute>
                     <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</exe-cmd>
                     <exe-output/>
+                    <exe-highlight>could not find the database system</exe-highlight>
                     <exe-err-expect>1</exe-err-expect>
                 </execute>
             </execute-list>
