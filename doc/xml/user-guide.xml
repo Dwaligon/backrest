@@ -104,7 +104,7 @@
     <section id="introduction">
         <title>Introduction</title>
 
-        <p>This user guide is intended to be followed sequentially from beginning to end &amp;mdash; each section depends on the last.  For example the <link page="#backup">Backup</link> section relies on setup that is performed in the <link page="#quickstart">Quick Start</link> section.  Once you have <backrest/> up and running it possible to skip around but it is recommended to follow the user guide in order the first time through.</p>
+        <p>This user guide is intended to be followed sequentially from beginning to end &amp;mdash; each section depends on the last.  For example the <link page="#backup">Backup</link> section relies on setup that is performed in the <link page="#quickstart">Quick Start</link> section.  Once you have <backrest/> up and running then skipping around is possible but it is recommended to follow the user guide in order the first time through.</p>
 
         <p>Although the examples are targeted at Ubuntu and <postgres/> 9.4 they will also work fine on Debian and it should be fairly easy to apply this guide to any Unix distribution and <postgres/> version.  The only OS-specific commands are those to create, start, stop, and drop <postgres/> clusters.  The <backrest/> commands will be the same on any Unix system though the locations to install Perl libraries and executables may vary.  Configuring archiving is different on <postgres/> versions &amp;lt;= 8.4 and configuration information can be found in the <postgres/> documentation.</p>
 
