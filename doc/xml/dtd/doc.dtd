@@ -116,8 +116,7 @@
     <!ATTLIST support title CDATA #REQUIRED>
 
 <!-- Table elements -->
-<!ELEMENT table (table-header, table-data)>
-    <!ATTLIST table title CDATA "">
+<!ELEMENT table (title?, table-header, table-data)>
 
 <!ELEMENT table-header (table-column+)>
     <!ATTLIST table-header width CDATA "">

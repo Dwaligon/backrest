@@ -230,7 +230,15 @@ sub sectionProcess
             my $strWidth = '{' . ($oHeader->paramTest('width') ? $oHeader->paramGet('width') : '\textwidth') . '}';
 
             # Build the table header
-            $strLatex .= "\\ \\newline\n\\textit{Title:}\\newline\\begin{tabularx}${strWidth}{\@{\\extracolsep{\\fill}} | ";
+            $strLatex .= "\\vspace{1em}\\newline\n";
+
+            if ($oChild->nodeGet("title", false))
+            {
+                $strLatex .= "\\textit{" . $self->processText($oChild->nodeGet("title")->textGet()) . ":}" .
+                             "\\vspace{.4em}\\newline\n";
+            }
+
+            $strLatex .= "\\begin{tabularx}${strWidth}{\@{\\extracolsep{\\fill}} | ";
 
             foreach my $oColumn (@oyColumn)
             {
