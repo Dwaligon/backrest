@@ -118,8 +118,8 @@ sub htmlRender
         logDebugParam
         (
             OP_DOC_HTML_BUILDER_HTML_RENDER, \@_,
-            {name => 'oElement'},
-            {name => 'iDepth'}
+            {name => 'oElement', trace => true},
+            {name => 'iDepth', trace => true}
         );
 
     # Build the header

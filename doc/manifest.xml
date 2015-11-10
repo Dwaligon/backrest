@@ -4,7 +4,7 @@
     <!-- System-wide variables  -->
     <variable-list>
         <variable key="project">pgBackRest</variable>
-        <variable key="version">0.87</variable>
+        <variable key="version" eval="y">use BackRest::Version; $VERSION</variable>
         <variable key="project-exe">pg_backrest</variable>
         <variable key="project-url-root">/</variable>
         <variable key="postgres">PostgreSQL</variable>
@@ -12,6 +12,12 @@
 
         <!-- Logo locations -->
         <variable key="crunchy-logo">/backrest/doc/output/latex/logo</variable>
+
+        <!-- HTML variables  -->
+        <variable key="html-footer" eval='y'>
+        use POSIX qw(strftime); 'Copyright &amp;copy; 2015' . (strftime('%Y', localtime) ne '2015' ?  '-' . strftime('%Y', localtime) : '') .
+        ', The PostgreSQL Global Development Group, &lt;a href="{[github-url-license]}">MIT License&lt;/a>.  Updated ' .
+        strftime('%B ', localtime) . trim(strftime('%e,', localtime)) . strftime(' %Y.', localtime)</variable>
 
         <!-- PDF variables  -->
         <variable key="pdf-title">{[project]} User Guide</variable>

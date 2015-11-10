@@ -165,7 +165,7 @@ sub process
 
     my $oPageFooter = $oHtmlBuilder->bodyGet()->
         addNew(HTML_DIV, 'page-footer',
-               {strContent => '{[footer]}'});
+               {strContent => '{[html-footer]}'});
 
     # Return from function and log return values if any
     return logDebugReturn

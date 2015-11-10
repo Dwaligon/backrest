@@ -101,6 +101,11 @@ sub new
         {
             foreach my $oVariable ($$oSourceHash{doc}->nodeGet('variable-list')->nodeList('variable'))
             {
+                if (!defined($oVariable->fieldGet('variable-name', false)))
+                {
+                    use Data::Dumper; confess $oVariable;
+                }
+
                 my $strKey = $oVariable->fieldGet('variable-name');
                 my $strValue = $oVariable->fieldGet('variable-value');
 
@@ -184,6 +189,16 @@ sub new
         {
             my $strKey = $oVariable->paramGet('key');
             my $strValue = $oVariable->valueGet();
+
+            if ($oVariable->paramTest('eval', 'y'))
+            {
+                $strValue = eval $strValue;
+
+                if ($@)
+                {
+                    confess &log(ERROR, "unable to evaluate ${strKey}: $@\n" . $oVariable->valueGet());
+                }
+            }
 
             $self->variableSet($strKey, defined($$oVariableOverride{$strKey}) ? $$oVariableOverride{$strKey} : $strValue);
 

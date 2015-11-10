@@ -30,6 +30,7 @@ use constant OP_DOC_NODE_GET                                        => OP_DOC . 
 use constant OP_DOC_NODE_LIST                                       => OP_DOC . '->nodeList';
 use constant OP_DOC_PARAM_GET                                       => OP_DOC . '->paramGet';
 use constant OP_DOC_PARAM_SET                                       => OP_DOC . '->paramSet';
+use constant OP_DOC_PARAM_TEST                                      => OP_DOC . '->paramSet';
 use constant OP_DOC_PARSE                                           => OP_DOC . '->parse';
 use constant OP_DOC_VALUE_GET                                       => OP_DOC . '->valueGet';
 use constant OP_DOC_VALUE_SET                                       => OP_DOC . '->valueSet';
@@ -589,6 +590,51 @@ sub paramGet
 }
 
 ####################################################################################################################################
+# paramTest
+#
+# Test that a parameter exists or has a certain value.
+####################################################################################################################################
+sub paramTest
+{
+    my $self = shift;
+
+    # Assign function parameters, defaults, and log debug info
+    my
+    (
+        $strOperation,
+        $strName,
+        $strExpectedValue,
+        $strType
+    ) =
+        logDebugParam
+        (
+            OP_DOC_PARAM_TEST, \@_,
+            {name => 'strName', trace => true},
+            {name => 'strExpectedValue', required => false, trace => true},
+            {name => 'strType', default => 'param', trace => true}
+        );
+
+    my $bResult = true;
+    my $strValue = $self->paramGet($strName, false, undef, $strType);
+
+    if (!defined($strValue))
+    {
+        $bResult = false;
+    }
+    elsif (defined($strExpectedValue) && $strValue ne $strExpectedValue)
+    {
+        $bResult = false;
+    }
+
+    # Return from function and log return values if any
+    return logDebugReturn
+    (
+        $strOperation,
+        {name => 'bResult', value => $bResult, trace => true}
+    );
+}
+
+####################################################################################################################################
 # paramSet
 #
 # Set a parameter in a node.
@@ -632,7 +678,7 @@ sub fieldGet
 }
 
 ####################################################################################################################################
-# fieldGet
+# fieldTest
 #
 # Test if a field exists.
 ####################################################################################################################################
@@ -640,7 +686,7 @@ sub fieldTest
 {
     my $self = shift;
 
-    return $self->paramGet(shift, false, undef, 'field');
+    return $self->paramTest(shift, shift, 'field');
 }
 
 ####################################################################################################################################
