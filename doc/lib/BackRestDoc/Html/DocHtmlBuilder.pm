@@ -131,8 +131,19 @@ sub htmlRender
 
     if (defined($oElement->{strContent}))
     {
-        $oElement->{strContent} =~ s/\n/\<br\/>\n/g;
-        $strHtml .= $self->lf() . trim($oElement->{strContent}) . $self->lf() . $self->indent($iDepth);
+        if (!defined($oElement->{bPre}) || !$oElement->{bPre})
+        {
+            $oElement->{strContent} =~ s/\n/\<br\/>\n/g;
+            $oElement->{strContent} = trim($oElement->{strContent});
+            $strHtml .= $self->lf();
+        }
+
+        $strHtml .= $oElement->{strContent};
+
+        if (!defined($oElement->{bPre}) || !$oElement->{bPre})
+        {
+            $strHtml .= $self->lf() . $self->indent($iDepth);
+        }
     }
     else
     {

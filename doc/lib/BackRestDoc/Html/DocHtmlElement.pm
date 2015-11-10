@@ -69,6 +69,7 @@ sub new
     $self->{strContent} = $$oParam{strContent};
     $self->{strId} = $$oParam{strId};
     $self->{strRef} = $$oParam{strRef};
+    $self->{bPre} = $$oParam{bPre};
 
     # Return from function and log return values if any
     return logDebugReturn

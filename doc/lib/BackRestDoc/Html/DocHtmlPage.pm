@@ -272,7 +272,7 @@ sub sectionProcess
                 {
                     $oExecuteBodyElement->
                         addNew(HTML_DIV, "execute-body-cmd" . ($bFirst ? '-first' : ''),
-                               {strContent => $strCommand});
+                               {strContent => $strCommand, bPre => true});
 
                     if (defined($strOutput))
                     {
@@ -290,12 +290,12 @@ sub sectionProcess
                                 $oExecuteBodyElement->
                                     addNew(HTML_DIV, 'execute-body-output' .
                                            ($bHighLightOld ? '-highlight' . ($bExeExpectedError ? '-error' : '') : ''),
-                                           {strContent => $strHighLightOutput});
+                                           {strContent => $strHighLightOutput, bPre => true});
 
                                 undef($strHighLightOutput);
                             }
 
-                            $strHighLightOutput .= "${strLine}\n";
+                            $strHighLightOutput .= (defined($strHighLightOutput) ? "\n" : '') . $strLine;
                             $bHighLightOld = $bHighLight;
 
                             $bHighLightFound = $bHighLightFound ? true : $bHighLight ? true : false;
@@ -306,7 +306,7 @@ sub sectionProcess
                             $oExecuteBodyElement->
                                 addNew(HTML_DIV, 'execute-body-output' .
                                        ($bHighLightOld ? '-highlight' . ($bExeExpectedError ? '-error' : '') : ''),
-                                       {strContent => $strHighLightOutput});
+                                       {strContent => $strHighLightOutput, bPre => true});
                         }
 
                         if ($self->{bExe} && defined($strHighLight) && !$bHighLightFound)

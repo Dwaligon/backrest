@@ -260,7 +260,6 @@ Config, Execute, and Code Block Elements
 .code-block
 {
     background-color: #444444;
-    /*overflow-x:auto;*/
     font-family: monospace;
     unicode-bidi: embed;
     color: white;
@@ -274,6 +273,13 @@ Config, Execute, and Code Block Elements
 {
     padding-left: .5em;
     padding-right: .5em;
+}
+
+.execute-body-cmd-first, .execute-body-cmd,
+.execute-body-output, .execute-body-output-highlight, .execute-body-output-highlight-error,
+.code-block
+{
+    white-space: pre-wrap;
 }
 
 .execute-body-cmd-first, .execute-body-output,
