@@ -270,8 +270,6 @@ sub sectionProcess
 
                 if ($bExeShow)
                 {
-                    $oExecute->fieldSet('actual-command', $strCommand);
-
                     $oExecuteBodyElement->
                         addNew(HTML_DIV, "execute-body-cmd" . ($bFirst ? '-first' : ''),
                                {strContent => $strCommand});
@@ -283,8 +281,6 @@ sub sectionProcess
                         my $bHighLightFound = false;
                         my $strHighLightOutput;
 
-                        $oExecute->fieldSet('actual-output', $strOutput);
-
                         foreach my $strLine (split("\n", $strOutput))
                         {
                             my $bHighLight = defined($strHighLight) && $strLine =~ /$strHighLight/;
@@ -292,8 +288,9 @@ sub sectionProcess
                             if (defined($bHighLightOld) && $bHighLight != $bHighLightOld)
                             {
                                 $oExecuteBodyElement->
-                                    addNew(HTML_DIV, 'execute-body-output' . ($bHighLightOld ? '-highlight' : '') .
-                                           ($bExeExpectedError ? '-error' : ''), {strContent => $strHighLightOutput});
+                                    addNew(HTML_DIV, 'execute-body-output' .
+                                           ($bHighLightOld ? '-highlight' . ($bExeExpectedError ? '-error' : '') : ''),
+                                           {strContent => $strHighLightOutput});
 
                                 undef($strHighLightOutput);
                             }
@@ -307,10 +304,9 @@ sub sectionProcess
                         if (defined($bHighLightOld))
                         {
                             $oExecuteBodyElement->
-                                addNew(HTML_DIV, 'execute-body-output' . ($bHighLightOld ? '-highlight' : ''),
+                                addNew(HTML_DIV, 'execute-body-output' .
+                                       ($bHighLightOld ? '-highlight' . ($bExeExpectedError ? '-error' : '') : ''),
                                        {strContent => $strHighLightOutput});
-
-                            undef($strHighLightOutput);
                         }
 
                         if ($self->{bExe} && defined($strHighLight) && !$bHighLightFound)
