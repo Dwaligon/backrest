@@ -221,6 +221,90 @@ sub sectionProcess
                 trim($oChild->valueGet()) . "\n" .
                 "\\end{lstlisting}\n";
         }
+        # Add table
+        elsif ($oChild->nameGet() eq 'table')
+        {
+            my $oHeader = $oChild->nodeGet('table-header');
+            my @oyColumn = $oHeader->nodeList('table-column');
+
+            my $strWidth = '{' . ($oHeader->paramTest('width') ? $oHeader->paramGet('width') : '\textwidth') . '}';
+
+            # Build the table header
+            $strLatex .= "\\ \\newline\n\\textit{Title:}\\newline\\begin{tabularx}${strWidth}{\@{\\extracolsep{\\fill}} | ";
+
+            foreach my $oColumn (@oyColumn)
+            {
+                my $strAlignCode;
+                my $strAlign = $oColumn->paramGet("align", false);
+
+                if ($oColumn->paramTest('fill', 'y'))
+                {
+                    if (!defined($strAlign) || $strAlign eq 'left')
+                    {
+                        $strAlignCode = 'X';
+                    }
+                    elsif ($strAlign eq 'right')
+                    {
+                        $strAlignCode = 'R';
+                    }
+                    else
+                    {
+                        confess &log(ERROR, "align '${strAlign}' not valid when fill=y");
+                    }
+                }
+                else
+                {
+                    if (!defined($strAlign) || $strAlign eq 'left')
+                    {
+                        $strAlignCode = 'l';
+                    }
+                    elsif ($strAlign eq 'center')
+                    {
+                        $strAlignCode = 'c';
+                    }
+                    elsif ($strAlign eq 'right')
+                    {
+                        $strAlignCode = 'r';
+                    }
+                    else
+                    {
+                        confess &log(ERROR, "align '${strAlign}' not valid");
+                    }
+                }
+
+                # $strLatex .= 'p{' . $oColumn->paramGet("width") . '} | ';
+                $strLatex .= $strAlignCode . ' | ';
+            }
+
+            $strLatex .= "}\n\\hline\n";
+
+            # $strLatex .= "\\begin{tabulary}{\\textwidth}{LLLL}\n\\toprule\n";
+
+            my $strLine;
+
+            foreach my $oColumn (@oyColumn)
+            {
+                $strLine .= (defined($strLine) ? ' & ' : '') . '\textbf{' . $self->processText($oColumn->textGet()) . '}';
+            }
+
+            $strLatex .= "${strLine}\\\\";
+
+            # Build the rows
+            foreach my $oRow ($oChild->nodeGet('table-data')->nodeList('table-row'))
+            {
+                $strLatex .= "\\hline\n";
+                undef($strLine);
+
+                foreach my $oRowCell ($oRow->nodeList('table-cell'))
+                {
+                    $strLine .= (defined($strLine) ? ' & ' : '') . $self->processText($oRowCell->textGet());
+                }
+
+                $strLatex .= "${strLine}\\\\";
+            }
+
+            $strLatex .= "\\hline\n\\end{tabularx}\n";
+        }
         # Add descriptive text
         elsif ($oChild->nameGet() eq 'p')
         {

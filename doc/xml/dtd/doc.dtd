@@ -86,7 +86,7 @@
 <!ELEMENT option-description EMPTY>
     <!ATTLIST option-description key CDATA #REQUIRED>
 
-<!ELEMENT section (title,((p|execute-list|backrest-config|postgres-config|option-description|code-block)+|(p*, section+)|p*))>
+<!ELEMENT section (title,((p|table|execute-list|backrest-config|postgres-config|option-description|code-block)+|(p*, section+)|p*))>
     <!ATTLIST section id CDATA #REQUIRED>
 <!ELEMENT title (#PCDATA|b|i|bi|ul|ol|id|code|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
                  pg-option|pg-setting|link|user)*>
@@ -115,6 +115,23 @@
 <!ELEMENT support (text)>
     <!ATTLIST support title CDATA #REQUIRED>
 
+<!-- Table elements -->
+<!ELEMENT table (table-header, table-data)>
+    <!ATTLIST table title CDATA "">
+
+<!ELEMENT table-header (table-column+)>
+    <!ATTLIST table-header width CDATA "">
+<!ELEMENT table-column (#PCDATA|quote|b|i|id|code|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
+                        br-setting|pg-option|pg-setting|link|user)*>
+    <!ATTLIST table-column align CDATA "">
+    <!ATTLIST table-column fill CDATA "">
+
+<!ELEMENT table-data (table-row+)>
+<!ELEMENT table-row (table-cell+)>
+<!ELEMENT table-cell (#PCDATA|quote|b|i|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
+                      br-setting|pg-option|pg-setting|link|user)*>
+
+<!-- Formatted elements -->
 <!ELEMENT summary (#PCDATA|quote|b|i|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
                    br-setting|pg-option|pg-setting|link|user)*>
 <!ELEMENT p (#PCDATA|quote|b|i|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|

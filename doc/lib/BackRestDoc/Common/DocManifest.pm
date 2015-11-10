@@ -258,7 +258,8 @@ sub variableReplace
 
     if (defined($strType) && $strType eq 'latex')
     {
-        $strBuffer =~ s/[^\\]\_/\\\_/g;
+        $strBuffer =~ s/\\\_/\_/g;
+        $strBuffer =~ s/\_/\\\_/g;
     }
 
     return $strBuffer;
