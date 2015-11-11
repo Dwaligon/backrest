@@ -243,9 +243,9 @@ sub sectionProcess
             my $strWidth = '{' . ($oHeader->paramTest('width') ? $oHeader->paramGet('width') : '\textwidth') . '}';
 
             # Build the table header
-            $strLatex .= "\\vspace{1em}\n";
+            $strLatex .= "\\vspace{1em}\\newline\n";
 
-            $strLatex .= "\\begin{tabularx}${strWidth}{\@{\\extracolsep{\\fill}} | ";
+            $strLatex .= "\\begin{tabularx}${strWidth}{ | ";
 
             foreach my $oColumn (@oyColumn)
             {
