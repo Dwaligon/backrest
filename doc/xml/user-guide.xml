@@ -173,7 +173,7 @@
             <title>Download version <id>{[version]}</id> of <backrest/></title>
 
             <execute>
-                <exe-cmd>wget -O -
+                <exe-cmd>wget -q -O -
                     https://github.com/pgmasters/backrest/archive/release/{[version]}.tar.gz |
                     tar zxv -C ~</exe-cmd>
                 <exe-user>vagrant</exe-user>
