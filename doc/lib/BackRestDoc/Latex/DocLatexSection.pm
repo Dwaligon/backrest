@@ -229,8 +229,32 @@ sub sectionProcess
         # Add code block
         elsif ($oChild->nameGet() eq 'code-block')
         {
+            my $strTitle = $oChild->paramGet("title", false);
+
+            if (defined($strTitle) && $strTitle eq '')
+            {
+                undef($strTitle)
+            }
+
+            # Begin the code listing
+            if (!defined($strTitle))
+            {
+                $strLatex .=
+                    "\\vspace{.75em}\n";
+            }
+
             $strLatex .=
-                "\\newline\n\\begin\{lstlisting\}\n" .
+                "\\begin\{lstlisting\}";
+
+            # Add the title if one is provided
+            if (defined($strTitle))
+            {
+                $strLatex .= "[title=\{${strTitle}:\}]";
+            }
+
+            # End the code listing
+            $strLatex .=
+                "\n" .
                 trim($oChild->valueGet()) . "\n" .
                 "\\end{lstlisting}\n";
         }
