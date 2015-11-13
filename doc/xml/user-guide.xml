@@ -263,6 +263,8 @@
                     <backrest-config-option-value>{[db-path]}</backrest-config-option-value>
                 </backrest-config-option>
             </backrest-config>
+
+            <p><backrest/> configuration files follow the Windows INI convention.  Sections are denoted by text in brackets and key/value pairs are contained in each section.  Lines beginning with <id>#</id> are ignored and can be used as comments.</p>
         </section>
 
         <!-- SECTION => QUICKSTART - CREATE REPOSITORY -->

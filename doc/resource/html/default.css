@@ -178,6 +178,7 @@ Section
 
 .section1-title, .page-toc-title
 {
+    border-radius: 3px;
     background-color: #dddddd;
     font-size: 22pt;
     padding-left: .5em;
@@ -259,6 +260,7 @@ Config, Execute, and Code Block Elements
 .config-body,
 .code-block
 {
+    border-radius: 3px;
     background-color: #444444;
     font-family: monospace;
     unicode-bidi: embed;
@@ -300,6 +302,7 @@ Config, Execute, and Code Block Elements
 .config-body-output,
 .code-block
 {
+    border-radius: 3px;
     background-color: #606060;
 }
 

@@ -260,6 +260,8 @@ sub variableReplace
     {
         $strBuffer =~ s/\\\_/\_/g;
         $strBuffer =~ s/\_/\\\_/g;
+        $strBuffer =~ s/\\\#/\#/g;
+        $strBuffer =~ s/\#/\\\#/g;
     }
 
     return $strBuffer;

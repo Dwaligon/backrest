@@ -167,7 +167,7 @@ sub new
     $$oRenderTag{text}{backrest}[0] = "{[project]}";
     $$oRenderTag{text}{exe}[0] = "{[project-exe]}";
 
-    $$oRenderTag{latex}{backrest}[0] = "{[project-exe]}";
+    $$oRenderTag{latex}{backrest}[0] = "{[project]}";
     $$oRenderTag{latex}{exe}[0] = "\\textnormal\{\\texttt\{[project-exe]}}\}\}";
 
     $$oRenderTag{html}{backrest}[0] = "<span class=\"backrest\">{[project]}</span>";
