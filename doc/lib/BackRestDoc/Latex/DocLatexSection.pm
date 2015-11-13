@@ -275,7 +275,7 @@ sub sectionProcess
             # }
 
             # $strLatex .= "\\bgroup\n\\def\\arraystretch{1.5}%";
-            $strLatex .= "\\begin{longtabu}${strWidth}{ | ";
+            $strLatex .= "\\begin{tabu}${strWidth}{ | ";
 
             foreach my $oColumn (@oyColumn)
             {
@@ -334,7 +334,7 @@ sub sectionProcess
                 $strLine .= (defined($strLine) ? ' & ' : '') . '\textbf{' . $self->processText($oColumn->textGet()) . '}';
             }
 
-            $strLatex .= "${strLine}\\endhead";
+            $strLatex .= "${strLine}\\\\";
 
             # Build the rows
             foreach my $oRow ($oChild->nodeGet('table-data')->nodeList('table-row'))
@@ -350,7 +350,7 @@ sub sectionProcess
                 $strLatex .= "${strLine}\\\\";
             }
 
-            $strLatex .= "\\hline\n\\end{longtabu}\n";
+            $strLatex .= "\\hline\n\\end{tabu}\n";
             # $strLatex .= "\\egroup\n";
         }
         # Add descriptive text
