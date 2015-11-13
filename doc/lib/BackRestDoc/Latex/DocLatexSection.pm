@@ -322,8 +322,8 @@ sub sectionProcess
                 $strLatex .= "\\caption{" . $self->processText($oChild->nodeGet("title")->textGet()) . ":}\\\\\n";
             }
 
-            # $strLatex .= "\\begin{tabulary}{\\textwidth}{LLLL}\n\\toprule\n";
-            $strLatex .= "\\hline\n";
+            $strLatex .= "\\hline";
+            $strLatex .= "\\rowcolor{ltgray}\n";
 
             my $strLine;
 
