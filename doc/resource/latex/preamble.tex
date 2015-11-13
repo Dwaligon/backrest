@@ -18,7 +18,7 @@
 
 % Create a light gray color to use for source code listings
 % ----------------------------------------------------------------------------------------------------------------------------------
-\usepackage{xcolor}
+\usepackage[table]{xcolor}
 \definecolor{ltgray}{HTML}{E8E8E8}
 
 % Use listings package instead of verbatim for displaying code
@@ -39,7 +39,12 @@
 
 % Use tabularx for tables
 % ----------------------------------------------------------------------------------------------------------------------------------
-\usepackage{tabularx}
+\usepackage{varwidth}
+\usepackage{tabu}
+\usepackage{longtable}
+% \renewcommand{\arraystretch}{1.3}
+% \usepackage[table]{xcolor}
+% \usepackage{tabularx}
 \newcolumntype{R}{>{\raggedleft\arraybackslash}X}%
 
 % \usepackage{ltablex}

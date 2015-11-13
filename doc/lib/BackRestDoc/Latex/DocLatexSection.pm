@@ -264,12 +264,18 @@ sub sectionProcess
             my $oHeader = $oChild->nodeGet('table-header');
             my @oyColumn = $oHeader->nodeList('table-column');
 
-            my $strWidth = '{' . ($oHeader->paramTest('width') ? $oHeader->paramGet('width') : '\textwidth') . '}';
+            my $strWidth = ' to ' . ($oHeader->paramTest('width') ? $oHeader->paramGet('width') : '\textwidth') . ' ';
 
             # Build the table header
             $strLatex .= "\\vspace{1em}\\newline\n";
+            #
+            # if ($oChild->nodeGet("title", false))
+            # {
+            #     $strLatex .= "\\caption{" . $self->processText($oChild->nodeGet("title")->textGet()) . ":}\\\\\n";
+            # }
 
-            $strLatex .= "\\begin{tabularx}${strWidth}{ | ";
+            # $strLatex .= "\\bgroup\n\\def\\arraystretch{1.5}%";
+            $strLatex .= "\\begin{longtabu}${strWidth}{ | ";
 
             foreach my $oColumn (@oyColumn)
             {
@@ -315,15 +321,11 @@ sub sectionProcess
                 $strLatex .= $strAlignCode . ' | ';
             }
 
-            $strLatex .= "}\n";
-
-            if ($oChild->nodeGet("title", false))
-            {
-                $strLatex .= "\\caption{" . $self->processText($oChild->nodeGet("title")->textGet()) . ":}\\\\\n";
-            }
+            $strLatex .= "}";
 
             # $strLatex .= "\\begin{tabulary}{\\textwidth}{LLLL}\n\\toprule\n";
-            $strLatex .= "\\hline\n";
+            $strLatex .= "\\hline";
+            $strLatex .= "\\rowcolor{ltgray}\n";
 
             my $strLine;
 
@@ -332,7 +334,7 @@ sub sectionProcess
                 $strLine .= (defined($strLine) ? ' & ' : '') . '\textbf{' . $self->processText($oColumn->textGet()) . '}';
             }
 
-            $strLatex .= "${strLine}\\\\";
+            $strLatex .= "${strLine}\\endhead";
 
             # Build the rows
             foreach my $oRow ($oChild->nodeGet('table-data')->nodeList('table-row'))
@@ -348,7 +350,8 @@ sub sectionProcess
                 $strLatex .= "${strLine}\\\\";
             }
 
-            $strLatex .= "\\hline\n\\end{tabularx}\n";
+            $strLatex .= "\\hline\n\\end{longtabu}\n";
+            # $strLatex .= "\\egroup\n";
         }
         # Add descriptive text
         elsif ($oChild->nameGet() eq 'p')
