@@ -583,8 +583,10 @@ sub processText
         $strBuffer =~ s/\&lt\;/\</g;
         $strBuffer =~ s/\<\=/\$\\leq\$/g;
         $strBuffer =~ s/\>\=/\$\\geq\$/g;
-        $strBuffer =~ s/\_/\\_/g;
+        # $strBuffer =~ s/\_/\\_/g;
     }
+
+    $strBuffer = $self->variableReplace($strBuffer);
 
     # Return from function and log return values if any
     return logDebugReturn

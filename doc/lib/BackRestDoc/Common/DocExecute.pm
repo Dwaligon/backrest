@@ -244,38 +244,45 @@ sub backrestConfig
 
         &log(DEBUG, ('    ' x $iDepth) . 'process backrest config: ' . $strFile);
 
-        foreach my $oOption ($oConfig->nodeList('backrest-config-option'))
+        if ($self->{bExe})
         {
-            my $strSection = $oOption->fieldGet('backrest-config-option-section');
-            my $strKey = $oOption->fieldGet('backrest-config-option-key');
-            my $strValue = $self->{oManifest}->variableReplace(trim($oOption->fieldGet('backrest-config-option-value'), false));
-
-            if (!defined($strValue))
+            foreach my $oOption ($oConfig->nodeList('backrest-config-option'))
             {
-                delete(${$self->{config}}{$strFile}{$strSection}{$strKey});
+                my $strSection = $oOption->fieldGet('backrest-config-option-section');
+                my $strKey = $oOption->fieldGet('backrest-config-option-key');
+                my $strValue = $self->{oManifest}->variableReplace(trim($oOption->fieldGet('backrest-config-option-value'), false));
 
-                if (keys(${$self->{config}}{$strFile}{$strSection}) == 0)
+                if (!defined($strValue))
                 {
-                    delete(${$self->{config}}{$strFile}{$strSection});
+                    delete(${$self->{config}}{$strFile}{$strSection}{$strKey});
+
+                    if (keys(${$self->{config}}{$strFile}{$strSection}) == 0)
+                    {
+                        delete(${$self->{config}}{$strFile}{$strSection});
+                    }
+
+                    &log(DEBUG, ('    ' x ($iDepth + 1)) . "reset ${strSection}->${strKey}");
                 }
+                else
+                {
+                    ${$self->{config}}{$strFile}{$strSection}{$strKey} = $strValue;
+                    &log(DEBUG, ('    ' x ($iDepth + 1)) . "set ${strSection}->${strKey} = ${strValue}");
+                }
+            }
 
-                &log(DEBUG, ('    ' x ($iDepth + 1)) . "reset ${strSection}->${strKey}");
-            }
-            else
-            {
-                ${$self->{config}}{$strFile}{$strSection}{$strKey} = $strValue;
-                &log(DEBUG, ('    ' x ($iDepth + 1)) . "set ${strSection}->${strKey} = ${strValue}");
-            }
+            # Save the ini file
+            executeTest("sudo chmod 777 $strFile", {bSuppressError => true});
+            iniSave($strFile, $self->{config}{$strFile}, true);
+
+            $strConfig = fileStringRead($strFile);
+
+            executeTest("sudo chown postgres:postgres $strFile");
+            executeTest("sudo chmod 640 $strFile");
         }
-
-        # Save the ini file
-        executeTest("sudo chmod 777 $strFile", {bSuppressError => true});
-        iniSave($strFile, $self->{config}{$strFile}, true);
-
-        $strConfig = fileStringRead($strFile);
-
-        executeTest("sudo chown postgres:postgres $strFile");
-        executeTest("sudo chmod 640 $strFile");
+        else
+        {
+            $strConfig = 'Config suppressed for testing';
+        }
 
         $oConfig->fieldSet('actual-file', $strFile);
         $oConfig->fieldSet('actual-config', $strConfig);
@@ -325,67 +332,74 @@ sub postgresConfig
         # Get filename
         $strFile = $self->{oManifest}->variableReplace($oConfig->paramGet('file'));
 
-        if (!defined(${$self->{'pg-config'}}{$strFile}{base}) && $self->{bExe})
+        if ($self->{bExe})
         {
-            ${$self->{'pg-config'}}{$strFile}{base} = fileStringRead($strFile);
-        }
-
-        my $oConfigHash = $self->{'pg-config'}{$strFile};
-        my $oConfigHashNew;
-
-        if (!defined($$oConfigHash{old}))
-        {
-            $oConfigHashNew = {};
-            $$oConfigHash{old} = {}
-        }
-        else
-        {
-            $oConfigHashNew = dclone($$oConfigHash{old});
-        }
-
-        &log(DEBUG, ('    ' x $iDepth) . 'process postgres config: ' . $strFile);
-
-        foreach my $oOption ($oConfig->nodeList('postgres-config-option'))
-        {
-            my $strKey = $oOption->paramGet('key');
-            my $strValue = $self->{oManifest}->variableReplace(trim($oOption->valueGet()));
-
-            if ($strValue eq '')
+            if (!defined(${$self->{'pg-config'}}{$strFile}{base}) && $self->{bExe})
             {
-                delete($$oConfigHashNew{$strKey});
+                ${$self->{'pg-config'}}{$strFile}{base} = fileStringRead($strFile);
+            }
 
-                &log(DEBUG, ('    ' x ($iDepth + 1)) . "reset ${strKey}");
+            my $oConfigHash = $self->{'pg-config'}{$strFile};
+            my $oConfigHashNew;
+
+            if (!defined($$oConfigHash{old}))
+            {
+                $oConfigHashNew = {};
+                $$oConfigHash{old} = {}
             }
             else
             {
-                $$oConfigHashNew{$strKey} = $strValue;
-                &log(DEBUG, ('    ' x ($iDepth + 1)) . "set ${strKey} = ${strValue}");
+                $oConfigHashNew = dclone($$oConfigHash{old});
             }
-        }
 
-        # Generate config text
-        foreach my $strKey (sort(keys(%$oConfigHashNew)))
-        {
-            if (defined($strConfig))
+            &log(DEBUG, ('    ' x $iDepth) . 'process postgres config: ' . $strFile);
+
+            foreach my $oOption ($oConfig->nodeList('postgres-config-option'))
             {
-                $strConfig .= "\n";
+                my $strKey = $oOption->paramGet('key');
+                my $strValue = $self->{oManifest}->variableReplace(trim($oOption->valueGet()));
+
+                if ($strValue eq '')
+                {
+                    delete($$oConfigHashNew{$strKey});
+
+                    &log(DEBUG, ('    ' x ($iDepth + 1)) . "reset ${strKey}");
+                }
+                else
+                {
+                    $$oConfigHashNew{$strKey} = $strValue;
+                    &log(DEBUG, ('    ' x ($iDepth + 1)) . "set ${strKey} = ${strValue}");
+                }
             }
 
-            $strConfig .= "${strKey} = $$oConfigHashNew{$strKey}";
-        }
+            # Generate config text
+            foreach my $strKey (sort(keys(%$oConfigHashNew)))
+            {
+                if (defined($strConfig))
+                {
+                    $strConfig .= "\n";
+                }
 
-        # Save the conf file
-        if ($self->{bExe})
+                $strConfig .= "${strKey} = $$oConfigHashNew{$strKey}";
+            }
+
+            # Save the conf file
+            if ($self->{bExe})
+            {
+                executeTest("sudo chown vagrant $strFile");
+
+                fileStringWrite($strFile, $$oConfigHash{base} .
+                                (defined($strConfig) ? "\n# pgBackRest Configuration\n${strConfig}" : ''));
+
+                executeTest("sudo chown postgres $strFile");
+            }
+
+            $$oConfigHash{old} = $oConfigHashNew;
+        }
+        else
         {
-            executeTest("sudo chown vagrant $strFile");
-
-            fileStringWrite($strFile, $$oConfigHash{base} .
-                            (defined($strConfig) ? "\n# pgBackRest Configuration\n${strConfig}" : ''));
-
-            executeTest("sudo chown postgres $strFile");
+            $strConfig = 'Config suppressed for testing';
         }
-
-        $$oConfigHash{old} = $oConfigHashNew;
 
         $oConfig->fieldSet('actual-file', $strFile);
         $oConfig->fieldSet('actual-config', $strConfig);

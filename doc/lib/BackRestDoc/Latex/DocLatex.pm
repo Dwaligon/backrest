@@ -116,7 +116,7 @@ sub process
             new BackRestDoc::Latex::DocLatexSection($self->{oManifest}, $strPageId, $self->{bExe});
 
         # Save the html page
-        $strLatex .= $self->{oManifest}->variableReplace($oDocLatexSection->process());
+        $strLatex .= $oDocLatexSection->process();
     }
 
     $strLatex .= "\n% " . ('-' x 130) . "\n% End document\n% " . ('-' x 130) . "\n\\end{document}\n";

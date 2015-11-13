@@ -430,7 +430,6 @@ sub configProcess
 
     # Replace _ in filename
     $strFile = $self->variableReplace($strFile);
-    # $strFile = $self->variableReplace($strFile);
 
     # Render the config
     my $strLatex =
