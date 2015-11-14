@@ -286,14 +286,16 @@ Config, Execute, and Code Block Elements
 
 .execute-body-cmd-first, .execute-body-output,
 .config-body-title, .config-body-output,
-.code-block
+.code-block,
+.execute-body-output-highlight, .execute-body-output-highlight-error
 {
     padding-top: .25em;
 }
 
 .execute-body-cmd-first, .execute-body-cmd, .execute-body-output,
 .config-body-title, .config-body-output,
-.code-block
+.code-block,
+.execute-body-output-highlight, .execute-body-output-highlight-error
 {
     padding-bottom: .25em;
 }

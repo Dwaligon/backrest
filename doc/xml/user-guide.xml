@@ -150,8 +150,8 @@
             <execute>
                 <exe-cmd>apt-get install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl</exe-cmd>
                 <exe-user>root</exe-user>
-                <exe-output/>
-                <exe-highlight>^Setting up libdbi-perl|^Setting up libdbd-pg-perl|^Setting up libnet-daemon-perl|^Setting up libplrpc-perl</exe-highlight>
+                <!-- <exe-output/>
+                <exe-highlight>^Setting up libdbi-perl|^Setting up libdbd-pg-perl|^Setting up libnet-daemon-perl|^Setting up libplrpc-perl</exe-highlight> -->
             </execute>
         </execute-list>
 
@@ -163,7 +163,7 @@
             <execute>
                 <exe-cmd>wget -q -O -
                     https://github.com/pgmasters/backrest/archive/release/{[version]}.tar.gz |
-                    tar zxv -C /root</exe-cmd>
+                    tar zx -C /root</exe-cmd>
                 <exe-skip/>
             </execute>
         </execute-list>
@@ -577,7 +577,7 @@
             <p>PITR allows the WAL to be played from the last backup to a specified time, transaction id, or recovery point.  For common recovery scenarios time-based recovery is arguably the most useful.  A common recovery scenario is to restore a table or data was accidentally dropped or deleted.  Recovering a dropped table is more dramatic so that's the example given here but deleted data would be recovered in exactly the same way.</p>
 
             <execute-list>
-                <title>Create table with very important data</title>
+                <title>Create a table with very important data</title>
 
                 <execute>
                     <exe-cmd>
@@ -622,7 +622,7 @@
                 </execute>
             </execute-list>
 
-            <p>Now the restore can be performed with time-based recovery to <id>{[time-recovery-timestamp]}</id> to bring back the missing table.</p>
+            <p>Now the restore can be performed with time-based recovery to bring back the missing table.</p>
 
             <execute-list>
                 <title>Stop <postgres/>, restore the {[postgres-cluster-demo]} cluster to <id>{[time-recovery-timestamp]}</id>, and display <file>recovery.conf</file></title>
@@ -644,6 +644,7 @@
                 <execute>
                     <exe-cmd>cat /var/lib/postgresql/9.4/{[postgres-cluster-demo]}/recovery.conf</exe-cmd>
                     <exe-output/>
+                    <exe-highlight>recovery_target_time</exe-highlight>
                 </execute>
             </execute-list>
 
