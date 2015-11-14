@@ -1,5 +1,10 @@
+# Ubuntu 14.04 Base Container
 FROM ubuntu:14.04
+
+# Install SSH
 RUN apt-get -y install openssh-server
+
+# Create vagrant user
 RUN addgroup admin
 RUN adduser --ingroup=admin --disabled-password --gecos "" vagrant
 RUN sed -i 's/^\%admin.*$/\%admin ALL\=\(ALL\) NOPASSWD\: ALL/' /etc/sudoers
@@ -7,4 +12,12 @@ RUN sed -i 's/^\%admin.*$/\%admin ALL\=\(ALL\) NOPASSWD\: ALL/' /etc/sudoers
 # Suppress dpkg interactive output
 RUN rm /etc/apt/apt.conf.d/70debconf
 
+# Copy trusted SSH setup
+COPY ssh/config /root/resource/.ssh/config
+COPY ssh/id_rsa /root/resource/.ssh/id_rsa
+COPY ssh/id_rsa.pub /root/resource/.ssh/authorized_keys
+RUN chmod 700 /root/resource/.ssh
+RUN chmod 600 /root/resource/.ssh/*
+
+# Start SSH when container starts
 ENTRYPOINT service ssh restart && bash

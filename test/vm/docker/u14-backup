@@ -1,13 +1,10 @@
-# Ubuntu 14.04 Database Container
+# Ubuntu 14.04 Backup Container
 FROM vagrant/u14-base
 
 # Create backrest user
 RUN adduser --home /var/lib/backrest --disabled-password --gecos "" backrest
 
 # Setup SSH
-COPY ssh/config /var/lib/backrest/.ssh/config
-COPY ssh/id_rsa /var/lib/backrest/.ssh/id_rsa
-COPY ssh/id_rsa.pub /var/lib/backrest/.ssh/authorized_keys
+RUN mkdir -p /var/lib/backrest/.ssh
 RUN chown -R backrest:backrest /var/lib/backrest
-RUN chmod 700 /var/lib/backrest/.ssh
-RUN chmod 600 /var/lib/backrest/.ssh/*
+RUN cp /root/resource/.ssh/* /var/lib/backrest/.ssh

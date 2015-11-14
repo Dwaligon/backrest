@@ -63,9 +63,12 @@ sub new
 
     executeTest("docker kill $self->{strName}", {bSuppressError => true});
     executeTest("docker rm $self->{strName}", {bSuppressError => true});
+    executeTest("rm -rf ~/data/$self->{strName}");
+
     executeTest("docker run -itd --name=$self->{strName} " .
                 (defined($self->{strMount}) ? "-v $self->{strMount} " : '') .
                 "$self->{strImage}");
+    executeTest("mkdir -p ~/data/$self->{strName}/etc");
 
     $self->{bActive} = true;
 
