@@ -81,6 +81,10 @@
             <exe-cmd>cp -r /backrest/lib /root/backrest-release-{[version]}</exe-cmd>
             <exe-user>root</exe-user>
         </execute>
+        <execute>
+            <exe-cmd>rm /etc/apt/apt.conf.d/70debconf</exe-cmd>
+            <exe-user>root</exe-user>
+        </execute>
     </cleanup>
 
     <!-- SECTION => INTRODUCTION -->
@@ -146,6 +150,8 @@
             <execute>
                 <exe-cmd>apt-get install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl</exe-cmd>
                 <exe-user>root</exe-user>
+                <exe-output/>
+                <exe-highlight>^Setting up libdbi-perl|^Setting up libdbd-pg-perl|^Setting up libnet-daemon-perl|^Setting up libplrpc-perl</exe-highlight>
             </execute>
         </execute-list>
 
@@ -352,6 +358,7 @@
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=diff
                         {[dash]}-log-level-console=info backup</exe-cmd>
                     <exe-output/>
+                    <exe-highlight>diff backup size</exe-highlight>
                 </execute>
             </execute-list>
 
@@ -562,7 +569,7 @@
         <p>The Restore section introduces additional <cmd>restore</cmd> command features.</p>
 
         <!-- SECTION => RESTORE - PITR -->
-        <!-- <section id="pitr">
+        <section id="pitr">
             <title>Point-in-Time Recovery (PITR)</title>
 
             <p>The <link page="#quickstart-perform-restore">restore example</link> in <link page="#quickstart">Quick Start</link> performed default recovery, which is to play all the way to the end of the WAL stream.  In the case of a hardware failure this is probably the most appropriate action but for data corruption scenarios (whether machine or human in origin) there is a better alternative called Point-in-Time Recovery (PITR).</p>
@@ -781,7 +788,7 @@
                     <exe-highlight>recovery stopping before|last completed transaction|starting point-in-time recovery</exe-highlight>
                 </execute>
             </execute-list>
-        </section> -->
+        </section>
     </section>
 
     <!-- SECTION => INFO -->

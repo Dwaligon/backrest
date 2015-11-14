@@ -308,11 +308,13 @@ Config, Execute, and Code Block Elements
 
 .execute-body-output-highlight
 {
+    border-radius: 3px;
     background-color: green;
 }
 
 .execute-body-output-highlight-error
 {
+    border-radius: 3px;
     background-color: firebrick;
 }
 

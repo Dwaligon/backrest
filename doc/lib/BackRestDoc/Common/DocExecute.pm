@@ -162,7 +162,7 @@ sub execute
         {
             if ($self->{bExe})
             {
-                my $oExec = new BackRestTest::Common::ExecuteTest((!$bDocker ? 'docker exec -t db-master ' : '') . $strCommand,
+                my $oExec = new BackRestTest::Common::ExecuteTest((!$bDocker ? 'docker exec db-master ' : '') . $strCommand,
                                                                   {bSuppressError => $bSuppressError,
                                                                    bSuppressStdErr => $bSuppressStdErr,
                                                                    iExpectedExitStatus => $iExeExpectedError});
