@@ -142,7 +142,8 @@ sub execute
 
         $strUser = defined($strUser) ? $strUser : 'postgres';
         $strCommand = $self->{oManifest}->variableReplace(
-            ($bDocker ? '' : ('sudo ' . ($strUser eq 'root' ? '' : "-u ${strUser} "))) . $strCommand);
+            ($bDocker || defined($strUser) && $strUser eq 'vagrant' ? '' :
+                ('sudo ' . ($strUser eq 'root' ? '' : "-u ${strUser} "))) . $strCommand);
 
         # Add continuation chars and proper spacing
         $strCommand =~ s/[ ]*\n[ ]*/ \\\n    /smg;
@@ -162,7 +163,7 @@ sub execute
         {
             if ($self->{bExe})
             {
-                my $oExec = new BackRestTest::Common::ExecuteTest((!$bDocker ? 'docker exec db-master ' : '') . $strCommand,
+                my $oExec = new BackRestTest::Common::ExecuteTest((!$bDocker ? 'docker exec -u vagrant db-master ' : '') . $strCommand,
                                                                   {bSuppressError => $bSuppressError,
                                                                    bSuppressStdErr => $bSuppressStdErr,
                                                                    iExpectedExitStatus => $iExeExpectedError});

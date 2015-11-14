@@ -70,16 +70,16 @@
             <exe-user>root</exe-user>
         </execute>
         <execute>
-            <exe-cmd>mkdir /root/backrest-release-{[version]}</exe-cmd>
-            <exe-user>root</exe-user>
+            <exe-cmd>mkdir /home/vagrant/backrest-release-{[version]}</exe-cmd>
+            <exe-user>vagrant</exe-user>
         </execute>
         <execute>
-            <exe-cmd>cp -r /backrest/bin /root/backrest-release-{[version]}</exe-cmd>
-            <exe-user>root</exe-user>
+            <exe-cmd>cp -r /backrest/bin /home/vagrant/backrest-release-{[version]}</exe-cmd>
+            <exe-user>vagrant</exe-user>
         </execute>
         <execute>
-            <exe-cmd>cp -r /backrest/lib /root/backrest-release-{[version]}</exe-cmd>
-            <exe-user>root</exe-user>
+            <exe-cmd>cp -r /backrest/lib /home/vagrant/backrest-release-{[version]}</exe-cmd>
+            <exe-user>vagrant</exe-user>
         </execute>
         <execute>
             <exe-cmd>rm /etc/apt/apt.conf.d/70debconf</exe-cmd>
@@ -163,7 +163,8 @@
             <execute>
                 <exe-cmd>wget -q -O -
                     https://github.com/pgmasters/backrest/archive/release/{[version]}.tar.gz |
-                    tar zx -C /root</exe-cmd>
+                    tar zx -C ~</exe-cmd>
+                    <exe-user>vagrant</exe-user>
                 <exe-skip/>
             </execute>
         </execute-list>
@@ -172,7 +173,7 @@
             <title>Install <backrest/></title>
 
             <execute>
-                <exe-cmd>cp -r /root/backrest-release-{[version]}/lib/BackRest {[perl-lib-path]}</exe-cmd>
+                <exe-cmd>cp -r ~/backrest-release-{[version]}/lib/BackRest {[perl-lib-path]}</exe-cmd>
                 <exe-user>root</exe-user>
             </execute>
             <execute>
@@ -184,7 +185,7 @@
                 <exe-user>root</exe-user>
             </execute>
             <execute>
-                <exe-cmd>cp /root/backrest-release-{[version]}/bin/{[project-exe]} {[perl-bin-path]}/{[project-exe]}</exe-cmd>
+                <exe-cmd>cp ~/backrest-release-{[version]}/bin/{[project-exe]} {[perl-bin-path]}/{[project-exe]}</exe-cmd>
                 <exe-user>root</exe-user>
             </execute>
             <execute>

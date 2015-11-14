@@ -1,3 +1,7 @@
 FROM ubuntu:14.04
 RUN apt-get -y install openssh-server
+RUN addgroup admin
+RUN adduser --ingroup=admin --disabled-password --gecos "" vagrant
+RUN sed -i 's/^\%admin.*$/\%admin ALL\=\(ALL\) NOPASSWD\: ALL/' /etc/sudoers
+
 ENTRYPOINT service ssh restart && bash
