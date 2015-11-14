@@ -86,7 +86,9 @@
 <!ELEMENT option-description EMPTY>
     <!ATTLIST option-description key CDATA #REQUIRED>
 
-<!ELEMENT section (title,((p|table|execute-list|backrest-config|postgres-config|option-description|code-block)+|(p*, section+)|p*))>
+<!ELEMENT section (title,
+                   ((p|table|host-add|execute-list|backrest-config|postgres-config|option-description|code-block)+|
+                   (p*, section+)|p*))>
     <!ATTLIST section id CDATA #REQUIRED>
 <!ELEMENT title (#PCDATA|b|i|bi|ul|ol|id|code|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
                  pg-option|pg-setting|link|user)*>
@@ -114,6 +116,11 @@
 
 <!ELEMENT support (text)>
     <!ATTLIST support title CDATA #REQUIRED>
+
+<!-- Host elements -->
+<!ELEMENT host-add (execute*)>
+    <!ATTLIST host-add name CDATA #REQUIRED>
+    <!ATTLIST host-add image CDATA #REQUIRED>
 
 <!-- Table elements -->
 <!ELEMENT table (title?, table-header, table-data)>

@@ -4,4 +4,7 @@ RUN addgroup admin
 RUN adduser --ingroup=admin --disabled-password --gecos "" vagrant
 RUN sed -i 's/^\%admin.*$/\%admin ALL\=\(ALL\) NOPASSWD\: ALL/' /etc/sudoers
 
+# Suppress dpkg interactive output
+RUN rm /etc/apt/apt.conf.d/70debconf
+
 ENTRYPOINT service ssh restart && bash

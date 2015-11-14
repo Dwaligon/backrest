@@ -45,48 +45,6 @@
         </variable>
     </variable-list>
 
-    <!-- Commands used to clean the environment before or after doc generation -->
-    <cleanup>
-        <execute>
-            <exe-cmd>docker kill db-master</exe-cmd>
-            <exe-user>docker</exe-user>
-            <exe-err-suppress/>
-        </execute>
-        <execute>
-            <exe-cmd>docker rm db-master</exe-cmd>
-            <exe-user>docker</exe-user>
-            <exe-err-suppress/>
-        </execute>
-        <execute>
-            <exe-cmd>docker run -itd --name=db-master -v /backrest:/backrest vagrant/u14-db</exe-cmd>
-            <exe-user>docker</exe-user>
-        </execute>
-        <execute>
-            <exe-cmd>touch /etc/pg_backrest.conf</exe-cmd>
-            <exe-user>root</exe-user>
-        </execute>
-        <execute>
-            <exe-cmd>chown postgres /etc/pg_backrest.conf</exe-cmd>
-            <exe-user>root</exe-user>
-        </execute>
-        <execute>
-            <exe-cmd>mkdir /home/vagrant/backrest-release-{[version]}</exe-cmd>
-            <exe-user>vagrant</exe-user>
-        </execute>
-        <execute>
-            <exe-cmd>cp -r /backrest/bin /home/vagrant/backrest-release-{[version]}</exe-cmd>
-            <exe-user>vagrant</exe-user>
-        </execute>
-        <execute>
-            <exe-cmd>cp -r /backrest/lib /home/vagrant/backrest-release-{[version]}</exe-cmd>
-            <exe-user>vagrant</exe-user>
-        </execute>
-        <execute>
-            <exe-cmd>rm /etc/apt/apt.conf.d/70debconf</exe-cmd>
-            <exe-user>root</exe-user>
-        </execute>
-    </cleanup>
-
     <!-- SECTION => INTRODUCTION -->
     <section id="introduction">
         <title>Introduction</title>
@@ -143,6 +101,21 @@
         <title>Installation</title>
 
         <p><backrest/> is written in Perl which is included with Ubuntu by default.  A few additional modules are required which are all available as packages.</p>
+
+        <host-add name="db-master" image="db">
+            <execute>
+                <exe-cmd>mkdir /home/vagrant/backrest-release-{[version]}</exe-cmd>
+                <exe-user>vagrant</exe-user>
+            </execute>
+            <execute>
+                <exe-cmd>cp -r /backrest/bin /home/vagrant/backrest-release-{[version]}</exe-cmd>
+                <exe-user>vagrant</exe-user>
+            </execute>
+            <execute>
+                <exe-cmd>cp -r /backrest/lib /home/vagrant/backrest-release-{[version]}</exe-cmd>
+                <exe-user>vagrant</exe-user>
+            </execute>
+        </host-add>
 
         <execute-list>
             <title>Install required Perl modules</title>

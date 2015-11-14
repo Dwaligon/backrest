@@ -20,6 +20,7 @@ use BackRest::FileCommon;
 
 use lib dirname($0) . '/../test/lib';
 use BackRestTest::Common::ExecuteTest;
+use BackRestTest::Common::HostTest;
 
 use BackRestDoc::Common::DocManifest;
 
@@ -32,6 +33,7 @@ use constant OP_DOC_EXECUTE_BACKREST_CONFIG                         => OP_DOC_EX
 use constant OP_DOC_EXECUTE_EXECUTE                                 => OP_DOC_EXECUTE . '->execute';
 use constant OP_DOC_EXECUTE_NEW                                     => OP_DOC_EXECUTE . '->new';
 use constant OP_DOC_EXECUTE_POSTGRES_CONFIG                         => OP_DOC_EXECUTE . '->postresConfig';
+use constant OP_DOC_EXECUTE_SECTION_CHILD_PROCESS                   => OP_DOC_EXECUTE . '->sectionChildProcess';
 
 ####################################################################################################################################
 # CONSTRUCTOR
@@ -64,16 +66,8 @@ sub new
 
     $self->{bExe} = $bExe;
 
-    # Execute cleanup commands
-    if ($self->{bExe} && defined($self->{oDoc}->nodeGet('cleanup', false)))
-    {
-        &log(DEBUG, "do cleanup");
-
-        foreach my $oExecute ($self->{oDoc}->nodeGet('cleanup')->nodeList('execute'))
-        {
-            $self->execute($oExecute);
-        }
-    }
+    # For now hardcode the OS to u14
+    $self->{strOS} = 'u14';
 
     # Return from function and log return values if any
     return logDebugReturn
@@ -94,12 +88,14 @@ sub execute
     my
     (
         $strOperation,
+        # $strHostName,
         $oCommand,
         $iIndent
     ) =
         logDebugParam
         (
             OP_DOC_EXECUTE_EXECUTE, \@_,
+            # {name => 'strHostName'},
             {name => 'oCommand'},
             {name => 'iIndent', default => 1}
         );
@@ -214,7 +210,6 @@ sub execute
         {name => '$strOutput', value => $strOutput, trace => true}
     );
 }
-
 
 ####################################################################################################################################
 # backrestConfig
@@ -429,6 +424,66 @@ sub postgresConfig
         $strOperation,
         {name => 'strFile', value => $strFile, trace => true},
         {name => 'strConfig', value => $strConfig, trace => true}
+    );
+}
+
+####################################################################################################################################
+# sectionChildProcesss
+####################################################################################################################################
+sub sectionChildProcess
+{
+    my $self = shift;
+
+    # Assign function parameters, defaults, and log debug info
+    my
+    (
+        $strOperation,
+        $oChild,
+        $iDepth
+    ) =
+        logDebugParam
+        (
+            OP_DOC_EXECUTE_SECTION_CHILD_PROCESS, \@_,
+            {name => 'oChild'},
+            {name => 'iDepth'}
+        );
+
+    &log(DEBUG, ('    ' x ($iDepth + 1)) . 'process child: ' . $oChild->nameGet());
+
+    # Execute a command
+    if ($oChild->nameGet() eq 'host-add')
+    {
+        if ($self->{bExe})
+        {
+            my $strName = $oChild->paramGet('name');
+            my $strImage = $oChild->paramGet('image');
+
+            if (defined($self->{host}{$strName}))
+            {
+                confess &log(ERROR, 'cannot add host ${strName} because it already exists');
+            }
+
+            my $oHost = new BackRestTest::Common::HostTest($strName, $self->{strOS}, $strImage);
+
+            # Execute cleanup commands
+            foreach my $oExecute ($oChild->nodeList('execute'))
+            {
+                $self->execute($oExecute);
+            }
+
+            $self->{host}{$strName} = $oHost;
+        }
+    }
+    # Skip children that have already been processed and error on others
+    elsif ($oChild->nameGet() ne 'title')
+    {
+        confess &log(ASSERT, 'unable to process child type ' . $oChild->nameGet());
+    }
+
+    # Return from function and log return values if any
+    return logDebugReturn
+    (
+        $strOperation
     );
 }
 

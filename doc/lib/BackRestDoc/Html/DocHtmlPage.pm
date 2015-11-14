@@ -370,9 +370,9 @@ sub sectionProcess
             $oSectionTocElement->add($oChildSectionTocElement);
         }
         # Skip children that have already been processed and error on others
-        elsif ($oChild->nameGet() ne 'title')
+        else
         {
-            confess &log(ASSERT, 'unable to process child type ' . $oChild->nameGet());
+            $self->sectionChildProcess($oChild, $iDepth + 1);
         }
     }
 

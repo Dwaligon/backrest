@@ -15,3 +15,8 @@ COPY ssh/id_rsa.pub /var/lib/postgresql/.ssh/authorized_keys
 RUN chown -R postgres:postgres /var/lib/postgresql/.ssh
 RUN chmod 700 /var/lib/postgresql/.ssh
 RUN chmod 600 /var/lib/postgresql/.ssh/*
+
+# Create pg_backrest.conf
+RUN touch /etc/pg_backrest.conf
+RUN chmod 640 /etc/pg_backrest.conf
+RUN chown postgres:postgres /etc/pg_backrest.conf
