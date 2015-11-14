@@ -32,6 +32,41 @@
             <variable-value>/var/lib/postgresql/9.4/{[postgres-cluster-demo]}</variable-value>
         </variable>
 
+        <!-- Hosts -->
+        <variable>
+            <variable-name>host-os</variable-name>
+            <variable-value>u14</variable-value>
+        </variable>
+        <variable>
+            <variable-name>host-user</variable-name>
+            <variable-value>vagrant</variable-value>
+        </variable>
+        <variable>
+            <variable-name>host-mount</variable-name>
+            <variable-value>/backrest:/backrest</variable-value>
+        </variable>
+        <variable>
+            <variable-name>image-user</variable-name>
+            <variable-value>{[host-user]}</variable-value>
+        </variable>
+
+        <variable>
+            <variable-name>host-db-master</variable-name>
+            <variable-value>db-master</variable-value>
+        </variable>
+        <variable>
+            <variable-name>host-db-master-user</variable-name>
+            <variable-value>{[host-user]}</variable-value>
+        </variable>
+        <variable>
+            <variable-name>host-db-master-image</variable-name>
+            <variable-value>{[image-user]}/{[host-os]}-db</variable-value>
+        </variable>
+        <variable>
+            <variable-name>host-db-master-mount</variable-name>
+            <variable-value>{[host-mount]}</variable-value>
+        </variable>
+
         <!-- Commands for various operations -->
         <variable>
             <variable-name>cmd-backup-last</variable-name>
@@ -102,7 +137,7 @@
 
         <p><backrest/> is written in Perl which is included with Ubuntu by default.  A few additional modules are required which are all available as packages.</p>
 
-        <host-add name="db-master" image="db">
+        <host-add name="{[host-db-master]}" user="{[host-db-master-image]}" image="{[host-db-master-image]}" os="{[host-os]}" mount="{[host-db-master-mount]}">
             <execute>
                 <exe-cmd>mkdir /home/vagrant/backrest-release-{[version]}</exe-cmd>
                 <exe-user>vagrant</exe-user>
@@ -117,7 +152,7 @@
             </execute>
         </host-add>
 
-        <execute-list>
+        <execute-list host="{[host-db-master]}">
             <title>Install required Perl modules</title>
 
             <execute>
@@ -130,7 +165,7 @@
 
         <p>No Debian/Ubuntu packages are currently available for <backrest/> but it is easy to download the source and install manually.</p>
 
-        <execute-list>
+        <execute-list host="{[host-db-master]}">
             <title>Download version <id>{[version]}</id> of <backrest/></title>
 
             <execute>
@@ -142,7 +177,7 @@
             </execute>
         </execute-list>
 
-        <execute-list>
+        <execute-list host="{[host-db-master]}">
             <title>Install <backrest/></title>
 
             <execute>
@@ -169,7 +204,7 @@
 
         <p><backrest/> should now be properly installed but it is best to check.  If any dependencies were missed then you will get an error when running <backrest/> from the command line.</p>
 
-        <execute-list>
+        <execute-list host="{[host-db-master]}">
             <title>Make sure the installation worked</title>
 
             <execute>
@@ -191,7 +226,7 @@
 
             <p>You'll need to create a demo cluster to run the example commands in this user guide. This step is optional, but you may need to adjust commands in the user guide to work with your environment if you choose not to create the demo cluster.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Create and start the demo cluster</title>
 
                 <execute>
@@ -214,7 +249,7 @@
 
             <p>By default Ubuntu stores clusters in <path>/var/lib/postgresql/[version]/[cluster]</path> so it is easy to determine the correct path for the data directory.</p>
 
-            <backrest-config file="{[backrest-config-demo]}">
+            <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
                 <title>Configure the <postgres/> cluster data directory</title>
 
                 <backrest-config-option>
@@ -233,7 +268,7 @@
 
             <p>For this simple configuration the repository will be stored on the same host as the <postgres/> server.  This is the simplest configuration and is useful in cases where external backup software is employed to backup the database host.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Create the <backrest/> repository</title>
 
                 <execute>
@@ -252,7 +287,7 @@
 
             <p>The repository path must be configured so <backrest/> knows where to find it.</p>
 
-            <backrest-config file="{[backrest-config-demo]}">
+            <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
                 <title>Configure the <backrest/> repository path</title>
 
                 <backrest-config-option>
@@ -269,7 +304,7 @@
 
             <p>Backing up a running <postgres/> cluster requires WAL archiving to be enabled.</p>
 
-            <postgres-config file="{[postgres-config-demo]}">
+            <postgres-config host="{[host-db-master]}" file="{[postgres-config-demo]}">
                 <title>Configure <postgres/> settings</title>
 
                 <postgres-config-option key="archive_command">'{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} archive-push %p'</postgres-config-option>
@@ -281,7 +316,7 @@
 
             <p>The <postgres/> cluster must be restarted after making these changes and before performing a backup.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Restart the {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
@@ -290,14 +325,14 @@
             </execute-list>
 
 <!--        It would be good if the info command showed xlogs so we don't have to examine directories
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <execute>
                     <exe-cmd>psql -c "select pg_switch_xlog()"</exe-cmd>
                     <exe-output/>
                 </execute>
             </execute-list>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <execute>
                     <exe-cmd>ls -lahR {[backrest-repo-path]}/archive/{[postgres-cluster-demo]}/9.4-1</exe-cmd>
                     <exe-retry/>
@@ -312,7 +347,7 @@
 
             <p>To perform a backup of the <postgres/> cluster run <backrest/> with the <cmd>backup</cmd> command.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Backup the {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
@@ -325,7 +360,7 @@
 
             <p>The <br-option>type</br-option> option can be used to specify and full or differential backup.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Differential backup of the {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
@@ -340,7 +375,7 @@
 
             <p>Use the <cmd>info</cmd> command to get information about backups.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Get info for the {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
@@ -361,7 +396,7 @@
 
             <p>Backups can protect you from a number of disaster scenarios, the most common of which are hardware failure and data corruption.  The easiest way to simulate data corruption is to remove an important <postgres/> cluster file.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Stop the {[postgres-cluster-demo]} cluster and delete the <file>pg_control</file> file</title>
 
                 <execute>
@@ -375,7 +410,7 @@
 
             <p>Starting the cluster without this important file will result in an error.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Attempt to start the corrupted {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
@@ -388,7 +423,7 @@
 
             <p>To restore a backup of the <postgres/> cluster run <backrest/> with the <cmd>restore</cmd> command. The cluster needs to be stopped (in this case it is already stopped) and all files must be removed from the <postgres/> data directory.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Remove old files from {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
@@ -396,7 +431,7 @@
                 </execute>
             </execute-list>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Restore the {[postgres-cluster-demo]} cluster and start <postgres/></title>
 
                 <execute>
@@ -426,7 +461,7 @@
 
             <p>By default <backrest/> will wait for the next regularly scheduled checkpoint before starting a backup.  Depending on the <pg-option>checkpoint_timeout</pg-option> and <pg-option>checkpoint_segments</pg-option> settings in <postgres/> it may be quite some time before a checkpoint completes and the backup can begin.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Incremental backup of the {[postgres-cluster-demo]} cluster with the regularly scheduled checkpoint</title>
 
                 <execute>
@@ -439,7 +474,7 @@
 
             <p>By setting <br-setting>start-fast</br-setting> on the command-line or in <file>{[backrest-config-demo]}</file> an immediate checkpoint is requested and the backup will start more quickly. This is convenient for testing and for ad-hoc backups.  For instance, if a backup is being taken at the beginning of a release window it makes no sense to wait for a checkpoint.  Since regularly scheduled backups generally only happen once per day it is unlikely that enabling the <br-option>start-fast</br-option> in <file>{[backrest-config-demo]}</file> will negatively affect performance, however for high-volume transactional systems you may want to pass <br-setting>{[dash]}-start-fast</br-setting> on the command-line instead.</p>
 
-            <backrest-config file="{[backrest-config-demo]}">
+            <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
                 <title>Enable the <br-option>start-fast</br-option> option</title>
 
                 <backrest-config-option>
@@ -449,7 +484,7 @@
                 </backrest-config-option>
             </backrest-config>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Incremental backup of the {[postgres-cluster-demo]} cluster with an immediate checkpoint</title>
 
                 <execute>
@@ -469,7 +504,7 @@
 
             <p>Here an error in intentionally caused by removing repository permissions.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Revoke write privileges in the <backrest/> repository and attempt a backup</title>
 
                 <execute>
@@ -488,7 +523,7 @@
 
             <p>Even when the permissions are fixed <backrest/> will still be unable to perform a backup because the <postgres/> cluster is stuck in backup mode.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Restore write privileges in the <backrest/> repository and attempt a backup</title>
 
                 <execute>
@@ -507,7 +542,7 @@
 
             <p>Enabling the <br-option>stop-auto</br-option> option allows <backrest/> to stop the current backup if it detects that no other <backrest/> backup process is running.</p>
 
-            <backrest-config file="{[backrest-config-demo]}">
+            <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
                 <title>Enable the <br-option>stop-auto</br-option> option</title>
 
                 <backrest-config-option>
@@ -519,7 +554,7 @@
 
             <p>Now <backrest/> will stop the old backup and start a new one so the process completes successfully.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Perform an incremental backup</title>
 
                 <execute>
@@ -550,7 +585,7 @@
 
             <p>PITR allows the WAL to be played from the last backup to a specified time, transaction id, or recovery point.  For common recovery scenarios time-based recovery is arguably the most useful.  A common recovery scenario is to restore a table or data was accidentally dropped or deleted.  Recovering a dropped table is more dramatic so that's the example given here but deleted data would be recovered in exactly the same way.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Create a table with very important data</title>
 
                 <execute>
@@ -568,7 +603,7 @@
 
             <p>It is important to represent the time as reckoned by <postgres/> and to include timezone offsets.  This reduces the possibility of unintended timezone conversions and an unexpected recovery result.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Get the time from <postgres/></title>
 
                 <execute>
@@ -582,7 +617,7 @@
 
             <p>Now that the time has been recorded the table is dropped.  In practice finding the exact time that the table was dropped is a lot harder than in this example.  It may not be possible to find the exact time, but some forensic work should be able to get you close.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Drop the important table</title>
 
                 <execute>
@@ -598,7 +633,7 @@
 
             <p>Now the restore can be performed with time-based recovery to bring back the missing table.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Stop <postgres/>, restore the {[postgres-cluster-demo]} cluster to <id>{[time-recovery-timestamp]}</id>, and display <file>recovery.conf</file></title>
 
                 <execute>
@@ -624,7 +659,7 @@
 
             <p>The <file>recovery.conf</file> file has been automatically generated by <backrest/> so <postgres/> can be started immediately. Once <postgres/> has finished recovery the table will exist again and can be queried.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Start <postgres/> and check that the important table exists</title>
 
                 <execute>
@@ -640,7 +675,7 @@
 
             <p>The <postgres/> log also contains valuable information.  It will indicate the time and transaction where the recovery stopped and also give the time of the last transaction to be applied.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Examine the <postgres/> log output</title>
 
                 <execute>
@@ -652,7 +687,7 @@
 
             <p>This example was rigged to give the correct result.  If a backup after the required time is chosen then <postgres/> will not be able to recover the lost table. <postgres/> can only play forward, not backward.  To demonstrate this the important table must be dropped (again).</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Drop the important table (again)</title>
 
                 <execute>
@@ -668,7 +703,7 @@
 
             <p>Now take a new backup and attempt recovery from the new backup.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Perform a backup then attempt recovery from that backup</title>
 
                 <execute>
@@ -709,7 +744,7 @@
 
             <p>Looking at the log output it's not obvious that recovery failed to restore the table.  The key is to look for the presence of the <quote>recovery stopping before...</quote> and <quote>last completed transaction...</quote> log messages.  If they are not present then the recovery to the specified point-in-time was not successful.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Examine the <postgres/> log output to discover the recovery was not successful</title>
 
                 <execute>
@@ -721,7 +756,7 @@
 
             <p>Using an earlier backup will allow <postgres/> to play forward to the correct time again.  The default behavior for restore is to use the most recent backup but an earlier backup can be specified with the <br-option>{[dash]}-set</br-option> option.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Stop <postgres/>, restore from the previous backup, and start <postgres/></title>
 
                 <execute>
@@ -754,7 +789,7 @@
 
             <p>Now the the log output will contain the expected <quote>recovery stopping before...</quote> and <quote>last completed transaction...</quote> messages showing that the recovery was successful.</p>
 
-            <execute-list>
+            <execute-list host="{[host-db-master]}">
                 <title>Examine the <postgres/> log output for log messages indicating success</title>
 
                 <execute>
@@ -772,7 +807,7 @@
 
         <p></p>
 
-        <execute-list>
+        <execute-list host="{[host-db-master]}">
             <title>Get detailed information</title>
 
             <execute>

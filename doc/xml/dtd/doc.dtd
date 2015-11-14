@@ -50,6 +50,7 @@
     <!ATTLIST config-key name CDATA #REQUIRED>
 
 <!ELEMENT execute-list (title, execute+)>
+    <!ATTLIST execute-list host CDATA #REQUIRED>
 <!ELEMENT execute (exe-cmd, exe-user?,  exe-var?, exe-retry?, exe-output?, exe-no-show?, exe-highlight?, exe-skip?,
                    exe-err-expect?, exe-err-suppress?, exe-err-suppress-stderr?)>
 <!ELEMENT exe-cmd (#PCDATA)>
@@ -72,6 +73,7 @@
 <!ELEMENT variable-value (#PCDATA)>
 
 <!ELEMENT backrest-config (title, backrest-config-option+)>
+    <!ATTLIST backrest-config host CDATA #REQUIRED>
     <!ATTLIST backrest-config file CDATA #REQUIRED>
 <!ELEMENT backrest-config-option (backrest-config-option-section?, backrest-config-option-key, backrest-config-option-value?)>
 <!ELEMENT backrest-config-option-section (#PCDATA)>
@@ -79,6 +81,7 @@
 <!ELEMENT backrest-config-option-value (#PCDATA)>
 
 <!ELEMENT postgres-config (title, postgres-config-option+)>
+    <!ATTLIST postgres-config host CDATA #REQUIRED>
     <!ATTLIST postgres-config file CDATA #REQUIRED>
 <!ELEMENT postgres-config-option (#PCDATA)>
     <!ATTLIST postgres-config-option key CDATA #REQUIRED>
@@ -120,7 +123,10 @@
 <!-- Host elements -->
 <!ELEMENT host-add (execute*)>
     <!ATTLIST host-add name CDATA #REQUIRED>
+    <!ATTLIST host-add user CDATA #REQUIRED>
     <!ATTLIST host-add image CDATA #REQUIRED>
+    <!ATTLIST host-add os CDATA "">
+    <!ATTLIST host-add mount CDATA "">
 
 <!-- Table elements -->
 <!ELEMENT table (title?, table-header, table-data)>

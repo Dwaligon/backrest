@@ -266,7 +266,8 @@ sub sectionProcess
                 my $bExeShow = defined($oExecute->fieldGet('exe-no-show', false)) ? false : true;
                 my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
 
-                my ($strCommand, $strOutput) = $self->execute($oExecute, $iDepth + 3);
+                my ($strCommand, $strOutput) = $self->execute($self->{oManifest}->variableReplace($oChild->paramGet('host')),
+                                                              $oExecute, $iDepth + 3);
 
                 if ($bExeShow)
                 {

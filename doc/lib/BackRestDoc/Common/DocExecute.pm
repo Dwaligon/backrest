@@ -66,9 +66,6 @@ sub new
 
     $self->{bExe} = $bExe;
 
-    # For now hardcode the OS to u14
-    $self->{strOS} = 'u14';
-
     # Return from function and log return values if any
     return logDebugReturn
     (
@@ -88,14 +85,14 @@ sub execute
     my
     (
         $strOperation,
-        # $strHostName,
+        $strHostName,
         $oCommand,
         $iIndent
     ) =
         logDebugParam
         (
             OP_DOC_EXECUTE_EXECUTE, \@_,
-            # {name => 'strHostName'},
+            {name => 'strHostName'},
             {name => 'oCommand'},
             {name => 'iIndent', default => 1}
         );
@@ -111,6 +108,14 @@ sub execute
     }
     else
     {
+        # Check that the host is valid
+        my $oHost = $self->{host}{$strHostName};
+
+        if (!defined($oHost))
+        {
+            confess &log(ERROR, "cannot execute on host ${strHostName} because it the host not exist");
+        }
+
         # Command variables
         $strCommand = trim($oCommand->fieldGet('exe-cmd'));
         my $strUser = $oCommand->fieldGet('exe-user', false);
@@ -128,17 +133,9 @@ sub execute
             sleep(1);
         }
 
-        my $bDocker = false;
-
-        if (defined($strUser) && $strUser eq 'docker')
-        {
-            $strUser = undef;
-            $bDocker = true;
-        }
-
         $strUser = defined($strUser) ? $strUser : 'postgres';
         $strCommand = $self->{oManifest}->variableReplace(
-            ($bDocker || defined($strUser) && $strUser eq 'vagrant' ? '' :
+            (defined($strUser) && $strUser eq 'vagrant' ? '' :
                 ('sudo ' . ($strUser eq 'root' ? '' : "-u ${strUser} "))) . $strCommand);
 
         # Add continuation chars and proper spacing
@@ -159,10 +156,10 @@ sub execute
         {
             if ($self->{bExe})
             {
-                my $oExec = new BackRestTest::Common::ExecuteTest((!$bDocker ? 'docker exec -u vagrant db-master ' : '') . $strCommand,
-                                                                  {bSuppressError => $bSuppressError,
-                                                                   bSuppressStdErr => $bSuppressStdErr,
-                                                                   iExpectedExitStatus => $iExeExpectedError});
+                my $oExec = $oHost->execute($strCommand,
+                                            {bSuppressError => $bSuppressError,
+                                            bSuppressStdErr => $bSuppressStdErr,
+                                            iExpectedExitStatus => $iExeExpectedError});
                 $oExec->begin();
                 $oExec->end();
 
@@ -250,6 +247,15 @@ sub backrestConfig
 
         if ($self->{bExe})
         {
+            # Check that the host is valid
+            my $strHostName = $self->{oManifest}->variableReplace($oConfig->paramGet('host'));
+            my $oHost = $self->{host}{$strHostName};
+
+            if (!defined($oHost))
+            {
+                confess &log(ERROR, "cannot configure backrest on host ${strHostName} because the host does not exist");
+            }
+
             foreach my $oOption ($oConfig->nodeList('backrest-config-option'))
             {
                 my $strSection = $oOption->fieldGet('backrest-config-option-section');
@@ -274,18 +280,14 @@ sub backrestConfig
                 }
             }
 
-            my $strLocalFile = "/home/vagrant/data/db-master${strFile}";
+            my $strLocalFile = "/home/vagrant/data/db-master/etc/pg_backrest.conf";
 
             # Save the ini file
-            # executeTest("sudo chmod 777 $strFile", {bSuppressError => true});
             iniSave($strLocalFile, $self->{config}{$strFile}, true);
 
             $strConfig = fileStringRead($strLocalFile);
 
-            executeTest("docker cp ${strLocalFile} db-master:${strFile}");
-
-            executeTest("docker exec -t db-master chown postgres:postgres $strFile");
-            executeTest("docker exec -t db-master chmod 640 $strFile");
+            $oHost->copyTo($strLocalFile, $strFile, 'postgres:postgres', '640');
         }
         else
         {
@@ -342,8 +344,17 @@ sub postgresConfig
 
         if ($self->{bExe})
         {
+            # Check that the host is valid
+            my $strHostName = $self->{oManifest}->variableReplace($oConfig->paramGet('host'));
+            my $oHost = $self->{host}{$strHostName};
+
+            if (!defined($oHost))
+            {
+                confess &log(ERROR, "cannot configure postgres on host ${strHostName} because the host does not exist");
+            }
+
             my $strLocalFile = '/home/vagrant/data/db-master/etc/postgresql.conf';
-            executeTest("docker cp db-master:${strFile} ${strLocalFile}");
+            $oHost->copyFrom($strFile, $strLocalFile);
 
             if (!defined(${$self->{'pg-config'}}{$strFile}{base}) && $self->{bExe})
             {
@@ -397,14 +408,10 @@ sub postgresConfig
             # Save the conf file
             if ($self->{bExe})
             {
-                # executeTest("sudo chown vagrant $strFile");
-
                 fileStringWrite($strLocalFile, $$oConfigHash{base} .
                                 (defined($strConfig) ? "\n# pgBackRest Configuration\n${strConfig}" : ''));
 
-                executeTest("docker cp ${strLocalFile} db-master:${strFile}");
-                executeTest("docker exec -t db-master sudo chown postgres $strFile");
-                executeTest("docker exec -t db-master chmod 640 $strFile");
+                $oHost->copyTo($strLocalFile, $strFile, 'postgres:postgres', '640');
             }
 
             $$oConfigHash{old} = $oConfigHashNew;
@@ -455,23 +462,25 @@ sub sectionChildProcess
     {
         if ($self->{bExe})
         {
-            my $strName = $oChild->paramGet('name');
-            my $strImage = $oChild->paramGet('image');
+            my $strName = $self->{oManifest}->variableReplace($oChild->paramGet('name'));
+            my $strUser = $self->{oManifest}->variableReplace($oChild->paramGet('user'));
+            my $strImage = $self->{oManifest}->variableReplace($oChild->paramGet('image'));
+            my $strOS = $self->{oManifest}->variableReplace($oChild->paramGet('os', false));
+            my $strMount = $self->{oManifest}->variableReplace($oChild->paramGet('mount', false));
 
             if (defined($self->{host}{$strName}))
             {
-                confess &log(ERROR, 'cannot add host ${strName} because it already exists');
+                confess &log(ERROR, 'cannot add host ${strName} because the host already exists');
             }
 
-            my $oHost = new BackRestTest::Common::HostTest($strName, $self->{strOS}, $strImage);
+            my $oHost = new BackRestTest::Common::HostTest($strName, $strImage, $strUser, $strOS, $strMount);
+            $self->{host}{$strName} = $oHost;
 
             # Execute cleanup commands
             foreach my $oExecute ($oChild->nodeList('execute'))
             {
-                $self->execute($oExecute);
+                $self->execute($strName, $oExecute, $iDepth + 1);
             }
-
-            $self->{host}{$strName} = $oHost;
         }
     }
     # Skip children that have already been processed and error on others
