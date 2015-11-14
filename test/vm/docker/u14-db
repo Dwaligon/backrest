@@ -7,3 +7,11 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo 
 RUN sudo apt-get update
 RUN apt-get install -y postgresql-9.4
 RUN pg_dropcluster --stop 9.4 main
+
+# Setup SSH
+COPY ssh/config /var/lib/postgresql/.ssh/config
+COPY ssh/id_rsa /var/lib/postgresql/.ssh/id_rsa
+COPY ssh/id_rsa.pub /var/lib/postgresql/.ssh/authorized_keys
+RUN chown -R postgres:postgres /var/lib/postgresql/.ssh
+RUN chmod 700 /var/lib/postgresql/.ssh
+RUN chmod 600 /var/lib/postgresql/.ssh/*

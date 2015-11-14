@@ -48,55 +48,38 @@
     <!-- Commands used to clean the environment before or after doc generation -->
     <cleanup>
         <execute>
-            <exe-cmd>pg_dropcluster {[dash]}-stop 9.4 {[postgres-cluster-demo]}</exe-cmd>
+            <exe-cmd>docker kill db-master</exe-cmd>
+            <exe-user>docker</exe-user>
             <exe-err-suppress/>
         </execute>
         <execute>
-            <exe-cmd>apt-get remove -y libdbd-pg-perl libdbi-perl libnet-daemon-perl
-                libplrpc-perl</exe-cmd>
-            <exe-user>root</exe-user>
-        </execute>
-        <execute>
-            <exe-cmd>chmod 777 /home/vagrant</exe-cmd>
-            <exe-user>root</exe-user>
-        </execute>
-        <execute>
-            <exe-cmd>rm {[backrest-config-demo]}</exe-cmd>
-            <exe-user>root</exe-user>
+            <exe-cmd>docker rm db-master</exe-cmd>
+            <exe-user>docker</exe-user>
             <exe-err-suppress/>
         </execute>
         <execute>
-            <exe-cmd>chmod 777 /etc</exe-cmd>
+            <exe-cmd>docker run -itd --name=db-master -v /backrest:/backrest vagrant/u14-db</exe-cmd>
+            <exe-user>docker</exe-user>
+        </execute>
+        <execute>
+            <exe-cmd>touch /etc/pg_backrest.conf</exe-cmd>
             <exe-user>root</exe-user>
         </execute>
         <execute>
-            <exe-cmd>rm -rf {[backrest-repo-path]}</exe-cmd>
+            <exe-cmd>chown postgres /etc/pg_backrest.conf</exe-cmd>
             <exe-user>root</exe-user>
         </execute>
         <execute>
-            <exe-cmd>rm -rf {[perl-lib-path]}/BackRest</exe-cmd>
+            <exe-cmd>mkdir /root/backrest-release-{[version]}</exe-cmd>
             <exe-user>root</exe-user>
         </execute>
         <execute>
-            <exe-cmd>rm {[perl-bin-path]}/{[project-exe]}</exe-cmd>
-            <exe-user>root</exe-user>
-            <exe-err-suppress/>
-        </execute>
-        <execute>
-            <exe-cmd>rm -rf /home/vagrant/backrest-release-{[version]}</exe-cmd>
+            <exe-cmd>cp -r /backrest/bin /root/backrest-release-{[version]}</exe-cmd>
             <exe-user>root</exe-user>
         </execute>
         <execute>
-            <exe-cmd>mkdir /home/vagrant/backrest-release-{[version]}</exe-cmd>
-            <exe-user>vagrant</exe-user>
-        </execute>
-        <execute>
-            <exe-cmd>cp -r /backrest/bin /home/vagrant/backrest-release-{[version]}</exe-cmd>
-            <exe-user>vagrant</exe-user>
-        </execute>
-        <execute>
-            <exe-cmd>cp -r /backrest/lib /home/vagrant/backrest-release-{[version]}</exe-cmd>
-            <exe-user>vagrant</exe-user>
+            <exe-cmd>cp -r /backrest/lib /root/backrest-release-{[version]}</exe-cmd>
+            <exe-user>root</exe-user>
         </execute>
     </cleanup>
 
@@ -163,7 +146,6 @@
             <execute>
                 <exe-cmd>apt-get install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl</exe-cmd>
                 <exe-user>root</exe-user>
-                <exe-output/>
             </execute>
         </execute-list>
 
@@ -175,8 +157,7 @@
             <execute>
                 <exe-cmd>wget -q -O -
                     https://github.com/pgmasters/backrest/archive/release/{[version]}.tar.gz |
-                    tar zxv -C ~</exe-cmd>
-                <exe-user>vagrant</exe-user>
+                    tar zxv -C /root</exe-cmd>
                 <exe-skip/>
             </execute>
         </execute-list>
@@ -185,7 +166,7 @@
             <title>Install <backrest/></title>
 
             <execute>
-                <exe-cmd>cp -r ~/backrest-release-{[version]}/lib/BackRest {[perl-lib-path]}</exe-cmd>
+                <exe-cmd>cp -r /root/backrest-release-{[version]}/lib/BackRest {[perl-lib-path]}</exe-cmd>
                 <exe-user>root</exe-user>
             </execute>
             <execute>
@@ -197,7 +178,7 @@
                 <exe-user>root</exe-user>
             </execute>
             <execute>
-                <exe-cmd>cp ~/backrest-release-{[version]}/bin/{[project-exe]} {[perl-bin-path]}/{[project-exe]}</exe-cmd>
+                <exe-cmd>cp /root/backrest-release-{[version]}/bin/{[project-exe]} {[perl-bin-path]}/{[project-exe]}</exe-cmd>
                 <exe-user>root</exe-user>
             </execute>
             <execute>
@@ -213,7 +194,6 @@
 
             <execute>
                 <exe-cmd>{[project-exe]}</exe-cmd>
-                <exe-user>vagrant</exe-user>
                 <exe-output/>
             </execute>
         </execute-list>
@@ -582,7 +562,7 @@
         <p>The Restore section introduces additional <cmd>restore</cmd> command features.</p>
 
         <!-- SECTION => RESTORE - PITR -->
-        <section id="pitr">
+        <!-- <section id="pitr">
             <title>Point-in-Time Recovery (PITR)</title>
 
             <p>The <link page="#quickstart-perform-restore">restore example</link> in <link page="#quickstart">Quick Start</link> performed default recovery, which is to play all the way to the end of the WAL stream.  In the case of a hardware failure this is probably the most appropriate action but for data corruption scenarios (whether machine or human in origin) there is a better alternative called Point-in-Time Recovery (PITR).</p>
@@ -650,8 +630,8 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --delta
-                        --type=time "--target={[time-recovery-timestamp]}" restore</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-delta
+                        {[dash]}-type=time "{[dash]}-target={[time-recovery-timestamp]}" restore</exe-cmd>
                 </execute>
 
                 <execute>
@@ -729,8 +709,8 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --delta
-                         --type=time "--target={[time-recovery-timestamp]}" restore</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-delta
+                         {[dash]}-type=time "{[dash]}-target={[time-recovery-timestamp]}" restore</exe-cmd>
                 </execute>
 
                 <execute>
@@ -757,7 +737,7 @@
                 </execute>
             </execute-list>
 
-            <p>Using an earlier backup will allow <postgres/> to play forward to the correct time again.  The default behavior for restore is to use the most recent backup but an earlier backup can be specified with the <br-option>--set</br-option> option.</p>
+            <p>Using an earlier backup will allow <postgres/> to play forward to the correct time again.  The default behavior for restore is to use the most recent backup but an earlier backup can be specified with the <br-option>{[dash]}-set</br-option> option.</p>
 
             <execute-list>
                 <title>Stop <postgres/>, restore from the previous backup, and start <postgres/></title>
@@ -773,9 +753,9 @@
 
                 <execute>
                     <exe-cmd>
-                        {[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --delta
-                            --type=time "--target={[time-recovery-timestamp]}"
-                            --set={[backup-last]} restore
+                        {[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-delta
+                            {[dash]}-type=time "{[dash]}-target={[time-recovery-timestamp]}"
+                            {[dash]}-set={[backup-last]} restore
                     </exe-cmd>
                 </execute>
 
@@ -801,7 +781,7 @@
                     <exe-highlight>recovery stopping before|last completed transaction|starting point-in-time recovery</exe-highlight>
                 </execute>
             </execute-list>
-        </section>
+        </section> -->
     </section>
 
     <!-- SECTION => INFO -->

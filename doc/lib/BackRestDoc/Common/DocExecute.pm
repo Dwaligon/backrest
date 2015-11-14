@@ -132,9 +132,17 @@ sub execute
             sleep(1);
         }
 
+        my $bDocker = false;
+
+        if (defined($strUser) && $strUser eq 'docker')
+        {
+            $strUser = undef;
+            $bDocker = true;
+        }
+
         $strUser = defined($strUser) ? $strUser : 'postgres';
         $strCommand = $self->{oManifest}->variableReplace(
-            ($strUser eq 'vagrant' ? '' : 'sudo ' . ($strUser eq 'root' ? '' : "-u ${strUser} ")) . $strCommand);
+            ($bDocker ? '' : ('sudo ' . ($strUser eq 'root' ? '' : "-u ${strUser} "))) . $strCommand);
 
         # Add continuation chars and proper spacing
         $strCommand =~ s/[ ]*\n[ ]*/ \\\n    /smg;
@@ -154,7 +162,7 @@ sub execute
         {
             if ($self->{bExe})
             {
-                my $oExec = new BackRestTest::Common::ExecuteTest($strCommand,
+                my $oExec = new BackRestTest::Common::ExecuteTest((!$bDocker ? 'docker exec -t db-master ' : '') . $strCommand,
                                                                   {bSuppressError => $bSuppressError,
                                                                    bSuppressStdErr => $bSuppressStdErr,
                                                                    iExpectedExitStatus => $iExeExpectedError});
@@ -270,14 +278,18 @@ sub backrestConfig
                 }
             }
 
+            my $strLocalFile = "/home/vagrant/data/db-master${strFile}";
+
             # Save the ini file
-            executeTest("sudo chmod 777 $strFile", {bSuppressError => true});
-            iniSave($strFile, $self->{config}{$strFile}, true);
+            # executeTest("sudo chmod 777 $strFile", {bSuppressError => true});
+            iniSave($strLocalFile, $self->{config}{$strFile}, true);
 
-            $strConfig = fileStringRead($strFile);
+            $strConfig = fileStringRead($strLocalFile);
 
-            executeTest("sudo chown postgres:postgres $strFile");
-            executeTest("sudo chmod 640 $strFile");
+            executeTest("docker cp ${strLocalFile} db-master:${strFile}");
+
+            executeTest("docker exec -t db-master chown postgres:postgres $strFile");
+            executeTest("docker exec -t db-master chmod 640 $strFile");
         }
         else
         {
@@ -334,9 +346,12 @@ sub postgresConfig
 
         if ($self->{bExe})
         {
+            my $strLocalFile = '/home/vagrant/data/db-master/etc/postgresql.conf';
+            executeTest("docker cp db-master:${strFile} ${strLocalFile}");
+
             if (!defined(${$self->{'pg-config'}}{$strFile}{base}) && $self->{bExe})
             {
-                ${$self->{'pg-config'}}{$strFile}{base} = fileStringRead($strFile);
+                ${$self->{'pg-config'}}{$strFile}{base} = fileStringRead($strLocalFile);
             }
 
             my $oConfigHash = $self->{'pg-config'}{$strFile};
@@ -386,12 +401,14 @@ sub postgresConfig
             # Save the conf file
             if ($self->{bExe})
             {
-                executeTest("sudo chown vagrant $strFile");
+                # executeTest("sudo chown vagrant $strFile");
 
-                fileStringWrite($strFile, $$oConfigHash{base} .
+                fileStringWrite($strLocalFile, $$oConfigHash{base} .
                                 (defined($strConfig) ? "\n# pgBackRest Configuration\n${strConfig}" : ''));
 
-                executeTest("sudo chown postgres $strFile");
+                executeTest("docker cp ${strLocalFile} db-master:${strFile}");
+                executeTest("docker exec -t db-master sudo chown postgres $strFile");
+                executeTest("docker exec -t db-master chmod 640 $strFile");
             }
 
             $$oConfigHash{old} = $oConfigHashNew;
