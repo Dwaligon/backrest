@@ -32,6 +32,8 @@ use constant HTML_A                                                 => 'a';
     push @EXPORT, qw(HTML_A);
 use constant HTML_BODY                                              => 'body';
     push @EXPORT, qw(HTML_BODY);
+use constant HTML_PRE                                               => 'pre';
+    push @EXPORT, qw(HTML_PRE);
 use constant HTML_DIV                                               => 'div';
     push @EXPORT, qw(HTML_DIV);
 use constant HTML_SPAN                                              => 'span';

@@ -271,8 +271,11 @@ sub sectionProcess
 
                 if ($bExeShow)
                 {
+                    # Add continuation chars and proper spacing
+                    $strCommand =~ s/\n/\n   /smg;
+
                     $oExecuteBodyElement->
-                        addNew(HTML_DIV, "execute-body-cmd" . ($bFirst ? '-first' : ''),
+                        addNew(HTML_PRE, "execute-body-cmd",
                                {strContent => $strCommand, bPre => true});
 
                     if (defined($strOutput))
@@ -289,7 +292,7 @@ sub sectionProcess
                             if (defined($bHighLightOld) && $bHighLight != $bHighLightOld)
                             {
                                 $oExecuteBodyElement->
-                                    addNew(HTML_DIV, 'execute-body-output' .
+                                    addNew(HTML_PRE, 'execute-body-output' .
                                            ($bHighLightOld ? '-highlight' . ($bExeExpectedError ? '-error' : '') : ''),
                                            {strContent => $strHighLightOutput, bPre => true});
 
@@ -305,7 +308,7 @@ sub sectionProcess
                         if (defined($bHighLightOld))
                         {
                             $oExecuteBodyElement->
-                                addNew(HTML_DIV, 'execute-body-output' .
+                                addNew(HTML_PRE, 'execute-body-output' .
                                        ($bHighLightOld ? '-highlight' . ($bExeExpectedError ? '-error' : '') : ''),
                                        {strContent => $strHighLightOutput, bPre => true});
                         }

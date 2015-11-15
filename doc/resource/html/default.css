@@ -63,17 +63,13 @@ Header
 /*******************************************************************************
 Menu
 *******************************************************************************/
-.page-menu
+/*.page-menu
 {
-    /*margin-top: .25em;*/
-    /*font-size: 14pt;*/
-}
+}*/
 
 .menu-body
 {
     text-align: center;
-    /*font-weight: 600;*/
-    /*border-bottom: 2px #dddddd solid;*/
 }
 
 .menu
@@ -91,20 +87,16 @@ Menu
 .menu:before
 {
     content: "[";
-    /*margin-right: .5em;*/
 }
 
 .menu:after
 {
     content: "]";
-    /*margin-left: .5em;*/
 }
 
-.menu-link
+/*.menu-link
 {
-    /*margin-left: 2px;
-    margin-right: 2px;*/
-}
+}*/
 
 a.menu-link:link, a.menu-link:visited, a.menu-link:active
 {
@@ -221,9 +213,9 @@ Section
     margin-top: .75em;
 }
 
-.section-body
+/*.section-body
 {
-}
+}*/
 
 /*******************************************************************************
 Config, Execute, and Code Block Elements
@@ -268,7 +260,7 @@ Config, Execute, and Code Block Elements
     font-size: 10pt;
 }
 
-.execute-body-cmd-first, .execute-body-cmd,
+.execute-body-cmd,
 .execute-body-output, .execute-body-output-highlight,
 .config-body-title,
 .code-block
@@ -277,14 +269,26 @@ Config, Execute, and Code Block Elements
     padding-right: .5em;
 }
 
-.execute-body-cmd-first, .execute-body-cmd,
-.execute-body-output, .execute-body-output-highlight, .execute-body-output-highlight-error,
-.code-block
+/* Would rather not use pre at all, but Firefox won't copy code samples correctly without it */
+pre
 {
+    margin: 0px;
+    padding: 0px;
     white-space: pre-wrap;
 }
 
-.execute-body-cmd-first, .execute-body-output,
+.execute-body-cmd:before
+{
+    content: "$ ";
+}
+
+/*.execute-body-cmd,
+.execute-body-output, .execute-body-output-highlight, .execute-body-output-highlight-error,
+.code-block
+{
+}*/
+
+.execute-body-cmd:first-of-type, .execute-body-output,
 .config-body-title, .config-body-output,
 .code-block,
 .execute-body-output-highlight, .execute-body-output-highlight-error
@@ -292,7 +296,7 @@ Config, Execute, and Code Block Elements
     padding-top: .25em;
 }
 
-.execute-body-cmd-first, .execute-body-cmd, .execute-body-output,
+.execute-body-cmd, .execute-body-output,
 .config-body-title, .config-body-output,
 .code-block,
 .execute-body-output-highlight, .execute-body-output-highlight-error
@@ -323,16 +327,16 @@ Config, Execute, and Code Block Elements
 .execute-body-output, .execute-body-output-highlight, .execute-body-output-highlight-error,
 .config-body-output
 {
-    padding-left: 2em;
+    padding-left: 1.75em;
 }
 
-.code-block
+/*.code-block
 {
-}
+}*/
 
-.section-body-execute-output
+/*.section-body-execute-output
 {
-}
+}*/
 
 /*******************************************************************************
 Keywords
