@@ -357,7 +357,12 @@ sub sectionProcess
         # Add/remove backrest config options
         elsif ($oChild->nameGet() eq 'backrest-config')
         {
-            $oSectionBodyElement->add($self->backrestConfigProcess($oChild, $iDepth + 3));
+            my $oConfigElement = $self->backrestConfigProcess($oChild, $iDepth + 3);
+
+            if (defined($oConfigElement))
+            {
+                $oSectionBodyElement->add();
+            }
         }
         # Add/remove postgres config options
         elsif ($oChild->nameGet() eq 'postgres-config')
@@ -411,24 +416,28 @@ sub backrestConfigProcess
         );
 
     # Generate the config
-    my ($strFile, $strConfig) = $self->backrestConfig($oConfig, $iDepth);
+    my $oConfigElement;
+    my ($strFile, $strConfig, $bShow) = $self->backrestConfig($oConfig, $iDepth);
 
-    # Render the config
-    my $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");
+    if ($bShow)
+    {
+        # Render the config
+        my $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");
 
-    $oConfigElement->
-        addNew(HTML_DIV, "config-title",
-               {strContent => $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
+        $oConfigElement->
+            addNew(HTML_DIV, "config-title",
+                   {strContent => $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
 
-    my $oConfigBodyElement = $oConfigElement->addNew(HTML_DIV, "config-body");
+        my $oConfigBodyElement = $oConfigElement->addNew(HTML_DIV, "config-body");
 
-    $oConfigBodyElement->
-        addNew(HTML_DIV, "config-body-title",
-               {strContent => "${strFile}:"});
+        $oConfigBodyElement->
+            addNew(HTML_DIV, "config-body-title",
+                   {strContent => "${strFile}:"});
 
-    $oConfigBodyElement->
-        addNew(HTML_DIV, "config-body-output",
-               {strContent => $strConfig});
+        $oConfigBodyElement->
+            addNew(HTML_DIV, "config-body-output",
+                   {strContent => $strConfig});
+    }
 
     # Return from function and log return values if any
     return logDebugReturn

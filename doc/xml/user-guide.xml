@@ -818,34 +818,51 @@
         </section> -->
     </section>
 
-    <!-- SECTION => MULTI-HOST CONFIG -->
-    <section id="multi-host-config">
-        <title>Multiple Host Configuration</title>
-
-        <host-add name="{[host-backup]}" user="{[host-backup-user]}" image="{[host-backup-image]}" os="{[host-os]}" mount="{[host-backup-mount]}">
-            <execute>
-                <exe-cmd>cp -r /backrest/lib/BackRest {[perl-lib-path]}</exe-cmd>
-                <exe-user>root</exe-user>
-            </execute>
-            <execute>
-                <exe-cmd>find /usr/lib/perl5/BackRest -type f -exec chmod 644 {} +</exe-cmd>
-                <exe-user>root</exe-user>
-            </execute>
-            <execute>
-                <exe-cmd>find /usr/lib/perl5/BackRest -type d -exec chmod 755 {} +</exe-cmd>
-                <exe-user>root</exe-user>
-            </execute>
-            <execute>
-                <exe-cmd>cp /backrest/bin/{[project-exe]} {[perl-bin-path]}/{[project-exe]}</exe-cmd>
-                <exe-user>root</exe-user>
-            </execute>
-            <execute>
-                <exe-cmd>chmod 755 {[perl-bin-path]}/{[project-exe]}</exe-cmd>
-                <exe-user>root</exe-user>
-            </execute>
-        </host-add>
+    <!-- SECTION => BACKUP-HOST -->
+    <section id="backup-host">
+        <title>Backup Host</title>
 
         <p>Backup server separate, blah, blah, blah. db master IP is {[host-db-master-ip]}</p>
+
+        <!-- SECTION => BACKUP-HOST - INSTALL/CONFIGURE -->
+        <section id="install-config">
+            <title>Installation and Configuration</title>
+
+            <host-add name="{[host-backup]}" user="{[host-backup-user]}" image="{[host-backup-image]}" os="{[host-os]}" mount="{[host-backup-mount]}">
+                <execute>
+                    <exe-cmd>cp -r /backrest/lib/BackRest {[perl-lib-path]}</exe-cmd>
+                    <exe-user>root</exe-user>
+                </execute>
+                <execute>
+                    <exe-cmd>find /usr/lib/perl5/BackRest -type f -exec chmod 644 {} +</exe-cmd>
+                    <exe-user>root</exe-user>
+                </execute>
+                <execute>
+                    <exe-cmd>find /usr/lib/perl5/BackRest -type d -exec chmod 755 {} +</exe-cmd>
+                    <exe-user>root</exe-user>
+                </execute>
+                <execute>
+                    <exe-cmd>cp /backrest/bin/{[project-exe]} {[perl-bin-path]}/{[project-exe]}</exe-cmd>
+                    <exe-user>root</exe-user>
+                </execute>
+                <execute>
+                    <exe-cmd>chmod 755 {[perl-bin-path]}/{[project-exe]}</exe-cmd>
+                    <exe-user>root</exe-user>
+                </execute>
+            </host-add>
+
+            <p>The repository path must be configured so <backrest/> knows where to find it.</p>
+
+            <backrest-config host="{[host-backup]}" show="n" owner="backrest:backrest" file="{[backrest-config-demo]}">
+                <title>Configure the <backrest/> repository path</title>
+
+                <backrest-config-option>
+                    <backrest-config-option-section>global:general</backrest-config-option-section>
+                    <backrest-config-option-key>repo-path</backrest-config-option-key>
+                    <backrest-config-option-value>{[backrest-repo-path]}</backrest-config-option-value>
+                </backrest-config-option>
+            </backrest-config>
+        </section>
     </section>
 
     <!-- SECTION => INFO -->

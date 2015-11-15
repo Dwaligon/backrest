@@ -74,6 +74,8 @@
 
 <!ELEMENT backrest-config (title, backrest-config-option+)>
     <!ATTLIST backrest-config host CDATA #REQUIRED>
+    <!ATTLIST backrest-config owner CDATA "">
+    <!ATTLIST backrest-config show CDATA "">
     <!ATTLIST backrest-config file CDATA #REQUIRED>
 <!ELEMENT backrest-config-option (backrest-config-option-section?, backrest-config-option-key, backrest-config-option-value?)>
 <!ELEMENT backrest-config-option-section (#PCDATA)>

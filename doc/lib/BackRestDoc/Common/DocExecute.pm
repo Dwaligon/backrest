@@ -108,14 +108,6 @@ sub execute
     }
     else
     {
-        # Check that the host is valid
-        my $oHost = $self->{host}{$strHostName};
-
-        if (!defined($oHost))
-        {
-            confess &log(ERROR, "cannot execute on host ${strHostName} because it the host not exist");
-        }
-
         # Command variables
         $strCommand = trim($oCommand->fieldGet('exe-cmd'));
         my $strUser = $oCommand->fieldGet('exe-user', false);
@@ -156,6 +148,14 @@ sub execute
         {
             if ($self->{bExe})
             {
+                # Check that the host is valid
+                my $oHost = $self->{host}{$strHostName};
+
+                if (!defined($oHost))
+                {
+                    confess &log(ERROR, "cannot execute on host ${strHostName} because the host does not exist");
+                }
+
                 my $oExec = $oHost->execute($strCommand,
                                             {bSuppressError => $bSuppressError,
                                             bSuppressStdErr => $bSuppressStdErr,
@@ -203,8 +203,8 @@ sub execute
     return logDebugReturn
     (
         $strOperation,
-        {name => '$strCommand', value => $strCommand, trace => true},
-        {name => '$strOutput', value => $strOutput, trace => true}
+        {name => 'strCommand', value => $strCommand, trace => true},
+        {name => 'strOutput', value => $strOutput, trace => true}
     );
 }
 
@@ -264,18 +264,18 @@ sub backrestConfig
 
                 if (!defined($strValue))
                 {
-                    delete(${$self->{config}}{$strFile}{$strSection}{$strKey});
+                    delete(${$self->{config}}{$strHostName}{$strFile}{$strSection}{$strKey});
 
-                    if (keys(${$self->{config}}{$strFile}{$strSection}) == 0)
+                    if (keys(${$self->{config}}{$strHostName}{$strFile}{$strSection}) == 0)
                     {
-                        delete(${$self->{config}}{$strFile}{$strSection});
+                        delete(${$self->{config}}{$strHostName}{$strFile}{$strSection});
                     }
 
                     &log(DEBUG, ('    ' x ($iDepth + 1)) . "reset ${strSection}->${strKey}");
                 }
                 else
                 {
-                    ${$self->{config}}{$strFile}{$strSection}{$strKey} = $strValue;
+                    ${$self->{config}}{$strHostName}{$strFile}{$strSection}{$strKey} = $strValue;
                     &log(DEBUG, ('    ' x ($iDepth + 1)) . "set ${strSection}->${strKey} = ${strValue}");
                 }
             }
@@ -283,11 +283,11 @@ sub backrestConfig
             my $strLocalFile = "/home/vagrant/data/db-master/etc/pg_backrest.conf";
 
             # Save the ini file
-            iniSave($strLocalFile, $self->{config}{$strFile}, true);
+            iniSave($strLocalFile, $self->{config}{$strHostName}{$strFile}, true);
 
             $strConfig = fileStringRead($strLocalFile);
 
-            $oHost->copyTo($strLocalFile, $strFile, 'postgres:postgres', '640');
+            $oHost->copyTo($strLocalFile, $strFile, $oConfig->paramGet('owner', false, 'postgres:postgres'), '640');
         }
         else
         {
@@ -303,7 +303,8 @@ sub backrestConfig
     (
         $strOperation,
         {name => 'strFile', value => $strFile, trace => true},
-        {name => 'strConfig', value => $strConfig, trace => true}
+        {name => 'strConfig', value => $strConfig, trace => true},
+        {name => 'bShow', value => !$oConfig->paramTest('show', 'n'), trace => true}
     );
 }
 

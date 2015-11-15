@@ -416,28 +416,33 @@ sub configProcess
         );
 
     # Working variables
+    my $strLatex = '';
     my $strFile;
     my $strConfig;
+    my $bShow = true;
 
     # Generate the config
     if ($oConfig->nameGet() eq 'backrest-config')
     {
-        ($strFile, $strConfig) = $self->backrestConfig($oConfig, $iDepth);
+        ($strFile, $strConfig, $bShow) = $self->backrestConfig($oConfig, $iDepth);
     }
     else
     {
         ($strFile, $strConfig) = $self->postgresConfig($oConfig, $iDepth);
     }
 
-    # Replace _ in filename
-    $strFile = $self->variableReplace($strFile);
+    if ($bShow)
+    {
+        # Replace _ in filename
+        $strFile = $self->variableReplace($strFile);
 
-    # Render the config
-    my $strLatex =
-        "\n\\begin\{lstlisting\}[title=\{" . $self->processText($oConfig->nodeGet('title')->textGet()) .
-            " in \\textnormal\{\\texttt\{${strFile}\}\}:}]\n" .
-        ${strConfig} .
-        "\\end{lstlisting}\n";
+        # Render the config
+        my $strLatex =
+            "\n\\begin\{lstlisting\}[title=\{" . $self->processText($oConfig->nodeGet('title')->textGet()) .
+                " in \\textnormal\{\\texttt\{${strFile}\}\}:}]\n" .
+            ${strConfig} .
+            "\\end{lstlisting}\n";
+    }
 
     # Return from function and log return values if any
     return logDebugReturn
