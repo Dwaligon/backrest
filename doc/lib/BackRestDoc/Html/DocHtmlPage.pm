@@ -373,7 +373,7 @@ sub sectionProcess
             $oSectionBodyElement->add($oChildSectionElement);
             $oSectionTocElement->add($oChildSectionTocElement);
         }
-        # Skip children that have already been processed and error on others
+        # Check if the child can be processed by a parent
         else
         {
             $self->sectionChildProcess($oChild, $iDepth + 1);

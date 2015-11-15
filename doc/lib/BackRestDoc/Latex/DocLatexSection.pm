@@ -165,7 +165,8 @@ sub sectionProcess
             {
                 my $bExeShow = defined($oExecute->fieldGet('exe-no-show', false)) ? false : true;
                 my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
-                my ($strCommand, $strOutput) = $self->execute($oExecute, $iDepth + 3);
+                my ($strCommand, $strOutput) = $self->execute($self->{oManifest}->variableReplace($oChild->paramGet('host')),
+                                                              $oExecute, $iDepth + 3);
 
                 if ($bExeShow)
                 {
@@ -378,10 +379,10 @@ sub sectionProcess
         {
             $strLatex .= "\n" . $self->sectionProcess($oChild, $strSection, $iDepth + 1);
         }
-        # Skip children that have already been processed and error on others
-        elsif ($oChild->nameGet() ne 'title')
+        # Check if the child can be processed by a parent
+        else
         {
-            confess &log(ASSERT, 'unable to process child type ' . $oChild->nameGet());
+            $self->sectionChildProcess($oChild, $iDepth + 1);
         }
     }
 
