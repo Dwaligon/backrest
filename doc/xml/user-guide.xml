@@ -67,6 +67,23 @@
             <variable-value>{[host-mount]}</variable-value>
         </variable>
 
+        <variable>
+            <variable-name>host-backup</variable-name>
+            <variable-value>backup</variable-value>
+        </variable>
+        <variable>
+            <variable-name>host-backup-user</variable-name>
+            <variable-value>{[host-user]}</variable-value>
+        </variable>
+        <variable>
+            <variable-name>host-backup-image</variable-name>
+            <variable-value>{[image-user]}/{[host-os]}-backup</variable-value>
+        </variable>
+        <variable>
+            <variable-name>host-backup-mount</variable-name>
+            <variable-value>{[host-mount]}</variable-value>
+        </variable>
+
         <!-- Commands for various operations -->
         <variable>
             <variable-name>cmd-backup-last</variable-name>
@@ -137,7 +154,7 @@
 
         <p><backrest/> is written in Perl which is included with Ubuntu by default.  A few additional modules are required which are all available as packages.</p>
 
-        <host-add name="{[host-db-master]}" user="{[host-db-master-image]}" image="{[host-db-master-image]}" os="{[host-os]}" mount="{[host-db-master-mount]}">
+        <host-add name="{[host-db-master]}" user="{[host-db-master-user]}" image="{[host-db-master-image]}" os="{[host-os]}" mount="{[host-db-master-mount]}">
             <execute>
                 <exe-cmd>mkdir /home/vagrant/backrest-release-{[version]}</exe-cmd>
                 <exe-user>vagrant</exe-user>
@@ -391,7 +408,7 @@
         </section>
 
         <!-- SECTION => QUICKSTART - PERFORM RESTORE -->
-        <section id="perform-restore">
+        <!-- <section id="perform-restore">
             <title>Restore a Backup</title>
 
             <p>Backups can protect you from a number of disaster scenarios, the most common of which are hardware failure and data corruption.  The easiest way to simulate data corruption is to remove an important <postgres/> cluster file.</p>
@@ -446,7 +463,7 @@
             <p>This time the cluster started successfully since the restore replaced the missing <file>pg_control</file> file.</p>
 
             <p>More information about the <cmd>restore</cmd> command can be found in the <link page="#restore">Restore</link> section.</p>
-        </section>
+        </section> -->
     </section>
 
     <!-- SECTION => BACKUP -->
@@ -497,7 +514,7 @@
         </section>
 
         <!-- SECTION => BACKUP - STOP-AUTO -->
-        <section id="option-stop-auto">
+        <!-- <section id="option-stop-auto">
             <title>Automatic Stop Option</title>
 
             <p>Sometimes <backrest/> will exit unexpectedly and the backup in progress on the <postgres/> cluster will not be properly stopped.  <backrest/> exits as quickly as possible when an error occurs so that the cause can be reported accurately and is not masked by another problem that could happen during a more extensive cleanup.</p>
@@ -568,7 +585,7 @@
             <p>Although useful this feature may not be appropriate when another third-party backup solution is being used to take online backups as <backrest/> will not recognize that the other software is running and may terminate a backup started by that software.  However, it would be unusual to run more than one third-party backup solution at the same time so this is not likely to be a problem.</p>
 
             <p>Note that <id>pg_dump</id> and <id>pg_base_backup</id> do not take online backups so are not affected.  It is safe to run them in conjunction with <backrest/>.</p>
-        </section>
+        </section> -->
     </section>
 
     <!-- SECTION => RESTORE -->
@@ -578,7 +595,7 @@
         <p>The Restore section introduces additional <cmd>restore</cmd> command features.</p>
 
         <!-- SECTION => RESTORE - PITR -->
-        <section id="pitr">
+        <!-- <section id="pitr">
             <title>Point-in-Time Recovery (PITR)</title>
 
             <p>The <link page="#quickstart-perform-restore">restore example</link> in <link page="#quickstart">Quick Start</link> performed default recovery, which is to play all the way to the end of the WAL stream.  In the case of a hardware failure this is probably the most appropriate action but for data corruption scenarios (whether machine or human in origin) there is a better alternative called Point-in-Time Recovery (PITR).</p>
@@ -798,7 +815,37 @@
                     <exe-highlight>recovery stopping before|last completed transaction|starting point-in-time recovery</exe-highlight>
                 </execute>
             </execute-list>
-        </section>
+        </section> -->
+    </section>
+
+    <!-- SECTION => MULTI-HOST CONFIG -->
+    <section id="multi-host-config">
+        <title>Multiple Host Configuration</title>
+
+        <host-add name="{[host-backup]}" user="{[host-backup-user]}" image="{[host-backup-image]}" os="{[host-os]}" mount="{[host-backup-mount]}">
+            <execute>
+                <exe-cmd>cp -r /backrest/lib/BackRest {[perl-lib-path]}</exe-cmd>
+                <exe-user>root</exe-user>
+            </execute>
+            <execute>
+                <exe-cmd>find /usr/lib/perl5/BackRest -type f -exec chmod 644 {} +</exe-cmd>
+                <exe-user>root</exe-user>
+            </execute>
+            <execute>
+                <exe-cmd>find /usr/lib/perl5/BackRest -type d -exec chmod 755 {} +</exe-cmd>
+                <exe-user>root</exe-user>
+            </execute>
+            <execute>
+                <exe-cmd>cp /backrest/bin/{[project-exe]} {[perl-bin-path]}/{[project-exe]}</exe-cmd>
+                <exe-user>root</exe-user>
+            </execute>
+            <execute>
+                <exe-cmd>chmod 755 {[perl-bin-path]}/{[project-exe]}</exe-cmd>
+                <exe-user>root</exe-user>
+            </execute>
+        </host-add>
+
+        <p>Backup server separate, blah, blah, blah. db master IP is {[host-db-master-ip]}</p>
     </section>
 
     <!-- SECTION => INFO -->

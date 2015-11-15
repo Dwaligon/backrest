@@ -6,5 +6,5 @@ RUN adduser --home /var/lib/backrest --disabled-password --gecos "" backrest
 
 # Setup SSH
 RUN mkdir -p /var/lib/backrest/.ssh
-RUN chown -R backrest:backrest /var/lib/backrest
 RUN cp /root/resource/.ssh/* /var/lib/backrest/.ssh
+RUN chown -R backrest:backrest /var/lib/backrest

@@ -17,6 +17,7 @@ use File::Basename qw(dirname);
 
 use lib dirname($0) . '/../lib';
 use BackRest::Common::Log;
+use BackRest::Common::String;
 
 use BackRestTest::Common::ExecuteTest;
 
@@ -63,13 +64,15 @@ sub new
 
     executeTest("docker kill $self->{strName}", {bSuppressError => true});
     executeTest("docker rm $self->{strName}", {bSuppressError => true});
-    executeTest("rm -rf ~/data/$self->{strName}");
 
-    executeTest("docker run -itd --name=$self->{strName} " .
-                (defined($self->{strMount}) ? "-v $self->{strMount} " : '') .
-                "$self->{strImage}");
+    executeTest("rm -rf ~/data/$self->{strName}");
     executeTest("mkdir -p ~/data/$self->{strName}/etc");
 
+    executeTest("docker run -itd -h $self->{strName} --name=$self->{strName} " .
+                (defined($self->{strMount}) ? "-v $self->{strMount} " : '') .
+                "$self->{strImage}");
+
+    $self->{strIP} = trim(executeTest("docker inspect --format '\{\{ .NetworkSettings.IPAddress \}\}' $self->{strName}"));
     $self->{bActive} = true;
 
     # Return from function and log return values if any

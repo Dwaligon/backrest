@@ -475,11 +475,40 @@ sub sectionChildProcess
 
             my $oHost = new BackRestTest::Common::HostTest($strName, $strImage, $strUser, $strOS, $strMount);
             $self->{host}{$strName} = $oHost;
+            $self->{oManifest}->variableSet("host-${strName}-ip", $oHost->{strIP});
 
             # Execute cleanup commands
             foreach my $oExecute ($oChild->nodeList('execute'))
             {
                 $self->execute($strName, $oExecute, $iDepth + 1);
+            }
+
+            $oHost->executeSimple("sh -c 'echo \"\" >> /etc/hosts\'");
+            $oHost->executeSimple("sh -c 'echo \"# Test Hosts\" >> /etc/hosts'");
+
+            # Alter hostname for this host
+            # $oHost->executeSimple("sed -i 's/^172.17.0.3.*$/172.17.0.3 backup/' /etc/hosts");
+
+            # Add all other host IPs to this host
+            foreach my $strOtherHostName (sort(keys($self->{host})))
+            {
+                if ($strOtherHostName ne $strName)
+                {
+                    my $oOtherHost = $self->{host}{$strOtherHostName};
+
+                    $oHost->executeSimple("sh -c 'echo \"$oOtherHost->{strIP} ${strOtherHostName}\" >> /etc/hosts'");
+                }
+            }
+
+            # Add this hosts IP to all other hosts
+            foreach my $strOtherHostName (sort(keys($self->{host})))
+            {
+                if ($strOtherHostName ne $strName)
+                {
+                    my $oOtherHost = $self->{host}{$strOtherHostName};
+
+                    $oOtherHost->executeSimple("sh -c 'echo \"$oHost->{strIP} ${strName}\" >> /etc/hosts'");
+                }
             }
         }
     }
