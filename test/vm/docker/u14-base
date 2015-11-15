@@ -4,6 +4,11 @@ FROM ubuntu:14.04
 # Install SSH
 RUN apt-get -y install openssh-server
 
+# Add Postgres packages
+RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main 9.5' >> /etc/apt/sources.list.d/pgdg.list
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+RUN sudo apt-get update
+
 # Create vagrant user
 RUN addgroup admin
 RUN adduser --ingroup=admin --disabled-password --gecos "" vagrant
@@ -11,6 +16,12 @@ RUN sed -i 's/^\%admin.*$/\%admin ALL\=\(ALL\) NOPASSWD\: ALL/' /etc/sudoers
 
 # Suppress dpkg interactive output
 RUN rm /etc/apt/apt.conf.d/70debconf
+
+# Download Perl packages to be installed later
+RUN apt-get -dy install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl
+
+# Download Postgres packages to be installed later
+RUN apt-get -dy install postgresql-9.4
 
 # Copy trusted SSH setup
 COPY ssh/config /root/resource/.ssh/config

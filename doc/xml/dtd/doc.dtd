@@ -95,6 +95,7 @@
                    ((p|table|host-add|execute-list|backrest-config|postgres-config|option-description|code-block)+|
                    (p*, section+)|p*))>
     <!ATTLIST section id CDATA #REQUIRED>
+    <!ATTLIST section depend CDATA "">
 <!ELEMENT title (#PCDATA|b|i|bi|ul|ol|id|code|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
                  pg-option|pg-setting|link|user)*>
 

@@ -232,7 +232,7 @@
     </section>
 
     <!-- SECTION => QUICKSTART -->
-    <section id="quickstart">
+    <section id="quickstart" depend="installation">
         <title>Quick Start</title>
 
         <p>The Quick Start section will cover basic configuration of <backrest/> and <postgres/> and introduce the <cmd>backup</cmd>, <cmd>restore</cmd>, and <cmd>info</cmd> commands.</p>
@@ -255,7 +255,7 @@
         </section>
 
         <!-- SECTION => QUICKSTART - CONFIGURE STANZA -->
-        <section id="configure-stanza">
+        <section id="configure-stanza" depend="setup-demo-cluster">
             <title>Configure Cluster Stanza</title>
 
             <option-description key="stanza"/>
@@ -280,7 +280,7 @@
         </section>
 
         <!-- SECTION => QUICKSTART - CREATE REPOSITORY -->
-        <section id="create-repository">
+        <section id="create-repository" depend="config-stanza">
             <title>Create the Repository</title>
 
             <p>For this simple configuration the repository will be stored on the same host as the <postgres/> server.  This is the simplest configuration and is useful in cases where external backup software is employed to backup the database host.</p>
@@ -316,7 +316,7 @@
         </section>
 
         <!-- SECTION => QUICKSTART - CONFIGURE ARCHIVING -->
-        <section id="configure-archiving">
+        <section id="configure-archiving" depend="create-repository">
             <title>Configure Archiving</title>
 
             <p>Backing up a running <postgres/> cluster requires WAL archiving to be enabled.</p>
@@ -359,7 +359,7 @@
         </section>
 
         <!-- SECTION => QUICKSTART - PERFORM BACKUP -->
-        <section id="perform-backup">
+        <!-- <section id="perform-backup" depend="config-archiving">
             <title>Perform a Backup</title>
 
             <p>To perform a backup of the <postgres/> cluster run <backrest/> with the <cmd>backup</cmd> command.</p>
@@ -405,10 +405,10 @@
             <p>The oldest and newest backups are shown in the info output.  The oldest backup will <i>always</i> be a full backup (indicated by an <id>F</id> at the end of the label) but the newest backup can be full, differential (ends with <id>D</id>), or incremental (ends with <id>I</id>).</p>
 
             <p>More information about the <cmd>backup</cmd> command can be found in the <link page="#backup">Backup</link> section.</p>
-        </section>
+        </section> -->
 
         <!-- SECTION => QUICKSTART - PERFORM RESTORE -->
-        <!-- <section id="perform-restore">
+        <!-- <section id="perform-restore" depend="perform-backup">
             <title>Restore a Backup</title>
 
             <p>Backups can protect you from a number of disaster scenarios, the most common of which are hardware failure and data corruption.  The easiest way to simulate data corruption is to remove an important <postgres/> cluster file.</p>
@@ -467,13 +467,13 @@
     </section>
 
     <!-- SECTION => BACKUP -->
-    <section id="backup">
+    <section id="backup" depend="/quick-start/configure-archiving">
         <title>Backup</title>
 
         <p>The Backup section introduces additional <cmd>backup</cmd> command features.</p>
 
         <!-- SECTION => BACKUP - START-FAST -->
-        <section id="option-start-fast">
+        <!-- <section id="option-start-fast">
             <title>Fast Start Option</title>
 
             <p>By default <backrest/> will wait for the next regularly scheduled checkpoint before starting a backup.  Depending on the <pg-option>checkpoint_timeout</pg-option> and <pg-option>checkpoint_segments</pg-option> settings in <postgres/> it may be quite some time before a checkpoint completes and the backup can begin.</p>
@@ -511,7 +511,7 @@
                     <exe-highlight>backup begins after the requested immediate checkpoint completes</exe-highlight>
                 </execute>
             </execute-list>
-        </section>
+        </section> -->
 
         <!-- SECTION => BACKUP - STOP-AUTO -->
         <!-- <section id="option-stop-auto">
@@ -589,7 +589,7 @@
     </section>
 
     <!-- SECTION => RESTORE -->
-    <section id="restore">
+    <section id="restore" depend="/quick-start/perform-backup">
         <title>Restore</title>
 
         <p>The Restore section introduces additional <cmd>restore</cmd> command features.</p>
@@ -819,7 +819,7 @@
     </section>
 
     <!-- SECTION => BACKUP-HOST -->
-    <section id="backup-host">
+    <section id="backup-host" depend="/quick-start/configure-archiving">
         <title>Backup Host</title>
 
         <p>Backup server separate, blah, blah, blah. db master IP is {[host-db-master-ip]}</p>
