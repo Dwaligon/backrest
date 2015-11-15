@@ -487,9 +487,6 @@ sub sectionChildProcess
             $oHost->executeSimple("sh -c 'echo \"\" >> /etc/hosts\'");
             $oHost->executeSimple("sh -c 'echo \"# Test Hosts\" >> /etc/hosts'");
 
-            # Alter hostname for this host
-            # $oHost->executeSimple("sed -i 's/^172.17.0.3.*$/172.17.0.3 backup/' /etc/hosts");
-
             # Add all other host IPs to this host
             foreach my $strOtherHostName (sort(keys($self->{host})))
             {
@@ -501,7 +498,7 @@ sub sectionChildProcess
                 }
             }
 
-            # Add this hosts IP to all other hosts
+            # Add this host IP to all other hosts
             foreach my $strOtherHostName (sort(keys($self->{host})))
             {
                 if ($strOtherHostName ne $strName)
