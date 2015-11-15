@@ -241,13 +241,13 @@
         <section id="setup-demo-cluster">
             <title>Setup Demo Cluster</title>
 
-            <p>You'll need to create a demo cluster to run the example commands in this user guide. This step is optional, but you may need to adjust commands in the user guide to work with your environment if you choose not to create the demo cluster.</p>
+            <p>You'll need to create a demo cluster to run the example commands in this user guide. This step is optional, but you may need to adjust commands in the user guide to work with your environment if you choose not to create the demo cluster.  The cluster won't be started yet because there is still some configuration to do.</p>
 
             <execute-list host="{[host-db-master]}">
                 <title>Create and start the demo cluster</title>
 
                 <execute>
-                    <exe-cmd>pg_createcluster 9.4 {[postgres-cluster-demo]} {[dash]}-start</exe-cmd>
+                    <exe-cmd>pg_createcluster 9.4 {[postgres-cluster-demo]}</exe-cmd>
                     <exe-user>root</exe-user>
                     <exe-output/>
                 </execute>
