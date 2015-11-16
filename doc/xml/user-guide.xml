@@ -364,7 +364,7 @@
 
             <p>To perform a backup of the <postgres/> cluster run <backrest/> with the <cmd>backup</cmd> command.</p>
 
-            <!-- <execute-list host="{[host-db-master]}">
+            <execute-list host="{[host-db-master]}">
                 <title>Backup the {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
@@ -404,7 +404,7 @@
 
             <p>The oldest and newest backups are shown in the info output.  The oldest backup will <i>always</i> be a full backup (indicated by an <id>F</id> at the end of the label) but the newest backup can be full, differential (ends with <id>D</id>), or incremental (ends with <id>I</id>).</p>
 
-            <p>More information about the <cmd>backup</cmd> command can be found in the <link page="#backup">Backup</link> section.</p> -->
+            <p>More information about the <cmd>backup</cmd> command can be found in the <link page="#backup">Backup</link> section.</p>
         </section>
 
         <!-- SECTION => QUICKSTART - PERFORM RESTORE -->
@@ -589,11 +589,34 @@
     </section>
 
     <!-- SECTION => RESTORE -->
-    <section id="restore" depend="/quick-start/perform-backup">
+    <section id="restore" depend="quick-start/perform-backup">
         <title>Restore</title>
 
         <p>The Restore section introduces additional <cmd>restore</cmd> command features.</p>
 
+        <!-- SECTION => RESTORE - DELTA -->
+        <section id="option-delta">
+            <title>Delta Option</title>
+
+            <p><link page="#quickstart-perform-restore">Restore a Backup</link> in <link page="#quickstart">Quick Start</link> required the database cluster directory to be cleaned before the <cmd>restore</cmd> could be performed.  The <br-option>delta</br-option> allows <backrest/> to automatically determine which files in the database cluster directory should be kept which ones need to be restored from the backup.  This is accomplished by calculating a <link url="https://en.wikipedia.org/wiki/SHA-1">SHA-1</link> cryptographic hash for each file in the database cluster directory.  If the <id>SHA-1</id> hash does not match the hash stored in the backup then that file will be restored.  This operation is very efficient when combined with the <br-option>thread-max</br-option>.  Since the <postgres/> process is shut down during the restore, a larger number of threads can be used than might be desirable during a backup when the <postgres/> process is running.</p>
+
+            <execute-list host="{[host-db-master]}">
+                <title>Stop the {[postgres-cluster-demo]} cluster, perform delta restore, and restart <postgres/></title>
+
+                <execute>
+                    <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop</exe-cmd>
+                </execute>
+
+                <execute>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-delta restore</exe-cmd>
+                    <exe-output/>
+                </execute>
+
+                <execute>
+                    <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</exe-cmd>
+                </execute>
+            </execute-list>
+        </section>
     </section>
 
     <!-- SECTION => PITR -->
@@ -925,7 +948,7 @@
 
             <p>To perform a backup of the <postgres/> cluster run <backrest/> with the <cmd>backup</cmd> command on the <host>backup</host> host.</p>
 
-            <execute-list host="{[host-backup]}">
+            <!-- <execute-list host="{[host-backup]}">
                 <title>Backup the {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
@@ -935,7 +958,7 @@
                 </execute>
             </execute-list>
 
-            <p>Since a new repository was created on the <host>backup</host> host the warning about the incremental backup changing to a full backup was emitted.</p>
+            <p>Since a new repository was created on the <host>backup</host> host the warning about the incremental backup changing to a full backup was emitted.</p> -->
         </section>
 
         <!-- SECTION => BACKUP HOST - PERFORM RESTORE -->
@@ -944,7 +967,7 @@
 
             <p>To perform a restore of the <postgres/> cluster run <backrest/> with the <cmd>restore</cmd> command on the <host>database</host> host.</p>
 
-            <execute-list host="{[host-db-master]}">
+            <!-- <execute-list host="{[host-db-master]}">
                 <title>Stop the {[postgres-cluster-demo]} cluster, restore, and restart <postgres/></title>
 
                 <execute>
@@ -952,13 +975,13 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --delta restore</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-delta restore</exe-cmd>
                 </execute>
 
                 <execute>
                     <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</exe-cmd>
                 </execute>
-            </execute-list>
+            </execute-list> -->
         </section>
     </section>
 

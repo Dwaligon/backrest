@@ -258,7 +258,7 @@ sub sectionProcess
 
             $oSectionBodyExecute->
                 addNew(HTML_DIV, "execute-title",
-                       {strContent => "<span class=\"host\">${strHostName}</span> host <b>|</b> " .
+                       {strContent => "<span class=\"host\">${strHostName}</span> host <b>&#x21d2;</b> " .
                                       $self->processText($oChild->nodeGet('title')->textGet()) . ':'});
 
             my $oExecuteBodyElement = $oSectionBodyExecute->addNew(HTML_DIV, "execute-body");
@@ -429,8 +429,8 @@ sub backrestConfigProcess
 
         $oConfigElement->
             addNew(HTML_DIV, "config-title",
-                   {strContent => "<span class=\"host\">${strHostName}</span>:<span class=\"file\">${strFile}</span> file <b>|</b> " .
-                                  $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
+                   {strContent => "<span class=\"host\">${strHostName}</span>:<span class=\"file\">${strFile}</span>" .
+                                  " file <b>&#x21d2;</b> " . $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
 
         my $oConfigBodyElement = $oConfigElement->addNew(HTML_DIV, "config-body");
         #
@@ -481,8 +481,8 @@ sub postgresConfigProcess
 
     $oConfigElement->
         addNew(HTML_DIV, "config-title",
-               {strContent => "<span class=\"host\">${strHostName}</span>:<span class=\"file\">${strFile}</span> file <b>|</b> " .
-                              $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
+               {strContent => "<span class=\"host\">${strHostName}</span>:<span class=\"file\">${strFile}</span>" .
+                              " file <b>&#x21d2;</b> " . $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
 
     my $oConfigBodyElement = $oConfigElement->addNew(HTML_DIV, "config-body");
 
