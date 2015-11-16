@@ -304,7 +304,7 @@ sub backrestConfig
         $strOperation,
         {name => 'strFile', value => $strFile, trace => true},
         {name => 'strConfig', value => $strConfig, trace => true},
-        {name => 'bShow', value => !$oConfig->paramTest('show', 'n'), trace => true}
+        {name => 'bShow', value => $oConfig->paramTest('show', 'n') ? false : true, trace => true}
     );
 }
 

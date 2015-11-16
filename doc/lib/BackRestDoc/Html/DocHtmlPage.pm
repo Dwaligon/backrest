@@ -361,7 +361,7 @@ sub sectionProcess
 
             if (defined($oConfigElement))
             {
-                $oSectionBodyElement->add();
+                $oSectionBodyElement->add($oConfigElement);
             }
         }
         # Add/remove postgres config options
@@ -422,7 +422,7 @@ sub backrestConfigProcess
     if ($bShow)
     {
         # Render the config
-        my $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");
+        $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");
 
         $oConfigElement->
             addNew(HTML_DIV, "config-title",
