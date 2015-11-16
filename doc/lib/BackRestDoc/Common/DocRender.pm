@@ -117,6 +117,7 @@ my $oRenderTag =
         'ol' => ['<ol>', '</ol>'],
         'li' => ['<li>', '</li>'],
         'id' => ['<span class="id">', '</span>'],
+        'host' => ['<span class="host">', '</span>'],
         'file' => ['<span class="file">', '</span>'],
         'path' => ['<span class="path">', '</span>'],
         'cmd' => ['<span class="cmd">', '</span>'],

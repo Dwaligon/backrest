@@ -346,6 +346,11 @@ Keywords
     font-weight: 500;
 }
 
+.host
+{
+    font-weight: 700;
+}
+
 .path, .br-option, .br-setting, .pg-option, .pg-setting, .id, .user, .file, .path
 {
     /*font-weight: 600;*/

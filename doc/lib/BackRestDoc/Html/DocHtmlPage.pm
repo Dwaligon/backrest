@@ -254,10 +254,12 @@ sub sectionProcess
         {
             my $oSectionBodyExecute = $oSectionBodyElement->addNew(HTML_DIV, "execute");
             my $bFirst = true;
+            my $strHostName = $self->{oManifest}->variableReplace($oChild->paramGet('host'));
 
             $oSectionBodyExecute->
                 addNew(HTML_DIV, "execute-title",
-                       {strContent => $self->processText($oChild->nodeGet('title')->textGet()) . ':'});
+                       {strContent => "<span class=\"host\">${strHostName}</span> host <b>|</b> " .
+                                      $self->processText($oChild->nodeGet('title')->textGet()) . ':'});
 
             my $oExecuteBodyElement = $oSectionBodyExecute->addNew(HTML_DIV, "execute-body");
 
@@ -266,8 +268,7 @@ sub sectionProcess
                 my $bExeShow = defined($oExecute->fieldGet('exe-no-show', false)) ? false : true;
                 my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
 
-                my ($strCommand, $strOutput) = $self->execute($self->{oManifest}->variableReplace($oChild->paramGet('host')),
-                                                              $oExecute, $iDepth + 3);
+                my ($strCommand, $strOutput) = $self->execute($strHostName, $oExecute, $iDepth + 3);
 
                 if ($bExeShow)
                 {
@@ -421,18 +422,21 @@ sub backrestConfigProcess
 
     if ($bShow)
     {
+        my $strHostName = $self->{oManifest}->variableReplace($oConfig->paramGet('host'));
+
         # Render the config
         $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");
 
         $oConfigElement->
             addNew(HTML_DIV, "config-title",
-                   {strContent => $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
+                   {strContent => "<span class=\"host\">${strHostName}</span>:<span class=\"file\">${strFile}</span> file <b>|</b> " .
+                                  $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
 
         my $oConfigBodyElement = $oConfigElement->addNew(HTML_DIV, "config-body");
-
-        $oConfigBodyElement->
-            addNew(HTML_DIV, "config-body-title",
-                   {strContent => "${strFile}:"});
+        #
+        # $oConfigBodyElement->
+        #     addNew(HTML_DIV, "config-body-title",
+        #            {strContent => "${strFile}:"});
 
         $oConfigBodyElement->
             addNew(HTML_DIV, "config-body-output",
@@ -472,17 +476,19 @@ sub postgresConfigProcess
     my ($strFile, $strConfig) = $self->postgresConfig($oConfig, $iDepth);
 
     # Render the config
+    my $strHostName = $self->{oManifest}->variableReplace($oConfig->paramGet('host'));
     my $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");
 
     $oConfigElement->
         addNew(HTML_DIV, "config-title",
-               {strContent => $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
+               {strContent => "<span class=\"host\">${strHostName}</span>:<span class=\"file\">${strFile}</span> file <b>|</b> " .
+                              $self->processText($oConfig->nodeGet('title')->textGet()) . ':'});
 
     my $oConfigBodyElement = $oConfigElement->addNew(HTML_DIV, "config-body");
 
-    $oConfigBodyElement->
-        addNew(HTML_DIV, "config-body-title",
-               {strContent => "append to ${strFile}:"});
+    # $oConfigBodyElement->
+    #     addNew(HTML_DIV, "config-body-title",
+    #            {strContent => "append to ${strFile}:"});
 
     $oConfigBodyElement->
         addNew(HTML_DIV, "config-body-output",

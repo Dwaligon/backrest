@@ -8,3 +8,6 @@ RUN adduser --home /var/lib/backrest --disabled-password --gecos "" backrest
 RUN mkdir -p /var/lib/backrest/.ssh
 RUN cp /root/resource/.ssh/* /var/lib/backrest/.ssh
 RUN chown -R backrest:backrest /var/lib/backrest
+
+# Install Perl packages
+RUN apt-get -y install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl

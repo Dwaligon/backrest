@@ -136,34 +136,35 @@
 
 <!ELEMENT table-header (table-column+)>
     <!ATTLIST table-header width CDATA "">
-<!ELEMENT table-column (#PCDATA|quote|b|i|id|code|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
+<!ELEMENT table-column (#PCDATA|quote|b|i|id|code|host|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
                         br-setting|pg-option|pg-setting|link|user)*>
     <!ATTLIST table-column align CDATA "">
     <!ATTLIST table-column fill CDATA "">
 
 <!ELEMENT table-data (table-row+)>
 <!ELEMENT table-row (table-cell+)>
-<!ELEMENT table-cell (#PCDATA|quote|b|i|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
+<!ELEMENT table-cell (#PCDATA|quote|b|i|ul|ol|id|code|code-block|host|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
                       br-setting|pg-option|pg-setting|link|user)*>
 
 <!-- Formatted elements -->
-<!ELEMENT summary (#PCDATA|quote|b|i|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
+<!ELEMENT summary (#PCDATA|quote|b|i|ul|ol|id|code|code-block|host|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
                    br-setting|pg-option|pg-setting|link|user)*>
-<!ELEMENT p (#PCDATA|quote|b|i|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
+<!ELEMENT p (#PCDATA|quote|b|i|ul|ol|id|code|code-block|host|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
              pg-option|pg-setting|link|user)*>
-<!ELEMENT text (#PCDATA|quote|b|i|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
+<!ELEMENT text (#PCDATA|quote|b|i|ul|ol|id|code|code-block|host|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
                 br-setting|pg-option|pg-setting|link|user)*>
 <!ELEMENT i (#PCDATA)>
 <!ELEMENT b (#PCDATA)>
 <!ELEMENT ul (li+)>
 <!ELEMENT ol (li+)>
-<!ELEMENT li (#PCDATA|quote|b|i|ul|ol|id|code|code-block|file|path|cmd|param|setting|exe|backrest|postgres|br-option|br-setting|
-              pg-option|pg-setting|link|user)*>
+<!ELEMENT li (#PCDATA|quote|b|i|ul|ol|id|code|code-block|host|file|path|cmd|param|setting|exe|backrest|postgres|br-option|
+              br-setting|pg-option|pg-setting|link|user)*>
 <!ELEMENT id (#PCDATA)>
 <!ELEMENT code (#PCDATA)>
 <!ELEMENT code-block (#PCDATA|exe)*>
     <!ATTLIST code-block title CDATA #REQUIRED>
 
+<!ELEMENT host (#PCDATA)>
 <!ELEMENT file (#PCDATA)>
 <!ELEMENT path (#PCDATA)>
 <!ELEMENT cmd (#PCDATA)>
