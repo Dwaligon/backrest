@@ -88,6 +88,7 @@ my $oRenderTag =
         # 'ol' => ["\n", "\n"],
         # 'li' => ['* ', "\n"],
         'id' => ['\textnormal{\texttt{', '}}'],
+        'host' => ['\textnormal{\textbf{', '}}'],
         'file' => ['\textnormal{\texttt{', '}}'],
         'path' => ['\textnormal{\texttt{', '}}'],
         'cmd' => ['\textnormal{\texttt{', "}}"],

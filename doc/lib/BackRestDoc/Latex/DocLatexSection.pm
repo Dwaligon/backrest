@@ -158,8 +158,10 @@ sub sectionProcess
         # Execute a command
         if ($oChild->nameGet() eq 'execute-list')
         {
+            my $strHostName = $self->{oManifest}->variableReplace($oChild->paramGet('host'));
+
             $strLatex .=
-                "\n\\begin\{lstlisting\}[title=\{" . $self->processText($oChild->nodeGet('title')->textGet()) . ":}]\n";
+                "\n\\begin\{lstlisting\}[title=\{\\textnormal{\\textbf\{${strHostName}}} --- " . $self->processText($oChild->nodeGet('title')->textGet()) . "}]\n";
 
             foreach my $oExecute ($oChild->nodeList('execute'))
             {
@@ -433,13 +435,15 @@ sub configProcess
 
     if ($bShow)
     {
+        my $strHostName = $self->{oManifest}->variableReplace($oConfig->paramGet('host'));
+
         # Replace _ in filename
         $strFile = $self->variableReplace($strFile);
 
         # Render the config
-        my $strLatex =
-            "\n\\begin\{lstlisting\}[title=\{" . $self->processText($oConfig->nodeGet('title')->textGet()) .
-                " in \\textnormal\{\\texttt\{${strFile}\}\}:}]\n" .
+        $strLatex =
+            "\n\\begin\{lstlisting\}[title=\{\\textnormal{\\textbf\{${strHostName}}}:\\textnormal{\\texttt\{${strFile}}} --- " .
+            $self->processText($oConfig->nodeGet('title')->textGet()) . "}]\n" .
             ${strConfig} .
             "\\end{lstlisting}\n";
     }
