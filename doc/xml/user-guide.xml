@@ -384,6 +384,12 @@
                     <exe-output/>
                     <exe-highlight>no prior backup exists|full backup size</exe-highlight>
                 </execute>
+
+                <execute>
+                    <exe-cmd>{[cmd-backup-last]}</exe-cmd>
+                    <exe-var>backup-full-first</exe-var>
+                    <exe-no-show/>
+                </execute>
             </execute-list>
 
             <p>By default <backrest/> will attempt to perform an incremental backup.  However, an incremental backup must be based on a full backup and since no full backup existed <backrest/> ran a full backup instead.</p>
@@ -595,14 +601,14 @@
         </section>
     </section>
 
-    <!-- SECTION => EXPIRE -->
+    <!-- SECTION => RETENTION -->
     <section id="retention" depend="quick-start/perform-backup">
         <title>Retention</title>
 
-        <p>The Restore section introduces additional <cmd>restore</cmd> command features.</p>
+        <p>The Restore section introduces additional <cmd>restore</cmd> command features.  Note on temp backups.</p>
 
         <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
-            <title>???</title>
+            <title>Configure <br-option>full-retention</br-option></title>
 
             <backrest-config-option>
                 <backrest-config-option-section>global:expire</backrest-config-option-section>
@@ -610,7 +616,7 @@
                 <backrest-config-option-value>2</backrest-config-option-value>
             </backrest-config-option>
 
-            <backrest-config-option>
+            <!-- <backrest-config-option>
                 <backrest-config-option-section>global:expire</backrest-config-option-section>
                 <backrest-config-option-key>retention-archive-type</backrest-config-option-key>
                 <backrest-config-option-value>full</backrest-config-option-value>
@@ -620,38 +626,40 @@
                 <backrest-config-option-section>global:expire</backrest-config-option-section>
                 <backrest-config-option-key>retention-archive</backrest-config-option-key>
                 <backrest-config-option-value>2</backrest-config-option-value>
-            </backrest-config-option>
+            </backrest-config-option> -->
         </backrest-config>
 
-        <execute-list host="{[host-db-master]}">
-            <title>???</title>
-
-            <execute filter="n">
-                <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} expire</exe-cmd>
-                <exe-output/>
-                <!-- <exe-highlight>cluster is already in backup mode|backup begins after the requested immediate checkpoint completes</exe-highlight> -->
-            </execute>
-        </execute-list>
+        <p>Backup <br-setting>full-retention=2</br-setting> but currently there is only one full backup.  The next full backup to run will not expire any backups.</p>
 
         <execute-list host="{[host-db-master]}">
-            <title>???</title>
+            <title>Perform a full backup</title>
 
             <execute>
                 <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full backup</exe-cmd>
                 <exe-output/>
-                <exe-highlight>archive retention based on backup|no WAL segments to expire</exe-highlight>
+                <exe-highlight>archive retention from backup {[backup-full-first]}|expire WAL segments</exe-highlight>
+            </execute>
+
+            <execute>
+                <exe-cmd>{[cmd-backup-last]}</exe-cmd>
+                <exe-var>backup-full-second</exe-var>
+                <exe-no-show/>
             </execute>
         </execute-list>
 
+        <p>Archive <i>is</i> expired because there are WAL segments generated before the oldest backup.  These are not useful for recovery &amp;mdash; only WAL segments generated after a backup can be used to recover that backup.</p>
+
         <execute-list host="{[host-db-master]}">
-            <title>???</title>
+            <title>Perform a full backup</title>
 
             <execute>
                 <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full backup</exe-cmd>
                 <exe-output/>
-                <exe-highlight>remove expired full backup|expire WAL segments</exe-highlight>
+                <exe-highlight>remove expired full backup set\: {[backup-full-first]}|archive retention from backup {[backup-full-second]}|expire WAL segments</exe-highlight>
             </execute>
         </execute-list>
+
+        <p>The <id>{[backup-full-first]}</id> full backup is expired and archive retention is based on the <id>{[backup-full-second]}</id> which is now the oldest full backup.</p>
     </section>
 
     <!-- SECTION => RESTORE -->

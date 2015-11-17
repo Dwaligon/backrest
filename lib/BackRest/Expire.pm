@@ -135,15 +135,23 @@ sub process
         {
             # Delete all backups that depend on the full backup.  Done in reverse order so that remaining backups will still
             # be consistent if the process dies
+            my @stryRemoveList;
+
             foreach $strPath ($oFile->list(PATH_BACKUP_CLUSTER, undef, '^' . $stryPath[$iIndex] . '.*', 'reverse'))
             {
                 system("rm -rf ${strBackupClusterPath}/${strPath}") == 0
                     or confess &log(ERROR, "unable to delete backup ${strPath}");
 
                 $oBackupInfo->delete($strPath);
+
+                if ($strPath ne $stryPath[$iIndex])
+                {
+                    push(@stryRemoveList, $strPath);
+                }
             }
 
-            &log(INFO, 'remove expired full backup: ' . $stryPath[$iIndex]);
+            &log(INFO, 'remove expired full backup ' . (@stryRemoveList > 0 ? 'set: ' : '')  . $stryPath[$iIndex] .
+                       (@stryRemoveList > 0 ? ', ' . join(', ', @stryRemoveList) : ''));
 
             $iIndex++;
         }
@@ -182,6 +190,20 @@ sub process
         }
     }
 
+    # Default archive retention if not explicily set
+    if (defined($iFullRetention))
+    {
+        if (!defined($iArchiveRetention))
+        {
+            $iArchiveRetention = $iFullRetention;
+        }
+
+        if (!defined($strArchiveRetentionType))
+        {
+            $strArchiveRetentionType = BACKUP_TYPE_FULL;
+        }
+    }
+
     # If no archive retention type is set then exit
     if (!defined($strArchiveRetentionType))
     {
@@ -192,19 +214,19 @@ sub process
         # Determine which backup type to use for archive retention (full, differential, incremental)
         if ($strArchiveRetentionType eq BACKUP_TYPE_FULL)
         {
-            if (!defined($iArchiveRetention))
-            {
-                $iArchiveRetention = $iFullRetention;
-            }
+            # if (!defined($iArchiveRetention))
+            # {
+            #     $iArchiveRetention = $iFullRetention;
+            # }
 
             @stryPath = $oFile->list(PATH_BACKUP_CLUSTER, undef, backupRegExpGet(true), 'reverse');
         }
         elsif ($strArchiveRetentionType eq BACKUP_TYPE_DIFF)
         {
-            if (!defined($iArchiveRetention))
-            {
-                $iArchiveRetention = $iDifferentialRetention;
-            }
+            # if (!defined($iArchiveRetention))
+            # {
+            #     $iArchiveRetention = $iDifferentialRetention;
+            # }
 
             @stryPath = $oFile->list(PATH_BACKUP_CLUSTER, undef, backupRegExpGet(true, true), 'reverse');
         }
@@ -228,7 +250,7 @@ sub process
             confess &log(ERROR, 'archive_retention must be a number >= 1');
         }
 
-        # if no backups were found then preserve current archive logs - too scary to delete them!
+        # if no backups were found then preserve current archive logs - too soon to expire them
         my $iBackupTotal = scalar @stryPath;
 
         if ($iBackupTotal > 0)
@@ -252,8 +274,6 @@ sub process
 
                 # Get the archive logs that need to be kept.  To be cautious we will keep all the archive logs starting from this
                 # backup even though they are also in the pg_xlog directory (since they have been copied more than once).
-                &log(INFO, 'archive retention based on backup ' . $strArchiveRetentionBackup);
-
                 my $oManifest = new BackRest::Manifest($oFile->pathGet(PATH_BACKUP_CLUSTER) .
                                                        "/${strArchiveRetentionBackup}/backup.manifest");
                 my $strArchiveLast = $oManifest->get(MANIFEST_SECTION_BACKUP, MANIFEST_KEY_ARCHIVE_START);
@@ -263,7 +283,7 @@ sub process
                     confess &log(ERROR, "invalid archive location retrieved ${strArchiveRetentionBackup}");
                 }
 
-                &log(INFO, 'archive retention starts at ' . $strArchiveLast);
+                &log(INFO, "archive retention from backup ${strArchiveRetentionBackup}, start = ${strArchiveLast}");
 
                 # Get archive info
                 my $oArchive = new BackRest::Archive();
