@@ -125,35 +125,35 @@ sub process
         # Make sure iFullRetention is valid
         if (!looks_like_number($iFullRetention) || $iFullRetention < 1)
         {
-            confess &log(ERROR, 'full_retention must be a number >= 1');
+            confess &log(ERROR, 'retention-full must be a number >= 1');
         }
 
-        my $iIndex = $iFullRetention;
-        @stryPath = $oFile->list(PATH_BACKUP_CLUSTER, undef, backupRegExpGet(true), 'reverse');
+        @stryPath = $oFile->list(PATH_BACKUP_CLUSTER, undef, backupRegExpGet(true));
 
-        while (defined($stryPath[$iIndex]))
+        if (@stryPath > $iFullRetention)
         {
             # Delete all backups that depend on the full backup.  Done in reverse order so that remaining backups will still
             # be consistent if the process dies
-            my @stryRemoveList;
-
-            foreach $strPath ($oFile->list(PATH_BACKUP_CLUSTER, undef, '^' . $stryPath[$iIndex] . '.*', 'reverse'))
+            for (my $iFullIdx = 0; $iFullIdx < @stryPath - $iFullRetention; $iFullIdx++)
             {
-                system("rm -rf ${strBackupClusterPath}/${strPath}") == 0
-                    or confess &log(ERROR, "unable to delete backup ${strPath}");
+                my @stryRemoveList;
 
-                $oBackupInfo->delete($strPath);
-
-                if ($strPath ne $stryPath[$iIndex])
+                foreach $strPath ($oFile->list(PATH_BACKUP_CLUSTER, undef, '^' . $stryPath[$iFullIdx] . '.*'))
                 {
-                    push(@stryRemoveList, $strPath);
+                    system("rm -rf ${strBackupClusterPath}/${strPath}") == 0
+                        or confess &log(ERROR, "unable to delete backup ${strPath}");
+
+                    $oBackupInfo->delete($strPath);
+
+                    if ($strPath ne $stryPath[$iFullIdx])
+                    {
+                        push(@stryRemoveList, $strPath);
+                    }
                 }
+
+                &log(INFO, 'remove expired full backup ' . (@stryRemoveList > 0 ? 'set: ' : '')  . $stryPath[$iFullIdx] .
+                           (@stryRemoveList > 0 ? ', ' . join(', ', @stryRemoveList) : ''));
             }
-
-            &log(INFO, 'remove expired full backup ' . (@stryRemoveList > 0 ? 'set: ' : '')  . $stryPath[$iIndex] .
-                       (@stryRemoveList > 0 ? ', ' . join(', ', @stryRemoveList) : ''));
-
-            $iIndex++;
         }
     }
 
@@ -163,29 +163,43 @@ sub process
         # Make sure iDifferentialRetention is valid
         if (!looks_like_number($iDifferentialRetention) || $iDifferentialRetention < 1)
         {
-            confess &log(ERROR, 'differential_retention must be a number >= 1');
+            confess &log(ERROR, 'retention-diff must be a number >= 1');
         }
 
-        @stryPath = $oFile->list(PATH_BACKUP_CLUSTER, undef, backupRegExpGet(false, true), 'reverse');
+        @stryPath = $oFile->list(PATH_BACKUP_CLUSTER, undef, backupRegExpGet(false, true));
 
-        if (defined($stryPath[$iDifferentialRetention - 1]))
+        if (@stryPath > $iDifferentialRetention)
         {
-            logDebugMisc($strOperation,  'differential expiration based on ' . $stryPath[$iDifferentialRetention - 1]);
+            # $strDiffRetain = $stryPath[@stryPath - $iDifferentialRetention];
 
-            # Get a list of all differential and incremental backups
-            foreach $strPath ($oFile->list(PATH_BACKUP_CLUSTER, undef, backupRegExpGet(false, true, true), 'reverse'))
+            # logDebugMisc($strOperation,  'differential expiration based on ' . $strDiffRetain);
+
+            for (my $iDiffIdx = 0; $iDiffIdx < @stryPath - $iDifferentialRetention; $iDiffIdx++)
             {
-                logDebugMisc($strOperation, "checking ${strPath} for differential expiration");
+                # Get a list of all differential and incremental backups
+                my @stryRemoveList;
 
-                # Remove all differential and incremental backups before the oldest valid differential
-                if ($strPath lt $stryPath[$iDifferentialRetention - 1])
+                foreach $strPath ($oFile->list(PATH_BACKUP_CLUSTER, undef, backupRegExpGet(false, true, true)))
                 {
-                    system("rm -rf ${strBackupClusterPath}/${strPath}") == 0
-                        or confess &log(ERROR, "unable to delete backup ${strPath}");
-                    $oBackupInfo->delete($strPath);
+                    logDebugMisc($strOperation, "checking ${strPath} for differential expiration");
 
-                    &log(INFO, "remove expired diff/incr backup ${strPath}");
+                    # Remove all differential and incremental backups before the oldest valid differential
+                    if ($strPath lt $stryPath[$iDiffIdx + 1])
+                    {
+                        system("rm -rf ${strBackupClusterPath}/${strPath}") == 0
+                            or confess &log(ERROR, "unable to delete backup ${strPath}");
+                        $oBackupInfo->delete($strPath);
+
+                        if ($strPath ne $stryPath[$iDiffIdx])
+                        {
+                            push(@stryRemoveList, $strPath);
+                        }
+                        # &log(INFO, "remove expired diff/incr backup ${strPath}");
+                    }
                 }
+
+                &log(INFO, 'remove expired diff backup ' . (@stryRemoveList > 0 ? 'set: ' : '')  . $stryPath[$iDiffIdx] .
+                           (@stryRemoveList > 0 ? ', ' . join(', ', @stryRemoveList) : ''));
             }
         }
     }
@@ -214,20 +228,10 @@ sub process
         # Determine which backup type to use for archive retention (full, differential, incremental)
         if ($strArchiveRetentionType eq BACKUP_TYPE_FULL)
         {
-            # if (!defined($iArchiveRetention))
-            # {
-            #     $iArchiveRetention = $iFullRetention;
-            # }
-
             @stryPath = $oFile->list(PATH_BACKUP_CLUSTER, undef, backupRegExpGet(true), 'reverse');
         }
         elsif ($strArchiveRetentionType eq BACKUP_TYPE_DIFF)
         {
-            # if (!defined($iArchiveRetention))
-            # {
-            #     $iArchiveRetention = $iDifferentialRetention;
-            # }
-
             @stryPath = $oFile->list(PATH_BACKUP_CLUSTER, undef, backupRegExpGet(true, true), 'reverse');
         }
         elsif ($strArchiveRetentionType eq BACKUP_TYPE_INCR)

@@ -278,7 +278,7 @@
 
             <p><backrest/> configuration files follow the Windows INI convention.  Sections are denoted by text in brackets and key/value pairs are contained in each section.  Lines beginning with <id>#</id> are ignored and can be used as comments.</p>
 
-            <p>For the purposes of demonstration set console logging to <br-setting>info</br-setting>.  <backrest/> will output useful information what will be used to illustrate examples.</p>
+            <p>For the purposes of demonstration set console logging to <br-setting>info</br-setting> (but leave the archive command at <br-setting>warn</br-setting>).  <backrest/> will output useful information what will be used to illustrate examples.</p>
 
             <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
                 <title>Set the <br-option>log-level-console</br-option> option to <br-setting>info</br-setting></title>
@@ -287,6 +287,12 @@
                     <backrest-config-option-section>global:log</backrest-config-option-section>
                     <backrest-config-option-key>log-level-console</backrest-config-option-key>
                     <backrest-config-option-value>info</backrest-config-option-value>
+                </backrest-config-option>
+
+                <backrest-config-option>
+                    <backrest-config-option-section>global:archive</backrest-config-option-section>
+                    <backrest-config-option-key>log-level-console</backrest-config-option-key>
+                    <backrest-config-option-value>warn</backrest-config-option-value>
                 </backrest-config-option>
             </backrest-config>
         </section>
@@ -334,7 +340,7 @@
             <p>Backing up a running <postgres/> cluster requires WAL archiving to be enabled.</p>
 
             <postgres-config host="{[host-db-master]}" file="{[postgres-config-demo]}">
-                <title>Configure <postgres/> settings</title>
+                <title>Configure archive settings</title>
 
                 <postgres-config-option key="archive_command">'{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} archive-push %p'</postgres-config-option>
                 <postgres-config-option key="archive_mode">on</postgres-config-option>
@@ -348,6 +354,10 @@
             <execute-list host="{[host-db-master]}">
                 <title>Restart the {[postgres-cluster-demo]} cluster</title>
 
+                <execute>
+                    <exe-cmd>sh -c 'echo "log_line_prefix = '\'\''" >> {[postgres-config-demo]}'</exe-cmd>
+                    <exe-no-show/>
+                </execute>
                 <execute>
                     <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} restart</exe-cmd>
                 </execute>
@@ -406,7 +416,7 @@
                 </execute>
             </execute-list>
 
-            <p>This time there was no warning because a full backup already existed.  Like incremental backups, differential backups must be based on a full backup.  An incremental backup can be performed by running the <cmd>backup</cmd> command with <br-setting>{[dash]}-type=incr</br-setting>.</p>
+            <p>This time there was no warning because a full backup already existed.  While incremental backups can be based on a full <i>or</i> differential backup, differential backups must be based on a full backup.  An incremental backup can be performed by running the <cmd>backup</cmd> command with <br-setting>{[dash]}-type=incr</br-setting>.</p>
 
             <p>Use the <cmd>info</cmd> command to get information about backups.</p>
 
@@ -431,7 +441,7 @@
 
             <p>Backups can protect you from a number of disaster scenarios, the most common of which are hardware failure and data corruption.  The easiest way to simulate data corruption is to remove an important <postgres/> cluster file.</p>
 
-            <!-- <execute-list host="{[host-db-master]}">
+            <execute-list host="{[host-db-master]}">
                 <title>Stop the {[postgres-cluster-demo]} cluster and delete the <file>pg_control</file> file</title>
 
                 <execute>
@@ -480,7 +490,7 @@
 
             <p>This time the cluster started successfully since the restore replaced the missing <file>pg_control</file> file.</p>
 
-            <p>More information about the <cmd>restore</cmd> command can be found in the <link page="#restore">Restore</link> section.</p> -->
+            <p>More information about the <cmd>restore</cmd> command can be found in the <link page="#restore">Restore</link> section.</p>
         </section>
     </section>
 
@@ -496,7 +506,7 @@
 
             <p>By default <backrest/> will wait for the next regularly scheduled checkpoint before starting a backup.  Depending on the <pg-option>checkpoint_timeout</pg-option> and <pg-option>checkpoint_segments</pg-option> settings in <postgres/> it may be quite some time before a checkpoint completes and the backup can begin.</p>
 
-            <!-- <execute-list host="{[host-db-master]}">
+            <execute-list host="{[host-db-master]}">
                 <title>Incremental backup of the {[postgres-cluster-demo]} cluster with the regularly scheduled checkpoint</title>
 
                 <execute>
@@ -526,7 +536,7 @@
                     <exe-output/>
                     <exe-highlight>backup begins after the requested immediate checkpoint completes</exe-highlight>
                 </execute>
-            </execute-list> -->
+            </execute-list>
         </section>
 
         <!-- SECTION => BACKUP - STOP-AUTO -->
@@ -537,7 +547,7 @@
 
             <p>Here an error in intentionally caused by removing repository permissions.</p>
 
-            <!-- <execute-list host="{[host-db-master]}">
+            <execute-list host="{[host-db-master]}">
                 <title>Revoke write privileges in the <backrest/> repository and attempt a backup</title>
 
                 <execute>
@@ -593,7 +603,7 @@
                     <exe-output/>
                     <exe-highlight>cluster is already in backup mode|backup begins after the requested immediate checkpoint completes</exe-highlight>
                 </execute>
-            </execute-list> -->
+            </execute-list>
 
             <p>Although useful this feature may not be appropriate when another third-party backup solution is being used to take online backups as <backrest/> will not recognize that the other software is running and may terminate a backup started by that software.  However, it would be unusual to run more than one third-party backup solution at the same time so this is not likely to be a problem.</p>
 
@@ -605,61 +615,103 @@
     <section id="retention" depend="quick-start/perform-backup">
         <title>Retention</title>
 
-        <p>The Restore section introduces additional <cmd>restore</cmd> command features.  Note on temp backups.</p>
+        <p>Generally it is best to retain as many backups as possible to provide a greater window for <link page="#pitr">Point-in-Time Recovery</link>, but practical concerns such as disk space must also be considered.  Retention options remove older backups once they are no longer needed.</p>
 
-        <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
-            <title>Configure <br-option>full-retention</br-option></title>
+        <!-- SECTION => RETENTION - FULL -->
+        <section id="full">
+            <title>Full Backup Retention</title>
 
-            <backrest-config-option>
-                <backrest-config-option-section>global:expire</backrest-config-option-section>
-                <backrest-config-option-key>retention-full</backrest-config-option-key>
-                <backrest-config-option-value>2</backrest-config-option-value>
-            </backrest-config-option>
+            <p>Set <br-option>full-retention</br-option> to the number of full backups required.  New backups must be completed before expiration will occur &amp;mdash; that means if <br-setting>retention-full=2</br-setting> then there will be three full backups stored before the oldest one is expired.</p>
 
-            <!-- <backrest-config-option>
-                <backrest-config-option-section>global:expire</backrest-config-option-section>
-                <backrest-config-option-key>retention-archive-type</backrest-config-option-key>
-                <backrest-config-option-value>full</backrest-config-option-value>
-            </backrest-config-option>
+            <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
+                <title>Configure <br-option>retention-full</br-option></title>
 
-            <backrest-config-option>
-                <backrest-config-option-section>global:expire</backrest-config-option-section>
-                <backrest-config-option-key>retention-archive</backrest-config-option-key>
-                <backrest-config-option-value>2</backrest-config-option-value>
-            </backrest-config-option> -->
-        </backrest-config>
+                <backrest-config-option>
+                    <backrest-config-option-section>global:expire</backrest-config-option-section>
+                    <backrest-config-option-key>retention-full</backrest-config-option-key>
+                    <backrest-config-option-value>2</backrest-config-option-value>
+                </backrest-config-option>
+            </backrest-config>
 
-        <p>Backup <br-setting>full-retention=2</br-setting> but currently there is only one full backup.  The next full backup to run will not expire any backups.</p>
+            <p>Backup <br-setting>retention-full=2</br-setting> but currently there is only one full backup so the next full backup to run will not expire any full backups.</p>
 
-        <execute-list host="{[host-db-master]}">
-            <title>Perform a full backup</title>
+            <execute-list host="{[host-db-master]}">
+                <title>Perform a full backup</title>
 
-            <execute>
-                <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full backup</exe-cmd>
-                <exe-output/>
-                <exe-highlight>archive retention from backup {[backup-full-first]}|expire WAL segments</exe-highlight>
-            </execute>
+                <execute>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full backup</exe-cmd>
+                    <exe-output/>
+                    <exe-highlight>archive retention from backup {[backup-full-first]}|expire WAL segments</exe-highlight>
+                </execute>
 
-            <execute>
-                <exe-cmd>{[cmd-backup-last]}</exe-cmd>
-                <exe-var>backup-full-second</exe-var>
-                <exe-no-show/>
-            </execute>
-        </execute-list>
+                <execute>
+                    <exe-cmd>{[cmd-backup-last]}</exe-cmd>
+                    <exe-var>backup-full-second</exe-var>
+                    <exe-no-show/>
+                </execute>
+            </execute-list>
 
-        <p>Archive <i>is</i> expired because there are WAL segments generated before the oldest backup.  These are not useful for recovery &amp;mdash; only WAL segments generated after a backup can be used to recover that backup.</p>
+            <p>Archive <i>is</i> expired because WAL segments were generated before the oldest backup.  These are not useful for recovery &amp;mdash; only WAL segments generated after a backup can be used to recover that backup.</p>
 
-        <execute-list host="{[host-db-master]}">
-            <title>Perform a full backup</title>
+            <execute-list host="{[host-db-master]}">
+                <title>Perform a full backup</title>
 
-            <execute>
-                <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full backup</exe-cmd>
-                <exe-output/>
-                <exe-highlight>remove expired full backup set\: {[backup-full-first]}|archive retention from backup {[backup-full-second]}|expire WAL segments</exe-highlight>
-            </execute>
-        </execute-list>
+                <execute>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full backup</exe-cmd>
+                    <exe-output/>
+                    <exe-highlight>remove expired full backup set\: {[backup-full-first]}|archive retention from backup {[backup-full-second]}|expire WAL segments</exe-highlight>
+                </execute>
+            </execute-list>
 
-        <p>The <id>{[backup-full-first]}</id> full backup is expired and archive retention is based on the <id>{[backup-full-second]}</id> which is now the oldest full backup.</p>
+            <p>The <id>{[backup-full-first]}</id> full backup is expired and archive retention is based on the <id>{[backup-full-second]}</id> which is now the oldest full backup.</p>
+        </section>
+
+        <!-- SECTION => RETENTION - DIFF -->
+        <section id="diff">
+            <title>Differential Backup Retention</title>
+
+            <p>Set <br-option>retention-diff</br-option> to the number of differential backups required.  Differentials only rely on the prior full backup so it is possible to create a <quote>rolling</quote> set of differentials for the last day or more.  This allows quick restores to recent points-in-time but reduces overall space consumption.</p>
+
+            <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
+                <title>Configure <br-option>retention-diff</br-option></title>
+
+                <backrest-config-option>
+                    <backrest-config-option-section>global:expire</backrest-config-option-section>
+                    <backrest-config-option-key>retention-diff</backrest-config-option-key>
+                    <backrest-config-option-value>1</backrest-config-option-value>
+                </backrest-config-option>
+            </backrest-config>
+
+            <p>Backup <br-setting>retention-diff=2</br-setting> so two differentials will need to be performed before one is expired.  An incremental backup is added to demonstrate incremental expiration.</p>
+
+            <execute-list host="{[host-db-master]}">
+                <title>Perform differential and incremental backups</title>
+
+                <execute>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=diff backup</exe-cmd>
+                </execute>
+                <execute>
+                    <exe-cmd>{[cmd-backup-last]}</exe-cmd>
+                    <exe-var>backup-diff-second</exe-var>
+                    <exe-no-show/>
+                </execute>
+                <execute>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=incr backup</exe-cmd>
+                </execute>
+            </execute-list>
+
+            <p>Now performing a differential backup will expire the previous differential and incremental backups leaving only one differential backup.</p>
+
+            <execute-list host="{[host-db-master]}">
+                <title>Perform a differential backup</title>
+
+                <execute>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=diff backup</exe-cmd>
+                    <exe-output/>
+                    <exe-highlight>remove expired diff backup set: {[backup-diff-second]}</exe-highlight>
+                </execute>
+            </execute-list>
+        </section>
     </section>
 
     <!-- SECTION => RESTORE -->
@@ -672,9 +724,9 @@
         <section id="option-delta">
             <title>Delta Option</title>
 
-            <p><link page="#quickstart-perform-restore">Restore a Backup</link> in <link page="#quickstart">Quick Start</link> required the database cluster directory to be cleaned before the <cmd>restore</cmd> could be performed.  The <br-option>delta</br-option> allows <backrest/> to automatically determine which files in the database cluster directory should be kept which ones need to be restored from the backup.  This is accomplished by calculating a <link url="https://en.wikipedia.org/wiki/SHA-1">SHA-1</link> cryptographic hash for each file in the database cluster directory.  If the <id>SHA-1</id> hash does not match the hash stored in the backup then that file will be restored.  This operation is very efficient when combined with the <br-option>thread-max</br-option> option.  Since the <postgres/> process is shut down during the restore, a larger number of threads can be used than might be desirable during a backup when the <postgres/> process is running.</p>
+            <p><link page="#quickstart-perform-restore">Restore a Backup</link> in <link page="#quickstart">Quick Start</link> required the database cluster directory to be cleaned before the <cmd>restore</cmd> could be performed.  The <br-option>delta</br-option> allows <backrest/> to automatically determine which files in the database cluster directory can be preserved and which ones need to be restored from the backup.  This is accomplished by calculating a <link url="https://en.wikipedia.org/wiki/SHA-1">SHA-1</link> cryptographic hash for each file in the database cluster directory.  If the <id>SHA-1</id> hash does not match the hash stored in the backup then that file will be restored.  This operation is very efficient when combined with the <br-option>thread-max</br-option> option.  Since the <postgres/> process is shut down during the restore, a larger number of threads can be used than might be desirable during a backup when the <postgres/> process is running.</p>
 
-            <!-- <execute-list host="{[host-db-master]}">
+            <execute-list host="{[host-db-master]}">
                 <title>Stop the {[postgres-cluster-demo]} cluster, perform delta restore, and restart <postgres/></title>
 
                 <execute>
@@ -689,7 +741,7 @@
                 <execute>
                     <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</exe-cmd>
                 </execute>
-            </execute-list> -->
+            </execute-list>
         </section>
     </section>
 
@@ -701,8 +753,12 @@
 
         <p>Point-in-Time Recovery (PITR) allows the WAL to be played from the last backup to a specified time, transaction id, or recovery point.  For common recovery scenarios time-based recovery is arguably the most useful.  A common recovery scenario is to restore a table or data was accidentally dropped or deleted.  Recovering a dropped table is more dramatic so that's the example given here but deleted data would be recovered in exactly the same way.</p>
 
-        <!-- <execute-list host="{[host-db-master]}">
-            <title>Create a table with very important data</title>
+        <execute-list host="{[host-db-master]}">
+            <title>Backup the {[postgres-cluster-demo]} cluster and create a table with very important data</title>
+
+            <execute>
+                <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=diff backup</exe-cmd>
+            </execute>
 
             <execute>
                 <exe-cmd>
@@ -913,7 +969,7 @@
                 <exe-output/>
                 <exe-highlight>recovery stopping before|last completed transaction|starting point-in-time recovery</exe-highlight>
             </execute>
-        </execute-list> -->
+        </execute-list>
     </section>
 
     <!-- SECTION => BACKUP HOST -->
@@ -1028,17 +1084,16 @@
 
             <p>To perform a backup of the <postgres/> cluster run <backrest/> with the <cmd>backup</cmd> command on the <host>backup</host> host.</p>
 
-            <!-- <execute-list host="{[host-backup]}">
+            <execute-list host="{[host-backup]}">
                 <title>Backup the {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} backup</exe-cmd>
                     <exe-user>backrest</exe-user>
-                    <exe-output/>
                 </execute>
             </execute-list>
 
-            <p>Since a new repository was created on the <host>backup</host> host the warning about the incremental backup changing to a full backup was emitted.</p> -->
+            <p>Since a new repository was created on the <host>backup</host> host the warning about the incremental backup changing to a full backup was emitted.</p>
         </section>
 
         <!-- SECTION => BACKUP HOST - PERFORM RESTORE -->
@@ -1047,7 +1102,7 @@
 
             <p>To perform a restore of the <postgres/> cluster run <backrest/> with the <cmd>restore</cmd> command on the <host>database</host> host.</p>
 
-            <!-- <execute-list host="{[host-db-master]}">
+            <execute-list host="{[host-db-master]}">
                 <title>Stop the {[postgres-cluster-demo]} cluster, restore, and restart <postgres/></title>
 
                 <execute>
@@ -1061,7 +1116,7 @@
                 <execute>
                     <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</exe-cmd>
                 </execute>
-            </execute-list> -->
+            </execute-list>
         </section>
     </section>
 

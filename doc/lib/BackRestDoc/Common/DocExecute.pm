@@ -119,6 +119,7 @@ sub execute
         my $bExeRetry = defined($oCommand->fieldGet('exe-retry', false)) ? $oCommand->fieldGet('exe-retry') : false;
         my $strExeVar = defined($oCommand->fieldGet('exe-var', false)) ? $oCommand->fieldGet('exe-var') : undef;
         my $iExeExpectedError = defined($oCommand->fieldGet('exe-err-expect', false)) ? $oCommand->fieldGet('exe-err-expect') : undef;
+        my $bExeShow = defined($oCommand->fieldGet('exe-no-show', false)) ? false : true;
 
         if ($bExeRetry)
         {
@@ -133,14 +134,24 @@ sub execute
         # Add continuation chars and proper spacing
         $strCommand =~ s/[ ]*\n[ ]*/ \\\n    /smg;
 
-        # Make sure that no lines are greater than 80 chars
-        foreach my $strLine (split("\n", $strCommand))
+        if ($bExeShow)
         {
-            if (length(trim($strLine)) > 80)
+            # Make sure that no lines are greater than 80 chars
+            foreach my $strLine (split("\n", $strCommand))
             {
-                confess &log(ERROR, "command has a line > 80 characters:\n${strCommand}");
+                if (length(trim($strLine)) > 80)
+                {
+                    confess &log(ERROR, "command has a line > 80 characters:\n${strCommand}");
+                }
             }
         }
+        #
+        # my $strCommandRun = $strCommand;
+        #
+        # if ($strCommandRun =~ / pg\_backrest /)
+        # {
+        #     $strCommandRun .= ' --log-level-console=info';
+        # }
 
         &log(DEBUG, ('    ' x $iIndent) . "execute: $strCommand");
 
@@ -172,6 +183,10 @@ sub execute
                         $strOutput =~ s/^                             //smg;
                         $strOutput =~ s/^[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-6][0-9]:[0-6][0-9]\.[0-9]{3} T[0-9]{2}  //smg;
                     }
+                    # else
+                    # {
+                    #     $strOutput =~ s/^[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-6][0-9]:[0-6][0-9]\.[0-9]{3} T[0-9]{2}[ ]+INFO.*$//;
+                    # }
                 }
 
                 if (defined($iExeExpectedError))
@@ -194,11 +209,11 @@ sub execute
                         confess &log(ERROR, 'filter requires highlight definition: ' . $strCommand);
                     }
 
-                    my $iFilterContext = $oCommand->paramGet('filter-context', false, 3);
+                    my $iFilterContext = $oCommand->paramGet('filter-context', false, 2);
 
                     my @stryOutput = split("\n", $strOutput);
                     undef($strOutput);
-                    my $iFiltered = 0;
+                    # my $iFiltered = 0;
                     my $iLastOutput = -1;
 
                     for (my $iIndex = 0; $iIndex < @stryOutput; $iIndex++)
@@ -206,10 +221,15 @@ sub execute
                         if ($stryOutput[$iIndex] =~ /$strHighLight/)
                         {
                             # Output filtered lines
-                            if ($iFiltered > 0)
-                            {
-                                $strOutput .= (defined($strOutput) ? "\n" : '') . "       [filtered ${iFiltered} lines of output]";
-                            }
+                            # if ($iFiltered > 1)
+                            # {
+                            #     $strOutput .= (defined($strOutput) ? "\n" : '') .
+                            #                   "       [filtered ${iFiltered} line" . (${iFiltered} > 1 ? 's' : '') . ' of output]';
+                            # }
+                            # else
+                            # {
+                            #     $strOutput .= (defined($strOutput) ? "\n" : '') . $stryOutput[$iIndex - 1];
+                            # }
 
                             # Determine the first line to output
                             my $iFilterFirst = $iIndex - $iFilterContext;
@@ -226,25 +246,45 @@ sub execute
                             # Don't got past the end
                             $iFilterLast = $iFilterLast >= @stryOutput ? @stryOutput -1 : $iFilterLast;
 
+                            # Mark filtered lines if any
+                            if ($iFilterFirst > $iLastOutput + 1)
+                            {
+                                my $iFiltered = $iFilterFirst - ($iLastOutput + 1);
+
+                                if ($iFiltered > 1)
+                                {
+                                    $strOutput .= (defined($strOutput) ? "\n" : '') .
+                                                  "       [filtered ${iFiltered} lines of output]";
+                                }
+                                else
+                                {
+                                    $iFilterFirst -= 1;
+                                }
+                            }
+
                             # Output the lines
                             for (my $iOutputIndex = $iFilterFirst; $iOutputIndex <= $iFilterLast; $iOutputIndex++)
                             {
-                                $strOutput .= (defined($strOutput) ? "\n" : '') . $stryOutput[$iOutputIndex];
+                                    $strOutput .= (defined($strOutput) ? "\n" : '') . $stryOutput[$iOutputIndex];
                             }
 
-                            $iFiltered = 0;
-                            $iIndex =  $iFilterLast + 1;
-                        }
-                        else
-                        {
-                            $iFiltered++;
+                            $iLastOutput = $iFilterLast;
                         }
                     }
 
-                    # Output filtered lines
-                    if ($iFiltered > 0)
+                    if (@stryOutput - 1 > $iLastOutput + 1)
                     {
-                        $strOutput .= (defined($strOutput) ? "\n" : '') . "       [filtered ${iFiltered} lines of output]";
+                        my $iFiltered = (@stryOutput - 1) - ($iLastOutput + 1);
+
+                        if ($iFiltered > 1)
+                        {
+                            $strOutput .= (defined($strOutput) ? "\n" : '') .
+                                          "       [filtered ${iFiltered} lines of output]";
+                        }
+                        else
+                        {
+                            $strOutput .= (defined($strOutput) ? "\n" : '') . $stryOutput[@stryOutput - 1];
+                        }
                     }
                 }
             }
@@ -474,7 +514,7 @@ sub postgresConfig
             if ($self->{bExe})
             {
                 fileStringWrite($strLocalFile, $$oConfigHash{base} .
-                                (defined($strConfig) ? "\n# pgBackRest Configuration\n${strConfig}" : ''));
+                                (defined($strConfig) ? "\n# pgBackRest Configuration\n${strConfig}\n" : ''));
 
                 $oHost->copyTo($strLocalFile, $strFile, 'postgres:postgres', '640');
             }
