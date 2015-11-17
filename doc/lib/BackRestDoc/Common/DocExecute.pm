@@ -174,14 +174,78 @@ sub execute
                     }
                 }
 
+                if (defined($iExeExpectedError))
+                {
+                    $strOutput .= trim($oExec->{strErrorLog});
+                }
+
+                # Output is assigned to a var
                 if (defined($strExeVar))
                 {
                     $self->{oManifest}->variableSet($strExeVar, trim($oExec->{strOutLog}));
                 }
-
-                if (defined($iExeExpectedError))
+                elsif (!$oCommand->paramTest('filter', 'n') && defined($oCommand->fieldGet('exe-output', false)) &&
+                       defined($strOutput))
                 {
-                    $strOutput .= trim($oExec->{strErrorLog});
+                    my $strHighLight = $self->{oManifest}->variableReplace($oCommand->fieldGet('exe-highlight', false));
+
+                    if (!defined($strHighLight))
+                    {
+                        confess &log(ERROR, 'filter requires highlight definition: ' . $strCommand);
+                    }
+
+                    my $iFilterContext = $oCommand->paramGet('filter-context', false, 3);
+
+                    my @stryOutput = split("\n", $strOutput);
+                    undef($strOutput);
+                    my $iFiltered = 0;
+                    my $iLastOutput = -1;
+
+                    for (my $iIndex = 0; $iIndex < @stryOutput; $iIndex++)
+                    {
+                        if ($stryOutput[$iIndex] =~ /$strHighLight/)
+                        {
+                            # Output filtered lines
+                            if ($iFiltered > 0)
+                            {
+                                $strOutput .= (defined($strOutput) ? "\n" : '') . "       [filtered ${iFiltered} lines of output]";
+                            }
+
+                            # Determine the first line to output
+                            my $iFilterFirst = $iIndex - $iFilterContext;
+
+                            # Don't go past the beginning
+                            $iFilterFirst = $iFilterFirst < 0 ? 0 : $iFilterFirst;
+
+                            # Don't repeat lines that have already been output
+                            $iFilterFirst  = $iFilterFirst <= $iLastOutput ? $iLastOutput + 1 : $iFilterFirst;
+
+                            # Determine the last line to output
+                            my $iFilterLast = $iIndex + $iFilterContext;
+
+                            # Don't got past the end
+                            $iFilterLast = $iFilterLast >= @stryOutput ? @stryOutput -1 : $iFilterLast;
+
+                            # Output the lines
+                            for (my $iOutputIndex = $iFilterFirst; $iOutputIndex <= $iFilterLast; $iOutputIndex++)
+                            {
+                                $strOutput .= (defined($strOutput) ? "\n" : '') . $stryOutput[$iOutputIndex];
+                            }
+
+                            $iFiltered = 0;
+                            $iIndex =  $iFilterLast + 1;
+                        }
+                        else
+                        {
+                            $iFiltered++;
+                        }
+                    }
+
+                    # Output filtered lines
+                    if ($iFiltered > 0)
+                    {
+                        $strOutput .= (defined($strOutput) ? "\n" : '') . "       [filtered ${iFiltered} lines of output]";
+                    }
                 }
             }
             elsif ($bExeOutput)

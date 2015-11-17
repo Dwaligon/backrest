@@ -500,6 +500,7 @@ my %oOptionRule =
             &CMD_ARCHIVE_GET => true,
             &CMD_ARCHIVE_PUSH => true,
             &CMD_BACKUP => true,
+            &CMD_EXPIRE => true,
             &CMD_INFO => true,
             &CMD_REMOTE => true,
             &CMD_RESTORE => true

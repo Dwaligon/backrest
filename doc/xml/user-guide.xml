@@ -224,7 +224,7 @@
         <execute-list host="{[host-db-master]}">
             <title>Make sure the installation worked</title>
 
-            <execute>
+            <execute filter="n">
                 <exe-cmd>{[project-exe]}</exe-cmd>
                 <exe-output/>
             </execute>
@@ -246,7 +246,7 @@
             <execute-list host="{[host-db-master]}">
                 <title>Create and start the demo cluster</title>
 
-                <execute>
+                <execute filter="n">
                     <exe-cmd>pg_createcluster 9.4 {[postgres-cluster-demo]}</exe-cmd>
                     <exe-user>root</exe-user>
                     <exe-output/>
@@ -277,6 +277,18 @@
             </backrest-config>
 
             <p><backrest/> configuration files follow the Windows INI convention.  Sections are denoted by text in brackets and key/value pairs are contained in each section.  Lines beginning with <id>#</id> are ignored and can be used as comments.</p>
+
+            <p>For the purposes of demonstration set console logging to <br-setting>info</br-setting>.  <backrest/> will output useful information what will be used to illustrate examples.</p>
+
+            <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
+                <title>Set the <br-option>log-level-console</br-option> option to <br-setting>info</br-setting></title>
+
+                <backrest-config-option>
+                    <backrest-config-option-section>global:log</backrest-config-option-section>
+                    <backrest-config-option-key>log-level-console</backrest-config-option-key>
+                    <backrest-config-option-value>info</backrest-config-option-value>
+                </backrest-config-option>
+            </backrest-config>
         </section>
 
         <!-- SECTION => QUICKSTART - CREATE REPOSITORY -->
@@ -370,6 +382,7 @@
                 <execute>
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} backup</exe-cmd>
                     <exe-output/>
+                    <exe-highlight>no prior backup exists|full backup size</exe-highlight>
                 </execute>
             </execute-list>
 
@@ -381,8 +394,7 @@
                 <title>Differential backup of the {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=diff
-                        {[dash]}-log-level-console=info backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=diff backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>diff backup size</exe-highlight>
                 </execute>
@@ -395,7 +407,7 @@
             <execute-list host="{[host-db-master]}">
                 <title>Get info for the {[postgres-cluster-demo]} cluster</title>
 
-                <execute>
+                <execute filter="n">
                     <exe-cmd>{[project-exe]} info</exe-cmd>
                     <exe-output/>
                     <exe-highlight>(oldest|latest) backup label</exe-highlight>
@@ -482,8 +494,7 @@
                 <title>Incremental backup of the {[postgres-cluster-demo]} cluster with the regularly scheduled checkpoint</title>
 
                 <execute>
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
-                        {[dash]}-log-level-console=info backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>backup begins after the next regular checkpoint completes</exe-highlight>
                 </execute>
@@ -505,8 +516,7 @@
                 <title>Incremental backup of the {[postgres-cluster-demo]} cluster with an immediate checkpoint</title>
 
                 <execute>
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
-                        {[dash]}-log-level-console=info backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>backup begins after the requested immediate checkpoint completes</exe-highlight>
                 </execute>
@@ -530,8 +540,7 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
-                        {[dash]}-log-level-console=info backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>ERROR:</exe-highlight>
                     <exe-err-expect>199</exe-err-expect>
@@ -549,8 +558,7 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
-                        {[dash]}-log-level-console=info backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>ERROR:</exe-highlight>
                     <exe-err-expect>132</exe-err-expect>
@@ -575,8 +583,7 @@
                 <title>Perform an incremental backup</title>
 
                 <execute>
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
-                        {[dash]}-log-level-console=info backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
                     <exe-output/>
                     <exe-highlight>cluster is already in backup mode|backup begins after the requested immediate checkpoint completes</exe-highlight>
                 </execute>
@@ -586,6 +593,65 @@
 
             <p>Note that <id>pg_dump</id> and <id>pg_base_backup</id> do not take online backups so are not affected.  It is safe to run them in conjunction with <backrest/>.</p>
         </section>
+    </section>
+
+    <!-- SECTION => EXPIRE -->
+    <section id="retention" depend="quick-start/perform-backup">
+        <title>Retention</title>
+
+        <p>The Restore section introduces additional <cmd>restore</cmd> command features.</p>
+
+        <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
+            <title>???</title>
+
+            <backrest-config-option>
+                <backrest-config-option-section>global:expire</backrest-config-option-section>
+                <backrest-config-option-key>retention-full</backrest-config-option-key>
+                <backrest-config-option-value>2</backrest-config-option-value>
+            </backrest-config-option>
+
+            <backrest-config-option>
+                <backrest-config-option-section>global:expire</backrest-config-option-section>
+                <backrest-config-option-key>retention-archive-type</backrest-config-option-key>
+                <backrest-config-option-value>full</backrest-config-option-value>
+            </backrest-config-option>
+
+            <backrest-config-option>
+                <backrest-config-option-section>global:expire</backrest-config-option-section>
+                <backrest-config-option-key>retention-archive</backrest-config-option-key>
+                <backrest-config-option-value>2</backrest-config-option-value>
+            </backrest-config-option>
+        </backrest-config>
+
+        <execute-list host="{[host-db-master]}">
+            <title>???</title>
+
+            <execute filter="n">
+                <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} expire</exe-cmd>
+                <exe-output/>
+                <!-- <exe-highlight>cluster is already in backup mode|backup begins after the requested immediate checkpoint completes</exe-highlight> -->
+            </execute>
+        </execute-list>
+
+        <execute-list host="{[host-db-master]}">
+            <title>???</title>
+
+            <execute>
+                <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full backup</exe-cmd>
+                <exe-output/>
+                <exe-highlight>archive retention based on backup|no WAL segments to expire</exe-highlight>
+            </execute>
+        </execute-list>
+
+        <execute-list host="{[host-db-master]}">
+            <title>???</title>
+
+            <execute>
+                <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full backup</exe-cmd>
+                <exe-output/>
+                <exe-highlight>remove expired full backup|expire WAL segments</exe-highlight>
+            </execute>
+        </execute-list>
     </section>
 
     <!-- SECTION => RESTORE -->
@@ -598,16 +664,16 @@
         <section id="option-delta">
             <title>Delta Option</title>
 
-            <p><link page="#quickstart-perform-restore">Restore a Backup</link> in <link page="#quickstart">Quick Start</link> required the database cluster directory to be cleaned before the <cmd>restore</cmd> could be performed.  The <br-option>delta</br-option> allows <backrest/> to automatically determine which files in the database cluster directory should be kept which ones need to be restored from the backup.  This is accomplished by calculating a <link url="https://en.wikipedia.org/wiki/SHA-1">SHA-1</link> cryptographic hash for each file in the database cluster directory.  If the <id>SHA-1</id> hash does not match the hash stored in the backup then that file will be restored.  This operation is very efficient when combined with the <br-option>thread-max</br-option>.  Since the <postgres/> process is shut down during the restore, a larger number of threads can be used than might be desirable during a backup when the <postgres/> process is running.</p>
+            <p><link page="#quickstart-perform-restore">Restore a Backup</link> in <link page="#quickstart">Quick Start</link> required the database cluster directory to be cleaned before the <cmd>restore</cmd> could be performed.  The <br-option>delta</br-option> allows <backrest/> to automatically determine which files in the database cluster directory should be kept which ones need to be restored from the backup.  This is accomplished by calculating a <link url="https://en.wikipedia.org/wiki/SHA-1">SHA-1</link> cryptographic hash for each file in the database cluster directory.  If the <id>SHA-1</id> hash does not match the hash stored in the backup then that file will be restored.  This operation is very efficient when combined with the <br-option>thread-max</br-option> option.  Since the <postgres/> process is shut down during the restore, a larger number of threads can be used than might be desirable during a backup when the <postgres/> process is running.</p>
 
-            <execute-list host="{[host-db-master]}">
+            <!-- <execute-list host="{[host-db-master]}">
                 <title>Stop the {[postgres-cluster-demo]} cluster, perform delta restore, and restart <postgres/></title>
 
                 <execute>
                     <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop</exe-cmd>
                 </execute>
 
-                <execute>
+                <execute filter="n">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-delta restore</exe-cmd>
                     <exe-output/>
                 </execute>
@@ -615,7 +681,7 @@
                 <execute>
                     <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</exe-cmd>
                 </execute>
-            </execute-list>
+            </execute-list> -->
         </section>
     </section>
 
@@ -648,7 +714,7 @@
         <execute-list host="{[host-db-master]}">
             <title>Get the time from <postgres/></title>
 
-            <execute>
+            <execute filter="n">
                 <exe-cmd>
                     psql -Atc "select current_timestamp"
                 </exe-cmd>
@@ -913,6 +979,12 @@
                     <backrest-config-option-key>start-fast</backrest-config-option-key>
                     <backrest-config-option-value>y</backrest-config-option-value>
                 </backrest-config-option>
+
+                <backrest-config-option>
+                    <backrest-config-option-section>global:log</backrest-config-option-section>
+                    <backrest-config-option-key>log-level-console</backrest-config-option-key>
+                    <backrest-config-option-value>info</backrest-config-option-value>
+                </backrest-config-option>
             </backrest-config>
 
             <p>The database host must be configured with the backup host/user.</p>
@@ -994,7 +1066,7 @@
         <execute-list host="{[host-db-master]}">
             <title>Get detailed information</title>
 
-            <execute>
+            <execute filter="n">
                 <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-output=json info</exe-cmd>
                 <exe-output/>
             </execute>

@@ -240,8 +240,7 @@ sub process
             {
                 if ($strArchiveRetentionType eq BACKUP_TYPE_FULL && scalar @stryPath > 0)
                 {
-                    &log(INFO, 'fewer than required backups for retention, ' .
-                               'but since archive_retention_type = full using oldest full backup');
+                    &log(INFO, "full backup total < ${iArchiveRetention} - using oldest full backup for archive retention");
                     $strArchiveRetentionBackup = $stryPath[scalar @stryPath - 1];
                 }
             }
@@ -326,7 +325,8 @@ sub process
                 }
                 else
                 {
-                    &log(INFO, "expired WAL segments: start = ${strArchiveExpireStart}, stop = ${strArchiveExpireStop}");
+                    &log(INFO, 'expire WAL segments: start = ' . substr($strArchiveExpireStart, 0, 24) .
+                               ', stop = ' . substr($strArchiveExpireStop, 0, 24));
                 }
             }
         }
