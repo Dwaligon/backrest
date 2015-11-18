@@ -3,7 +3,8 @@
 <!ELEMENT variable-list (variable+)>
 <!ELEMENT variable (#PCDATA)>
     <!ATTLIST variable key CDATA #REQUIRED>
-    <!ATTLIST variable eval CDATA 'n'>
+    <!ATTLIST variable eval CDATA "n">
+    <!ATTLIST variable keyword CDATA "default">
 
 <!ELEMENT source-list (source+)>
 <!ELEMENT source EMPTY>

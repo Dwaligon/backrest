@@ -103,13 +103,8 @@ sub new
         {
             foreach my $oVariable ($$oSourceHash{doc}->nodeGet('variable-list')->nodeList('variable'))
             {
-                # if (!defined($oVariable->fieldGet('variable-name', false)))
-                # {
-                #     use Data::Dumper; confess $oVariable;
-                # }
                 if ($self->keywordMatch($oVariable->paramGet('keyword', false)))
                 {
-
                     my $strKey = $oVariable->fieldGet('variable-name');
                     my $strValue = $oVariable->fieldGet('variable-value');
 
@@ -192,27 +187,30 @@ sub new
     {
         foreach my $oVariable ($self->{oManifestXml}->nodeGet('variable-list')->nodeList('variable'))
         {
-            my $strKey = $oVariable->paramGet('key');
-            my $strValue = $oVariable->valueGet();
-
-            if ($oVariable->paramTest('eval', 'y'))
+            if ($self->keywordMatch($oVariable->paramGet('keyword', false)))
             {
-                $strValue = eval $strValue;
+                my $strKey = $oVariable->paramGet('key');
+                my $strValue = $oVariable->valueGet();
 
-                if ($@)
+                if ($oVariable->paramTest('eval', 'y'))
                 {
-                    confess &log(ERROR, "unable to evaluate ${strKey}: $@\n" . $oVariable->valueGet());
+                    $strValue = eval $strValue;
+
+                    if ($@)
+                    {
+                        confess &log(ERROR, "unable to evaluate ${strKey}: $@\n" . $oVariable->valueGet());
+                    }
                 }
+
+                $self->variableSet($strKey, defined($$oVariableOverride{$strKey}) ? $$oVariableOverride{$strKey} : $strValue);
+
+                logDebugMisc
+                (
+                    $strOperation, '    load manifest variable',
+                    {name => 'strKey', value => $strKey},
+                    {name => 'strValue', value => $strValue}
+                );
             }
-
-            $self->variableSet($strKey, defined($$oVariableOverride{$strKey}) ? $$oVariableOverride{$strKey} : $strValue);
-
-            logDebugMisc
-            (
-                $strOperation, '    load manifest variable',
-                {name => 'strKey', value => $strKey},
-                {name => 'strValue', value => $strValue}
-            );
         }
     }
 

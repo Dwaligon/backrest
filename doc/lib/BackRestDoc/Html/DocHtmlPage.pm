@@ -275,6 +275,8 @@ sub sectionProcess
 
                 foreach my $oExecute ($oChild->nodeList('execute'))
                 {
+                    next if (!$self->{oManifest}->keywordMatch($oExecute->paramGet('keyword', false)));
+
                     my $bExeShow = defined($oExecute->fieldGet('exe-no-show', false)) ? false : true;
                     my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
 
@@ -289,12 +291,18 @@ sub sectionProcess
                             addNew(HTML_PRE, "execute-body-cmd",
                                    {strContent => $strCommand, bPre => true});
 
+                        my $strHighLight = $self->{oManifest}->variableReplace($oExecute->fieldGet('exe-highlight', false));
+                        my $bHighLightFound = false;
+
                         if (defined($strOutput))
                         {
-                            my $strHighLight = $self->{oManifest}->variableReplace($oExecute->fieldGet('exe-highlight', false));
                             my $bHighLightOld;
-                            my $bHighLightFound = false;
                             my $strHighLightOutput;
+
+                            if ($oExecute->fieldTest('exe-highlight-type', 'error'))
+                            {
+                                $bExeExpectedError = true;
+                            }
 
                             foreach my $strLine (split("\n", $strOutput))
                             {
@@ -324,12 +332,12 @@ sub sectionProcess
                                            {strContent => $strHighLightOutput, bPre => true});
                             }
 
-                            if ($self->{bExe} && defined($strHighLight) && !$bHighLightFound)
-                            {
-                                confess &log(ERROR, "unable to find a match for highlight: ${strHighLight}");
-                            }
-
                             $bFirst = true;
+                        }
+
+                        if ($self->{bExe} && defined($strHighLight) && !$bHighLightFound)
+                        {
+                            confess &log(ERROR, "unable to find a match for highlight: ${strHighLight}");
                         }
                     }
 
