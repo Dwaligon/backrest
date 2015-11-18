@@ -155,9 +155,12 @@ sub process
         my ($oChildSectionElement, $oChildSectionTocElement) =
             $self->sectionProcess($oSection, undef, 1);
 
-        $oPageBody->add($oChildSectionElement);
+        if (defined($oChildSectionElement))
+        {
+            $oPageBody->add($oChildSectionElement);
+        }
 
-        if (defined($oPageTocBody))
+        if (defined($oPageTocBody) && defined($oChildSectionTocElement))
         {
             $oPageTocBody->add($oChildSectionTocElement);
         }
@@ -198,191 +201,207 @@ sub sectionProcess
             {name => 'iDepth'}
         );
 
-    &log($iDepth == 1 ? INFO : DEBUG, ('    ' x ($iDepth + 1)) . 'process section: ' . $oSection->paramGet('id'));
+    my $oSectionTocElement;
+    my $oSectionElement;
 
-    if ($iDepth > 3)
+    if ($self->{oManifest}->keywordMatch($oSection->paramGet('keyword', false)))
     {
-        confess &log(ASSERT, "section depth of ${iDepth} exceeds maximum");
-    }
+        &log($iDepth == 1 ? INFO : DEBUG, ('    ' x ($iDepth + 1)) . 'process section: ' . $oSection->paramGet('id'));
 
-    # Working variables
-    $strAnchor = (defined($strAnchor) ? "${strAnchor}-" : '') . $oSection->paramGet('id');
-
-    # Create the section toc element
-    my $oSectionTocElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "section${iDepth}-toc");
-
-    # Create the section element
-    my $oSectionElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "section${iDepth}");
-
-    # Add the section anchor
-    $oSectionElement->addNew(HTML_A, undef, {strId => $strAnchor});
-
-    # Add the section title to section and toc
-    my $strSectionTitle = $self->processText($oSection->nodeGet('title')->textGet());
-
-    $oSectionElement->
-        addNew(HTML_DIV, "section${iDepth}-title",
-               {strContent => $strSectionTitle});
-
-    my $oTocSectionTitleElement = $oSectionTocElement->
-        addNew(HTML_DIV, "section${iDepth}-toc-title");
-
-    $oTocSectionTitleElement->
-        addNew(HTML_A, undef,
-               {strContent => $strSectionTitle, strRef => "#${strAnchor}"});
-
-    # Add the section intro if it exists
-    if (defined($oSection->textGet(false)))
-    {
-        $oSectionElement->
-            addNew(HTML_DIV, "section-intro",
-                   {strContent => $self->processText($oSection->textGet())});
-    }
-
-    # Add the section body
-    my $oSectionBodyElement = $oSectionElement->addNew(HTML_DIV, "section-body");
-
-    # Process each child
-    my $oSectionBodyExe;
-
-    foreach my $oChild ($oSection->nodeList())
-    {
-        &log(DEBUG, ('    ' x ($iDepth + 2)) . 'process child ' . $oChild->nameGet());
-
-        # Execute a command
-        if ($oChild->nameGet() eq 'execute-list')
+        if ($iDepth > 3)
         {
-            my $oSectionBodyExecute = $oSectionBodyElement->addNew(HTML_DIV, "execute");
-            my $bFirst = true;
-            my $strHostName = $self->{oManifest}->variableReplace($oChild->paramGet('host'));
+            confess &log(ASSERT, "section depth of ${iDepth} exceeds maximum");
+        }
 
-            $oSectionBodyExecute->
-                addNew(HTML_DIV, "execute-title",
-                       {strContent => "<span class=\"host\">${strHostName}</span> <b>&#x21d2;</b> " .
-                                      $self->processText($oChild->nodeGet('title')->textGet())});
+        # Working variables
+        $strAnchor = (defined($strAnchor) ? "${strAnchor}-" : '') . $oSection->paramGet('id');
 
-            my $oExecuteBodyElement = $oSectionBodyExecute->addNew(HTML_DIV, "execute-body");
+        # Create the section toc element
+        $oSectionTocElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "section${iDepth}-toc");
 
-            foreach my $oExecute ($oChild->nodeList('execute'))
+        # Create the section element
+        $oSectionElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "section${iDepth}");
+
+        # Add the section anchor
+        $oSectionElement->addNew(HTML_A, undef, {strId => $strAnchor});
+
+        # Add the section title to section and toc
+        my $strSectionTitle = $self->processText($oSection->nodeGet('title')->textGet());
+
+        $oSectionElement->
+            addNew(HTML_DIV, "section${iDepth}-title",
+                   {strContent => $strSectionTitle});
+
+        my $oTocSectionTitleElement = $oSectionTocElement->
+            addNew(HTML_DIV, "section${iDepth}-toc-title");
+
+        $oTocSectionTitleElement->
+            addNew(HTML_A, undef,
+                   {strContent => $strSectionTitle, strRef => "#${strAnchor}"});
+
+        # Add the section intro if it exists
+        if (defined($oSection->textGet(false)))
+        {
+            $oSectionElement->
+                addNew(HTML_DIV, "section-intro",
+                       {strContent => $self->processText($oSection->textGet())});
+        }
+
+        # Add the section body
+        my $oSectionBodyElement = $oSectionElement->addNew(HTML_DIV, "section-body");
+
+        # Process each child
+        my $oSectionBodyExe;
+
+        foreach my $oChild ($oSection->nodeList())
+        {
+            next if (!$self->{oManifest}->keywordMatch($oChild->paramGet('keyword', false)));
+
+            &log(DEBUG, ('    ' x ($iDepth + 2)) . 'process child ' . $oChild->nameGet());
+
+            # Execute a command
+            if ($oChild->nameGet() eq 'execute-list')
             {
-                my $bExeShow = defined($oExecute->fieldGet('exe-no-show', false)) ? false : true;
-                my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
+                my $oSectionBodyExecute = $oSectionBodyElement->addNew(HTML_DIV, "execute");
+                my $bFirst = true;
+                my $strHostName = $self->{oManifest}->variableReplace($oChild->paramGet('host'));
 
-                my ($strCommand, $strOutput) = $self->execute($strHostName, $oExecute, $iDepth + 3);
+                $oSectionBodyExecute->
+                    addNew(HTML_DIV, "execute-title",
+                           {strContent => "<span class=\"host\">${strHostName}</span> <b>&#x21d2;</b> " .
+                                          $self->processText($oChild->nodeGet('title')->textGet())});
 
-                if ($bExeShow)
+                my $oExecuteBodyElement = $oSectionBodyExecute->addNew(HTML_DIV, "execute-body");
+
+                foreach my $oExecute ($oChild->nodeList('execute'))
                 {
-                    # Add continuation chars and proper spacing
-                    $strCommand =~ s/\n/\n   /smg;
+                    my $bExeShow = defined($oExecute->fieldGet('exe-no-show', false)) ? false : true;
+                    my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
 
-                    $oExecuteBodyElement->
-                        addNew(HTML_PRE, "execute-body-cmd",
-                               {strContent => $strCommand, bPre => true});
+                    my ($strCommand, $strOutput) = $self->execute($strHostName, $oExecute, $iDepth + 3);
 
-                    if (defined($strOutput))
+                    if ($bExeShow)
                     {
-                        my $strHighLight = $self->{oManifest}->variableReplace($oExecute->fieldGet('exe-highlight', false));
-                        my $bHighLightOld;
-                        my $bHighLightFound = false;
-                        my $strHighLightOutput;
+                        # Add continuation chars and proper spacing
+                        $strCommand =~ s/\n/\n   /smg;
 
-                        foreach my $strLine (split("\n", $strOutput))
+                        $oExecuteBodyElement->
+                            addNew(HTML_PRE, "execute-body-cmd",
+                                   {strContent => $strCommand, bPre => true});
+
+                        if (defined($strOutput))
                         {
-                            my $bHighLight = defined($strHighLight) && $strLine =~ /$strHighLight/;
+                            my $strHighLight = $self->{oManifest}->variableReplace($oExecute->fieldGet('exe-highlight', false));
+                            my $bHighLightOld;
+                            my $bHighLightFound = false;
+                            my $strHighLightOutput;
 
-                            if (defined($bHighLightOld) && $bHighLight != $bHighLightOld)
+                            foreach my $strLine (split("\n", $strOutput))
+                            {
+                                my $bHighLight = defined($strHighLight) && $strLine =~ /$strHighLight/;
+
+                                if (defined($bHighLightOld) && $bHighLight != $bHighLightOld)
+                                {
+                                    $oExecuteBodyElement->
+                                        addNew(HTML_PRE, 'execute-body-output' .
+                                               ($bHighLightOld ? '-highlight' . ($bExeExpectedError ? '-error' : '') : ''),
+                                               {strContent => $strHighLightOutput, bPre => true});
+
+                                    undef($strHighLightOutput);
+                                }
+
+                                $strHighLightOutput .= (defined($strHighLightOutput) ? "\n" : '') . $strLine;
+                                $bHighLightOld = $bHighLight;
+
+                                $bHighLightFound = $bHighLightFound ? true : $bHighLight ? true : false;
+                            }
+
+                            if (defined($bHighLightOld))
                             {
                                 $oExecuteBodyElement->
                                     addNew(HTML_PRE, 'execute-body-output' .
                                            ($bHighLightOld ? '-highlight' . ($bExeExpectedError ? '-error' : '') : ''),
                                            {strContent => $strHighLightOutput, bPre => true});
-
-                                undef($strHighLightOutput);
                             }
 
-                            $strHighLightOutput .= (defined($strHighLightOutput) ? "\n" : '') . $strLine;
-                            $bHighLightOld = $bHighLight;
+                            if ($self->{bExe} && defined($strHighLight) && !$bHighLightFound)
+                            {
+                                confess &log(ERROR, "unable to find a match for highlight: ${strHighLight}");
+                            }
 
-                            $bHighLightFound = $bHighLightFound ? true : $bHighLight ? true : false;
+                            $bFirst = true;
                         }
-
-                        if (defined($bHighLightOld))
-                        {
-                            $oExecuteBodyElement->
-                                addNew(HTML_PRE, 'execute-body-output' .
-                                       ($bHighLightOld ? '-highlight' . ($bExeExpectedError ? '-error' : '') : ''),
-                                       {strContent => $strHighLightOutput, bPre => true});
-                        }
-
-                        if ($self->{bExe} && defined($strHighLight) && !$bHighLightFound)
-                        {
-                            confess &log(ERROR, "unable to find a match for highlight: ${strHighLight}");
-                        }
-
-                        $bFirst = true;
                     }
+
+                    $bFirst = false;
+                }
+            }
+            # Add code block
+            elsif ($oChild->nameGet() eq 'code-block')
+            {
+                $oSectionBodyElement->
+                    addNew(HTML_DIV, 'code-block',
+                           {strContent => $oChild->valueGet()});
+            }
+            # Add descriptive text
+            elsif ($oChild->nameGet() eq 'p')
+            {
+                $oSectionBodyElement->
+                    addNew(HTML_DIV, 'section-body-text',
+                           {strContent => $self->processText($oChild->textGet())});
+            }
+            # Add option descriptive text
+            elsif ($oChild->nameGet() eq 'option-description')
+            {
+                my $strOption = $oChild->paramGet("key");
+                my $oDescription = ${$self->{oReference}->{oConfigHash}}{&CONFIG_HELP_OPTION}{$strOption}{&CONFIG_HELP_DESCRIPTION};
+
+                if (!defined($oDescription))
+                {
+                    confess &log(ERROR, "unable to find ${strOption} option in sections - try adding command?");
                 }
 
-                $bFirst = false;
+                $oSectionBodyElement->
+                    addNew(HTML_DIV, 'section-body-text',
+                           {strContent => $self->processText($oDescription)});
             }
-        }
-        # Add code block
-        elsif ($oChild->nameGet() eq 'code-block')
-        {
-            $oSectionBodyElement->
-                addNew(HTML_DIV, 'code-block',
-                       {strContent => $oChild->valueGet()});
-        }
-        # Add descriptive text
-        elsif ($oChild->nameGet() eq 'p')
-        {
-            $oSectionBodyElement->
-                addNew(HTML_DIV, 'section-body-text',
-                       {strContent => $self->processText($oChild->textGet())});
-        }
-        # Add option descriptive text
-        elsif ($oChild->nameGet() eq 'option-description')
-        {
-            my $strOption = $oChild->paramGet("key");
-            my $oDescription = ${$self->{oReference}->{oConfigHash}}{&CONFIG_HELP_OPTION}{$strOption}{&CONFIG_HELP_DESCRIPTION};
-
-            if (!defined($oDescription))
+            # Add/remove backrest config options
+            elsif ($oChild->nameGet() eq 'backrest-config')
             {
-                confess &log(ERROR, "unable to find ${strOption} option in sections - try adding command?");
+                my $oConfigElement = $self->backrestConfigProcess($oChild, $iDepth + 3);
+
+                if (defined($oConfigElement))
+                {
+                    $oSectionBodyElement->add($oConfigElement);
+                }
             }
-
-            $oSectionBodyElement->
-                addNew(HTML_DIV, 'section-body-text',
-                       {strContent => $self->processText($oDescription)});
-        }
-        # Add/remove backrest config options
-        elsif ($oChild->nameGet() eq 'backrest-config')
-        {
-            my $oConfigElement = $self->backrestConfigProcess($oChild, $iDepth + 3);
-
-            if (defined($oConfigElement))
+            # Add/remove postgres config options
+            elsif ($oChild->nameGet() eq 'postgres-config')
             {
-                $oSectionBodyElement->add($oConfigElement);
+                $oSectionBodyElement->add($self->postgresConfigProcess($oChild, $iDepth + 3));
             }
-        }
-        # Add/remove postgres config options
-        elsif ($oChild->nameGet() eq 'postgres-config')
-        {
-            $oSectionBodyElement->add($self->postgresConfigProcess($oChild, $iDepth + 3));
-        }
-        # Add a subsection
-        elsif ($oChild->nameGet() eq 'section')
-        {
-            my ($oChildSectionElement, $oChildSectionTocElement) =
-                $self->sectionProcess($oChild, $strAnchor, $iDepth + 1);
+            # Add a subsection
+            elsif ($oChild->nameGet() eq 'section')
+            {
+                my ($oChildSectionElement, $oChildSectionTocElement) =
+                    $self->sectionProcess($oChild, $strAnchor, $iDepth + 1);
 
-            $oSectionBodyElement->add($oChildSectionElement);
-            $oSectionTocElement->add($oChildSectionTocElement);
-        }
-        # Check if the child can be processed by a parent
-        else
-        {
-            $self->sectionChildProcess($oChild, $iDepth + 1);
+
+                if (defined($oChildSectionElement))
+                {
+                $oSectionBodyElement->add($oChildSectionElement);
+                }
+
+                if (defined($oChildSectionTocElement))
+                {
+                    $oSectionTocElement->add($oChildSectionTocElement);
+                }
+            }
+            # Check if the child can be processed by a parent
+            else
+            {
+                $self->sectionChildProcess($oChild, $iDepth + 1);
+            }
         }
     }
 

@@ -61,14 +61,16 @@ sub new
     # Assign function parameters, defaults, and log debug info
     (
         my $strOperation,
+        $self->{stryKeyword},
         my $oVariableOverride,
         $self->{strDocPath}
     ) =
         logDebugParam
         (
             OP_DOC_MANIFEST_NEW, \@_,
+            {name => 'stryKeyword'},
             {name => 'oVariableOverride', required => false},
-            {name => 'strDocPath', required => false}
+            {name => 'strDocPath', required => false},
         );
 
     # Set the base path if it was not passed in
@@ -101,22 +103,25 @@ sub new
         {
             foreach my $oVariable ($$oSourceHash{doc}->nodeGet('variable-list')->nodeList('variable'))
             {
-                if (!defined($oVariable->fieldGet('variable-name', false)))
+                # if (!defined($oVariable->fieldGet('variable-name', false)))
+                # {
+                #     use Data::Dumper; confess $oVariable;
+                # }
+                if ($self->keywordMatch($oVariable->paramGet('keyword', false)))
                 {
-                    use Data::Dumper; confess $oVariable;
+
+                    my $strKey = $oVariable->fieldGet('variable-name');
+                    my $strValue = $oVariable->fieldGet('variable-value');
+
+                    $self->variableSet($strKey, defined($$oVariableOverride{$strKey}) ? $$oVariableOverride{$strKey} : $strValue);
+
+                    logDebugMisc
+                    (
+                        $strOperation, '    load source variable',
+                        {name => 'strKey', value => $strKey},
+                        {name => 'strValue', value => $strValue}
+                    );
                 }
-
-                my $strKey = $oVariable->fieldGet('variable-name');
-                my $strValue = $oVariable->fieldGet('variable-value');
-
-                $self->variableSet($strKey, defined($$oVariableOverride{$strKey}) ? $$oVariableOverride{$strKey} : $strValue);
-
-                logDebugMisc
-                (
-                    $strOperation, '    load source variable',
-                    {name => 'strKey', value => $strKey},
-                    {name => 'strValue', value => $strValue}
-                );
             }
         }
 
@@ -231,6 +236,32 @@ sub isBackRest
     my $self = shift;
 
     return($self->variableTest('project-exe', 'pg_backrest'));
+}
+
+####################################################################################################################################
+# keywordMatch
+#
+# See if all the keywords were on the command line.
+####################################################################################################################################
+sub keywordMatch
+{
+    my $self = shift;
+    my $strKeywordRequired = shift;
+
+    if (defined($strKeywordRequired))
+    {
+        for my $strKeyword (split(',', $strKeywordRequired))
+        {
+            $strKeyword = trim($strKeyword);
+
+            if (!grep(/^$strKeyword$/, @{$self->{stryKeyword}}))
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 ####################################################################################################################################

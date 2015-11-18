@@ -69,12 +69,14 @@ my $bUseCache = false;                              # Use cached data to generat
 my $oVariableOverride = {};                         # Override variables
 my $strDocPath;                                     # Document path to render
 my @stryOutput;                                     # Output types
+my @stryKeyword;                                    # Keyword used to filter output
 
 GetOptions ('help' => \$bHelp,
             'version' => \$bVersion,
             'quiet' => \$bQuiet,
             'log-level=s' => \$strLogLevel,
             'out=s@' => \@stryOutput,
+            'keyword=s@' => \@stryKeyword,
             'no-exe', \$bNoExe,
             'use-cache', \$bUseCache,
             'var=s%', $oVariableOverride,
@@ -105,6 +107,12 @@ if ($bUseCache)
 if ($bQuiet)
 {
     $strLogLevel = 'error';
+}
+
+# If no keyword we passed then use default
+if (@stryKeyword == 0)
+{
+    @stryKeyword = ('default')
 }
 
 logLevelSet(undef, uc($strLogLevel));
@@ -156,7 +164,7 @@ if ($bUseCache && -e $strManifestCache)
 }
 else
 {
-    $oManifest = new BackRestDoc::Common::DocManifest($oVariableOverride, $strDocPath);
+    $oManifest = new BackRestDoc::Common::DocManifest(\@stryKeyword, $oVariableOverride, $strDocPath);
 }
 
 # If no outputs were given

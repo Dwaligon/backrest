@@ -123,6 +123,9 @@ Vagrant.configure(2) do |config|
             docker build -f /backrest/test/vm/docker/u14-db -t vagrant/u14-db /backrest/test/vm
             docker build -f /backrest/test/vm/docker/u14-backup -t vagrant/u14-backup /backrest/test/vm
 
+            docker build -f /backrest/test/vm/docker/co6-base -t vagrant/co6-base /backrest/test/vm
+            docker build -f /backrest/test/vm/docker/co6-db -t vagrant/co6-db /backrest/test/vm
+
             # Sample docker commands
             # docker inspect --format '{{ .NetworkSettings.IPAddress }}' db-master
             # docker run -itd --name=db-master -v /backrest:/backrest vagrant/u14-db

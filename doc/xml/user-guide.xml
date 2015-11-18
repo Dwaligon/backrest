@@ -3,9 +3,13 @@
 <doc title="User Guide" subtitle="Ubuntu 12.04 &amp; 14.04 / {[postgres]} 9.4">
     <variable-list>
         <!-- Variables used by the rest of the script -->
-        <variable>
+        <variable keyword="default">
             <variable-name>perl-lib-path</variable-name>
             <variable-value>/usr/lib/perl5</variable-value>
+        </variable>
+        <variable keyword="co6">
+            <variable-name>perl-lib-path</variable-name>
+            <variable-value>/usr/share/perl5</variable-value>
         </variable>
         <variable>
             <variable-name>perl-bin-path</variable-name>
@@ -23,20 +27,35 @@
             <variable-name>backrest-config-demo</variable-name>
             <variable-value>/etc/{[project-exe]}.conf</variable-value>
         </variable>
-        <variable>
-            <variable-name>postgres-config-demo</variable-name>
-            <variable-value>/etc/postgresql/9.4/{[postgres-cluster-demo]}/postgresql.conf</variable-value>
-        </variable>
-        <variable>
+
+        <variable keyword="default">
             <variable-name>db-path</variable-name>
             <variable-value>/var/lib/postgresql/9.4/{[postgres-cluster-demo]}</variable-value>
         </variable>
+        <variable keyword="default">
+            <variable-name>postgres-config-demo</variable-name>
+            <variable-value>{[db-path]}/{[postgres-cluster-demo]}]}/postgresql.conf</variable-value>
+        </variable>
+
+        <variable keyword="co6">
+            <variable-name>db-path</variable-name>
+            <variable-value>/var/lib/pgsql/9.4/data</variable-value>
+        </variable>
+        <variable keyword="co6">
+            <variable-name>postgres-config-demo</variable-name>
+            <variable-value>{[db-path]}/postgresql.conf</variable-value>
+        </variable>
 
         <!-- Hosts -->
-        <variable>
+        <variable keyword="default">
             <variable-name>host-os</variable-name>
             <variable-value>u14</variable-value>
         </variable>
+        <variable keyword="co6">
+            <variable-name>host-os</variable-name>
+            <variable-value>co6</variable-value>
+        </variable>
+
         <variable>
             <variable-name>host-user</variable-name>
             <variable-value>vagrant</variable-value>
@@ -94,6 +113,47 @@
         <variable>
             <variable-name>test-table-data</variable-name>
             <variable-value>Very important data</variable-value>
+        </variable>
+
+        <!-- Database cluster commmands -->
+        <variable keyword="default">
+            <variable-name>db-cluster-create</variable-name>
+            <variable-value>pg_createcluster 9.4 {[postgres-cluster-demo]}</variable-value>
+        </variable>
+
+        <variable keyword="co6">
+            <variable-name>db-cluster-create</variable-name>
+            <variable-value>service postgresql-9.4 initdb</variable-value>
+        </variable>
+
+        <variable keyword="default">
+            <variable-name>db-cluster-restart</variable-name>
+            <variable-value>pg_ctlcluster 9.4 {[postgres-cluster-demo]} restart</variable-value>
+        </variable>
+
+        <variable keyword="co6">
+            <variable-name>db-cluster-restart</variable-name>
+            <variable-value>service postgresql-9.4 restart</variable-value>
+        </variable>
+
+        <variable keyword="default">
+            <variable-name>db-cluster-start</variable-name>
+            <variable-value>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</variable-value>
+        </variable>
+
+        <variable keyword="co6">
+            <variable-name>db-cluster-start</variable-name>
+            <variable-value>service postgresql-9.4 start</variable-value>
+        </variable>
+
+        <variable keyword="default">
+            <variable-name>db-cluster-stop</variable-name>
+            <variable-value>pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop</variable-value>
+        </variable>
+
+        <variable keyword="co6">
+            <variable-name>db-cluster-stop</variable-name>
+            <variable-value>service postgresql-9.4 stop</variable-value>
         </variable>
     </variable-list>
 
@@ -169,14 +229,22 @@
             </execute>
         </host-add>
 
-        <execute-list host="{[host-db-master]}">
-            <title>Install required Perl modules</title>
+        <execute-list host="{[host-db-master]}" keyword="default">
+            <title>Install required Perl packages</title>
 
             <execute>
                 <exe-cmd>apt-get install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl</exe-cmd>
                 <exe-user>root</exe-user>
-                <!-- <exe-output/>
-                <exe-highlight>^Setting up libdbi-perl|^Setting up libdbd-pg-perl|^Setting up libnet-daemon-perl|^Setting up libplrpc-perl</exe-highlight> -->
+            </execute>
+        </execute-list>
+
+        <execute-list host="{[host-db-master]}" keyword="co6">
+            <title>Install required Perl packages</title>
+
+            <execute>
+                <exe-cmd>yum -y install perl perl-Time-HiRes perl-parent perl-JSON
+                    perl-Digest-SHA perl-DBD-Pg</exe-cmd>
+                <exe-user>root</exe-user>
             </execute>
         </execute-list>
 
@@ -202,11 +270,11 @@
                 <exe-user>root</exe-user>
             </execute>
             <execute>
-                <exe-cmd>find /usr/lib/perl5/BackRest -type f -exec chmod 644 {} +</exe-cmd>
+                <exe-cmd>find {[perl-lib-path]}/BackRest -type f -exec chmod 644 {} +</exe-cmd>
                 <exe-user>root</exe-user>
             </execute>
             <execute>
-                <exe-cmd>find /usr/lib/perl5/BackRest -type d -exec chmod 755 {} +</exe-cmd>
+                <exe-cmd>find {[perl-lib-path]}/BackRest -type d -exec chmod 755 {} +</exe-cmd>
                 <exe-user>root</exe-user>
             </execute>
             <execute>
@@ -247,7 +315,7 @@
                 <title>Create and start the demo cluster</title>
 
                 <execute filter="n">
-                    <exe-cmd>pg_createcluster 9.4 {[postgres-cluster-demo]}</exe-cmd>
+                    <exe-cmd>{[db-cluster-create]}</exe-cmd>
                     <exe-user>root</exe-user>
                     <exe-output/>
                 </execute>
@@ -359,7 +427,8 @@
                     <exe-no-show/>
                 </execute>
                 <execute>
-                    <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} restart</exe-cmd>
+                    <exe-cmd>{[db-cluster-restart]}</exe-cmd>
+                    <exe-user>root</exe-user>
                 </execute>
             </execute-list>
 
@@ -445,7 +514,8 @@
                 <title>Stop the {[postgres-cluster-demo]} cluster and delete the <file>pg_control</file> file</title>
 
                 <execute>
-                    <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop</exe-cmd>
+                    <exe-cmd>{[db-cluster-stop]}</exe-cmd>
+                    <exe-user>root</exe-user>
                 </execute>
 
                 <execute>
@@ -459,7 +529,8 @@
                 <title>Attempt to start the corrupted {[postgres-cluster-demo]} cluster</title>
 
                 <execute>
-                    <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</exe-cmd>
+                    <exe-cmd>{[db-cluster-start]}</exe-cmd>
+                    <exe-user>root</exe-user>
                     <exe-output/>
                     <exe-highlight>could not find the database system</exe-highlight>
                     <exe-err-expect>1</exe-err-expect>
@@ -484,7 +555,8 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</exe-cmd>
+                    <exe-cmd>{[db-cluster-start]}</exe-cmd>
+                    <exe-user>root</exe-user>
                 </execute>
             </execute-list>
 
@@ -730,7 +802,8 @@
                 <title>Stop the {[postgres-cluster-demo]} cluster, perform delta restore</title>
 
                 <execute>
-                    <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop</exe-cmd>
+                    <exe-cmd>{[db-cluster-stop]}</exe-cmd>
+                    <exe-user>root</exe-user>
                 </execute>
 
                 <execute filter="y">
@@ -744,7 +817,8 @@
                 <title>Restart <postgres/></title>
 
                 <execute>
-                    <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</exe-cmd>
+                    <exe-cmd>{[db-cluster-start]}</exe-cmd>
+                    <exe-user>root</exe-user>
                 </execute>
             </execute-list>
         </section>
@@ -814,7 +888,8 @@
             <title>Stop <postgres/>, restore the {[postgres-cluster-demo]} cluster to <id>{[time-recovery-timestamp]}</id>, and display <file>recovery.conf</file></title>
 
             <execute>
-                <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop</exe-cmd>
+                <exe-cmd>{[db-cluster-stop]}</exe-cmd>
+                <exe-user>root</exe-user>
             </execute>
 
             <execute>
@@ -840,7 +915,8 @@
             <title>Start <postgres/> and check that the important table exists</title>
 
             <execute>
-                <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</exe-cmd>
+                <exe-cmd>{[db-cluster-start]}</exe-cmd>
+                    <exe-user>root</exe-user>
             </execute>
 
             <execute>
@@ -894,7 +970,8 @@
             </execute>
 
             <execute>
-                <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop</exe-cmd>
+                <exe-cmd>{[db-cluster-stop]}</exe-cmd>
+                <exe-user>root</exe-user>
             </execute>
 
             <execute>
@@ -908,7 +985,8 @@
             </execute>
 
             <execute>
-                <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</exe-cmd>
+                <exe-cmd>{[db-cluster-start]}</exe-cmd>
+                <exe-user>root</exe-user>
             </execute>
 
             <execute>
@@ -937,7 +1015,8 @@
             <title>Stop <postgres/>, restore from the previous backup, and start <postgres/></title>
 
             <execute>
-                <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop</exe-cmd>
+                <exe-cmd>{[db-cluster-stop]}</exe-cmd>
+                <exe-user>root</exe-user>
             </execute>
 
             <execute>
@@ -954,7 +1033,8 @@
             </execute>
 
             <execute>
-                <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</exe-cmd>
+                <exe-cmd>{[db-cluster-start]}</exe-cmd>
+                <exe-user>root</exe-user>
             </execute>
 
             <execute>
@@ -1111,7 +1191,8 @@
                 <title>Stop the {[postgres-cluster-demo]} cluster, restore, and restart <postgres/></title>
 
                 <execute>
-                    <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop</exe-cmd>
+                    <exe-cmd>{[db-cluster-stop]}</exe-cmd>
+                    <exe-user>root</exe-user>
                 </execute>
 
                 <execute>
@@ -1119,7 +1200,8 @@
                 </execute>
 
                 <execute>
-                    <exe-cmd>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</exe-cmd>
+                    <exe-cmd>{[db-cluster-start]}</exe-cmd>
+                    <exe-user>root</exe-user>
                 </execute>
             </execute-list>
         </section>
