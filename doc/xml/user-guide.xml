@@ -233,17 +233,14 @@
         <title>Installation</title>
 
         <host-add name="{[host-db-master]}" user="{[host-db-master-user]}" image="{[host-db-master-image]}" os="{[host-os]}" mount="{[host-db-master-mount]}">
-            <execute>
+            <execute user="vagrant">
                 <exe-cmd>mkdir /home/vagrant/backrest-release-{[version]}</exe-cmd>
-                <exe-user>vagrant</exe-user>
             </execute>
-            <execute>
+            <execute user="vagrant">
                 <exe-cmd>cp -r /backrest/bin /home/vagrant/backrest-release-{[version]}</exe-cmd>
-                <exe-user>vagrant</exe-user>
             </execute>
-            <execute>
+            <execute user="vagrant">
                 <exe-cmd>cp -r /backrest/lib /home/vagrant/backrest-release-{[version]}</exe-cmd>
-                <exe-user>vagrant</exe-user>
             </execute>
         </host-add>
 
@@ -252,9 +249,8 @@
         <execute-list host="{[host-db-master]}" keyword="default">
             <title>Install required Perl packages</title>
 
-            <execute>
+            <execute user="root">
                 <exe-cmd>apt-get install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl</exe-cmd>
-                <exe-user>root</exe-user>
             </execute>
         </execute-list>
 
@@ -263,10 +259,9 @@
         <execute-list host="{[host-db-master]}" keyword="co6">
             <title>Install required Perl packages</title>
 
-            <execute>
+            <execute user="root">
                 <exe-cmd>yum -y install perl perl-Time-HiRes perl-parent perl-JSON
                     perl-Digest-SHA perl-DBD-Pg</exe-cmd>
-                <exe-user>root</exe-user>
             </execute>
         </execute-list>
 
@@ -277,11 +272,10 @@
         <execute-list host="{[host-db-master]}">
             <title>Download version <id>{[version]}</id> of <backrest/></title>
 
-            <execute>
+            <execute user="vagrant">
                 <exe-cmd>wget -q -O -
                     https://github.com/pgmasters/backrest/archive/release/{[version]}.tar.gz |
                     tar zx -C ~</exe-cmd>
-                    <exe-user>vagrant</exe-user>
                 <exe-skip/>
             </execute>
         </execute-list>
@@ -289,25 +283,20 @@
         <execute-list host="{[host-db-master]}">
             <title>Install <backrest/></title>
 
-            <execute>
+            <execute user="root">
                 <exe-cmd>cp -r ~/backrest-release-{[version]}/lib/BackRest {[perl-lib-path]}</exe-cmd>
-                <exe-user>root</exe-user>
             </execute>
-            <execute>
+            <execute user="root">
                 <exe-cmd>find {[perl-lib-path]}/BackRest -type f -exec chmod 644 {} +</exe-cmd>
-                <exe-user>root</exe-user>
             </execute>
-            <execute>
+            <execute user="root">
                 <exe-cmd>find {[perl-lib-path]}/BackRest -type d -exec chmod 755 {} +</exe-cmd>
-                <exe-user>root</exe-user>
             </execute>
-            <execute>
+            <execute user="root">
                 <exe-cmd>cp ~/backrest-release-{[version]}/bin/{[project-exe]} {[perl-bin-path]}/{[project-exe]}</exe-cmd>
-                <exe-user>root</exe-user>
             </execute>
-            <execute>
+            <execute user="root">
                 <exe-cmd>chmod 755 {[perl-bin-path]}/{[project-exe]}</exe-cmd>
-                <exe-user>root</exe-user>
             </execute>
         </execute-list>
 
@@ -338,9 +327,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Create and start the demo cluster</title>
 
-                <execute filter="n">
+                <execute user="root" filter="n">
                     <exe-cmd>{[db-cluster-create]}</exe-cmd>
-                    <exe-user>root</exe-user>
                     <exe-output/>
                 </execute>
             </execute-list>
@@ -398,17 +386,14 @@
             <execute-list host="{[host-db-master]}">
                 <title>Create the <backrest/> repository</title>
 
-                <execute>
+                <execute user="root">
                     <exe-cmd>mkdir {[backrest-repo-path]}</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
-                <execute>
+                <execute user="root">
                     <exe-cmd>chmod 750 {[backrest-repo-path]}</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
-                <execute>
+                <execute user="root">
                     <exe-cmd>chown postgres:postgres {[backrest-repo-path]}</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
             </execute-list>
 
@@ -456,9 +441,8 @@
                     <exe-no-show/>
                 </execute>
 
-                <execute>
+                <execute user="root">
                     <exe-cmd>{[db-cluster-restart]}</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
             </execute-list>
 
@@ -543,9 +527,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Stop the {[postgres-cluster-demo]} cluster and delete the <file>pg_control</file> file</title>
 
-                <execute>
+                <execute user="root">
                     <exe-cmd>{[db-cluster-stop]}</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
 
                 <execute>
@@ -558,29 +541,25 @@
             <execute-list host="{[host-db-master]}">
                 <title>Attempt to start the corrupted {[postgres-cluster-demo]} cluster</title>
 
-                <execute keyword="default">
+                <execute keyword="default" user="root">
                     <exe-cmd>{[db-cluster-start]}</exe-cmd>
-                    <exe-user>root</exe-user>
                     <exe-output/>
                     <exe-highlight>could not find the database system</exe-highlight>
                     <exe-err-expect>1</exe-err-expect>
                 </execute>
 
-                <execute keyword="co6">
+                <execute keyword="co6" user="root">
                     <exe-cmd>rm -f {[postgres-log-pgstartup-demo]}</exe-cmd>
-                    <exe-user>root</exe-user>
                     <exe-no-show/>
                 </execute>
 
-                <execute keyword="co6">
+                <execute keyword="co6" user="root">
                     <exe-cmd>{[db-cluster-start]}</exe-cmd>
-                    <exe-user>root</exe-user>
                     <exe-err-expect>1</exe-err-expect>
                 </execute>
 
-                <execute keyword="co6">
+                <execute keyword="co6" user="root">
                     <exe-cmd>cat {[postgres-log-pgstartup-demo]}</exe-cmd>
-                    <exe-user>root</exe-user>
                     <exe-output/>
                     <exe-highlight-type>error</exe-highlight-type>
                     <exe-highlight>could not find the database system</exe-highlight>
@@ -604,9 +583,8 @@
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} restore</exe-cmd>
                 </execute>
 
-                <execute>
+                <execute user="root">
                     <exe-cmd>{[db-cluster-start]}</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
             </execute-list>
 
@@ -672,9 +650,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Revoke write privileges in the <backrest/> repository and attempt a backup</title>
 
-                <execute>
+                <execute user="root">
                     <exe-cmd>chmod 550 {[backrest-repo-path]}/temp</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
 
                 <execute>
@@ -690,9 +667,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Restore write privileges in the <backrest/> repository and attempt a backup</title>
 
-                <execute>
+                <execute user="root">
                     <exe-cmd>chmod 750 {[backrest-repo-path]}/temp</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
 
                 <execute>
@@ -851,9 +827,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Stop the {[postgres-cluster-demo]} cluster, perform delta restore</title>
 
-                <execute>
+                <execute user="root">
                     <exe-cmd>{[db-cluster-stop]}</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
 
                 <execute filter="y">
@@ -866,9 +841,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Restart <postgres/></title>
 
-                <execute>
+                <execute user="root">
                     <exe-cmd>{[db-cluster-start]}</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
             </execute-list>
         </section>
@@ -937,9 +911,8 @@
         <execute-list host="{[host-db-master]}">
             <title>Stop <postgres/>, restore the {[postgres-cluster-demo]} cluster to <id>{[time-recovery-timestamp]}</id>, and display <file>recovery.conf</file></title>
 
-            <execute>
+            <execute user="root">
                 <exe-cmd>{[db-cluster-stop]}</exe-cmd>
-                <exe-user>root</exe-user>
             </execute>
 
             <execute>
@@ -947,9 +920,8 @@
                     {[dash]}-type=time "{[dash]}-target={[time-recovery-timestamp]}" restore</exe-cmd>
             </execute>
 
-            <execute>
+            <execute user="root">
                 <exe-cmd>rm {[postgres-log-demo]}</exe-cmd>
-                <exe-user>root</exe-user>
                 <exe-no-show/>
             </execute>
 
@@ -965,9 +937,8 @@
         <execute-list host="{[host-db-master]}">
             <title>Start <postgres/> and check that the important table exists</title>
 
-            <execute>
+            <execute user="root">
                 <exe-cmd>{[db-cluster-start]}</exe-cmd>
-                    <exe-user>root</exe-user>
             </execute>
 
             <execute>
@@ -1020,9 +991,8 @@
                 <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
             </execute>
 
-            <execute>
+            <execute user="root">
                 <exe-cmd>{[db-cluster-stop]}</exe-cmd>
-                <exe-user>root</exe-user>
             </execute>
 
             <execute>
@@ -1030,15 +1000,13 @@
                      {[dash]}-type=time "{[dash]}-target={[time-recovery-timestamp]}" restore</exe-cmd>
             </execute>
 
-            <execute>
+            <execute user="root">
                 <exe-cmd>rm {[postgres-log-demo]}</exe-cmd>
-                <exe-user>root</exe-user>
                 <exe-no-show/>
             </execute>
 
-            <execute>
+            <execute user="root">
                 <exe-cmd>{[db-cluster-start]}</exe-cmd>
-                <exe-user>root</exe-user>
             </execute>
 
             <execute>
@@ -1066,9 +1034,8 @@
         <execute-list host="{[host-db-master]}">
             <title>Stop <postgres/>, restore from the previous backup, and start <postgres/></title>
 
-            <execute>
+            <execute user="root">
                 <exe-cmd>{[db-cluster-stop]}</exe-cmd>
-                <exe-user>root</exe-user>
             </execute>
 
             <execute>
@@ -1079,15 +1046,13 @@
                 </exe-cmd>
             </execute>
 
-            <execute>
+            <execute user="root">
                 <exe-cmd>rm {[postgres-log-demo]}</exe-cmd>
-                <exe-user>root</exe-user>
                 <exe-no-show/>
             </execute>
 
-            <execute>
+            <execute user="root">
                 <exe-cmd>{[db-cluster-start]}</exe-cmd>
-                <exe-user>root</exe-user>
             </execute>
 
             <execute>
@@ -1121,25 +1086,20 @@
             <title>Installation and Configuration</title>
 
             <host-add name="{[host-backup]}" user="{[host-backup-user]}" image="{[host-backup-image]}" os="{[host-os]}" mount="{[host-backup-mount]}">
-                <execute>
+                <execute user="root">
                     <exe-cmd>cp -r /backrest/lib/BackRest {[perl-lib-path]}</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
-                <execute>
+                <execute user="root">
                     <exe-cmd>find {[perl-lib-path]}/BackRest -type f -exec chmod 644 {} +</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
-                <execute>
+                <execute user="root">
                     <exe-cmd>find {[perl-lib-path]}/BackRest -type d -exec chmod 755 {} +</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
-                <execute>
+                <execute user="root">
                     <exe-cmd>cp /backrest/bin/{[project-exe]} {[perl-bin-path]}/{[project-exe]}</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
-                <execute>
+                <execute user="root">
                     <exe-cmd>chmod 755 {[perl-bin-path]}/{[project-exe]}</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
             </host-add>
 
@@ -1225,9 +1185,8 @@
             <execute-list host="{[host-backup]}">
                 <title>Backup the {[postgres-cluster-demo]} cluster</title>
 
-                <execute>
+                <execute user="backrest">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} backup</exe-cmd>
-                    <exe-user>backrest</exe-user>
                 </execute>
             </execute-list>
 
@@ -1243,18 +1202,16 @@
             <execute-list host="{[host-db-master]}">
                 <title>Stop the {[postgres-cluster-demo]} cluster, restore, and restart <postgres/></title>
 
-                <execute>
+                <execute user="root">
                     <exe-cmd>{[db-cluster-stop]}</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
 
                 <execute>
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-delta restore</exe-cmd>
                 </execute>
 
-                <execute>
+                <execute user="root">
                     <exe-cmd>{[db-cluster-start]}</exe-cmd>
-                    <exe-user>root</exe-user>
                 </execute>
             </execute-list>
         </section>

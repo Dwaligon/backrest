@@ -110,7 +110,7 @@ sub execute
     {
         # Command variables
         $strCommand = trim($oCommand->fieldGet('exe-cmd'));
-        my $strUser = $oCommand->fieldGet('exe-user', false);
+        my $strUser = $oCommand->paramGet('user', false, 'postgres');
         my $bSuppressError = defined($oCommand->fieldGet('exe-err-suppress', false)) ? $oCommand->fieldGet('exe-err-suppress') : false;
         my $bSuppressStdErr = defined($oCommand->fieldGet('exe-err-suppress-stderr', false)) ?
                                   $oCommand->fieldGet('exe-err-suppress-stderr') : false;
@@ -126,7 +126,6 @@ sub execute
             sleep(1);
         }
 
-        $strUser = defined($strUser) ? $strUser : 'postgres';
         $strCommand = $self->{oManifest}->variableReplace(
             (defined($strUser) && $strUser eq 'vagrant' ? '' :
                 ('sudo ' . ($strUser eq 'root' ? '' : "-u ${strUser} "))) . $strCommand);

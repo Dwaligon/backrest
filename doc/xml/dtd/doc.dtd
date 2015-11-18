@@ -54,11 +54,11 @@
     <!ATTLIST execute-list keyword CDATA "">
 <!ELEMENT execute (exe-cmd, exe-user?,  exe-var?, exe-retry?, exe-output?, exe-no-show?, (exe-highlight-type?, exe-highlight)?,
                    exe-skip?, exe-err-expect?, exe-err-suppress?, exe-err-suppress-stderr?)>
-    <!ATTLIST execute filter CDATA "">
     <!ATTLIST execute keyword CDATA "">
+    <!ATTLIST execute user CDATA "">
+    <!ATTLIST execute filter CDATA "">
     <!ATTLIST execute filter-context CDATA "">
 <!ELEMENT exe-cmd (#PCDATA)>
-<!ELEMENT exe-user (#PCDATA)>
 <!ELEMENT exe-highlight (#PCDATA)>
 <!ELEMENT exe-highlight-type (#PCDATA)>
 <!ELEMENT exe-var (#PCDATA)>
