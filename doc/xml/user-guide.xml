@@ -470,9 +470,8 @@
                     <exe-highlight>no prior backup exists|full backup size</exe-highlight>
                 </execute>
 
-                <execute show="n">
+                <execute show="n" variable-key="backup-full-first">
                     <exe-cmd>{[cmd-backup-last]}</exe-cmd>
-                    <exe-var>backup-full-first</exe-var>
                 </execute>
             </execute-list>
 
@@ -718,9 +717,8 @@
                     <exe-highlight>archive retention from backup {[backup-full-first]}|expire WAL segments</exe-highlight>
                 </execute>
 
-                <execute show="n">
+                <execute show="n" variable-key="backup-full-second">
                     <exe-cmd>{[cmd-backup-last]}</exe-cmd>
-                    <exe-var>backup-full-second</exe-var>
                 </execute>
             </execute-list>
 
@@ -762,9 +760,8 @@
                 <execute>
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=diff backup</exe-cmd>
                 </execute>
-                <execute show="n">
+                <execute show="n" variable-key="backup-diff-second">
                     <exe-cmd>{[cmd-backup-last]}</exe-cmd>
-                    <exe-var>backup-diff-second</exe-var>
                 </execute>
                 <execute>
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=incr backup</exe-cmd>
@@ -851,11 +848,10 @@
         <execute-list host="{[host-db-master]}">
             <title>Get the time from <postgres/></title>
 
-            <execute output="y" filter="n">
+            <execute output="y" filter="n" variable-key="time-recovery-timestamp">
                 <exe-cmd>
                     psql -Atc "select current_timestamp"
                 </exe-cmd>
-                <exe-var>time-recovery-timestamp</exe-var>
             </execute>
         </execute-list>
 
@@ -942,9 +938,8 @@
         <execute-list host="{[host-db-master]}">
             <title>Perform a backup then attempt recovery from that backup</title>
 
-            <execute show="n">
+            <execute show="n" variable-key="backup-last">
                 <exe-cmd>{[cmd-backup-last]}</exe-cmd>
-                <exe-var>backup-last</exe-var>
             </execute>
 
             <execute>

@@ -62,10 +62,10 @@
     <!ATTLIST execute show CDATA "">
     <!ATTLIST execute output CDATA "">
     <!ATTLIST execute err-expect CDATA "">
+    <!ATTLIST execute variable-key CDATA "">
 <!ELEMENT exe-cmd (#PCDATA)>
 <!ELEMENT exe-highlight (#PCDATA)>
 <!ELEMENT exe-highlight-type (#PCDATA)>
-<!ELEMENT exe-var (#PCDATA)>
 
 <!ELEMENT cleanup (execute+)>
 

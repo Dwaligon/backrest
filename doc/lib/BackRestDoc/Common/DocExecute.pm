@@ -112,7 +112,7 @@ sub execute
         $strCommand = trim($oCommand->fieldGet('exe-cmd'));
         my $strUser = $oCommand->paramGet('user', false, 'postgres');
         my $bExeOutput = $oCommand->paramTest('output', 'y');
-        my $strExeVar = defined($oCommand->fieldGet('exe-var', false)) ? $oCommand->fieldGet('exe-var') : undef;
+        my $strVariableKey = $oCommand->paramGet('variable-key', false);
         my $iExeExpectedError = $oCommand->paramGet('err-expect', false);
 
         $strCommand = $self->{oManifest}->variableReplace(
@@ -181,9 +181,9 @@ sub execute
                 }
 
                 # Output is assigned to a var
-                if (defined($strExeVar))
+                if (defined($strVariableKey))
                 {
-                    $self->{oManifest}->variableSet($strExeVar, trim($oExec->{strOutLog}));
+                    $self->{oManifest}->variableSet($strVariableKey, trim($oExec->{strOutLog}));
                 }
                 elsif (!$oCommand->paramTest('filter', 'n') && $bExeOutput && defined($strOutput))
                 {
@@ -279,9 +279,9 @@ sub execute
             }
         }
 
-        if (defined($strExeVar) && !defined($self->{oManifest}->variableGet($strExeVar)))
+        if (defined($strVariableKey) && !defined($self->{oManifest}->variableGet($strVariableKey)))
         {
-            $self->{oManifest}->variableSet($strExeVar, '[Unset Variable]');
+            $self->{oManifest}->variableSet($strVariableKey, '[Test Variable]');
         }
 
         $oCommand->fieldSet('actual-command', $strCommand);
