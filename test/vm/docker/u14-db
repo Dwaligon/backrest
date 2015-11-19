@@ -11,6 +11,6 @@ RUN chmod 640 /etc/pg_backrest.conf
 RUN chown postgres:postgres /etc/pg_backrest.conf
 
 # Setup SSH
-RUN mkdir /var/lib/postgresql/.ssh
-RUN cp /root/resource/.ssh/* /var/lib/postgresql/.ssh
-RUN chown -R postgres:postgres /var/lib/postgresql/.ssh
+RUN mkdir /home/postgres/.ssh
+RUN cp /root/resource/.ssh/* /home/postgres/.ssh
+RUN chown -R postgres:postgres /home/postgres/.ssh

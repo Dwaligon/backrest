@@ -2,12 +2,18 @@
 FROM vagrant/u14-base
 
 # Create backrest user
-RUN adduser --home /var/lib/backrest --disabled-password --gecos "" backrest
+RUN adduser --ingroup=postgres --disabled-password --gecos "" backrest
 
 # Setup SSH
-RUN mkdir -p /var/lib/backrest/.ssh
-RUN cp /root/resource/.ssh/* /var/lib/backrest/.ssh
-RUN chown -R backrest:backrest /var/lib/backrest
+RUN mkdir -p /home/backrest/.ssh
+RUN cp /root/resource/.ssh/* /home/backrest/.ssh
+RUN chown -R backrest:postgres /home/backrest/.ssh
+RUN chmod 700 /home/backrest/.ssh
+
+# Setup repository
+RUN mkdir /var/lib/backrest
+RUN chown backrest:postgres /var/lib/backrest
+RUN chmod 750 /var/lib/backrest
 
 # Install Perl packages
 RUN apt-get -y install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl

@@ -10,6 +10,7 @@ RUN cp -p /root/resource/.ssh/* /home/backrest/.ssh
 RUN chown -R backrest:postgres /home/backrest
 RUN chmod 700 /home/backrest/.ssh
 
+# Setup repository
 RUN mkdir /var/lib/backrest
 RUN chown -R backrest:postgres /var/lib/backrest
 RUN chmod 750 /var/lib/backrest

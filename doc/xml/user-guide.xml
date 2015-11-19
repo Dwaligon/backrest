@@ -34,7 +34,7 @@
         </variable>
         <variable keyword="default">
             <variable-name>postgres-config-demo</variable-name>
-            <variable-value>{[db-path]}/{[postgres-cluster-demo]}]}/postgresql.conf</variable-value>
+            <variable-value>/etc/postgresql/9.4/{[postgres-cluster-demo]}/postgresql.conf</variable-value>
         </variable>
         <variable keyword="default">
             <variable-name>postgres-log-demo</variable-name>
@@ -42,7 +42,7 @@
         </variable>
         <variable keyword="default">
             <variable-name>postgres-recovery-demo</variable-name>
-            <variable-value>{[db-path]}/{[postgres-cluster-demo]}/recovery.conf</variable-value>
+            <variable-value>{[db-path]}/recovery.conf</variable-value>
         </variable>
 
         <variable keyword="co6">
