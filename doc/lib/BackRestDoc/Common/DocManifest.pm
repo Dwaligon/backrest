@@ -29,6 +29,7 @@ use constant OP_DOC_MANIFEST_RENDER_LIST                            => OP_DOC_MA
 use constant OP_DOC_MANIFEST_RENDER_OUT_GET                         => OP_DOC_MANIFEST . '->renderOutGet';
 use constant OP_DOC_MANIFEST_RENDER_OUT_LIST                        => OP_DOC_MANIFEST . '->renderOutList';
 use constant OP_DOC_MANIFEST_SOURCE_GET                             => OP_DOC_MANIFEST . '->sourceGet';
+use constant OP_DOC_MANIFEST_VARIABLE_LIST_PARSE                    => OP_DOC_MANIFEST . '->variableListParse';
 
 ####################################################################################################################################
 # File constants
@@ -99,26 +100,7 @@ sub new
         $$oSourceHash{doc} = new BackRestDoc::Common::Doc("$self->{strDocPath}/xml/${strKey}.xml");
 
         # Read variables from source
-        if (defined($$oSourceHash{doc}->nodeGet('variable-list', false)))
-        {
-            foreach my $oVariable ($$oSourceHash{doc}->nodeGet('variable-list')->nodeList('variable'))
-            {
-                if ($self->keywordMatch($oVariable->paramGet('keyword', false)))
-                {
-                    my $strKey = $oVariable->fieldGet('variable-name');
-                    my $strValue = $oVariable->fieldGet('variable-value');
-
-                    $self->variableSet($strKey, defined($$oVariableOverride{$strKey}) ? $$oVariableOverride{$strKey} : $strValue);
-
-                    logDebugMisc
-                    (
-                        $strOperation, '    load source variable',
-                        {name => 'strKey', value => $strKey},
-                        {name => 'strValue', value => $strValue}
-                    );
-                }
-            }
-        }
+        $self->variableListParse($$oSourceHash{doc}->nodeGet('variable-list', false), $oVariableOverride);
 
         ${$self->{oManifest}}{source}{$strKey} = $oSourceHash;
     }
@@ -183,36 +165,7 @@ sub new
     }
 
     # Read variables from manifest
-    if (defined($self->{oManifestXml}->nodeGet('variable-list', false)))
-    {
-        foreach my $oVariable ($self->{oManifestXml}->nodeGet('variable-list')->nodeList('variable'))
-        {
-            if ($self->keywordMatch($oVariable->paramGet('keyword', false)))
-            {
-                my $strKey = $oVariable->paramGet('key');
-                my $strValue = $oVariable->valueGet();
-
-                if ($oVariable->paramTest('eval', 'y'))
-                {
-                    $strValue = eval $strValue;
-
-                    if ($@)
-                    {
-                        confess &log(ERROR, "unable to evaluate ${strKey}: $@\n" . $oVariable->valueGet());
-                    }
-                }
-
-                $self->variableSet($strKey, defined($$oVariableOverride{$strKey}) ? $$oVariableOverride{$strKey} : $strValue);
-
-                logDebugMisc
-                (
-                    $strOperation, '    load manifest variable',
-                    {name => 'strKey', value => $strKey},
-                    {name => 'strValue', value => $strValue}
-                );
-            }
-        }
-    }
+    $self->variableListParse($self->{oManifestXml}->nodeGet('variable-list', false), $oVariableOverride);
 
     # use Data::Dumper; confess Dumper($self->{oVariable});
 
@@ -260,6 +213,64 @@ sub keywordMatch
     }
 
     return true;
+}
+
+####################################################################################################################################
+# variableListParse
+#
+# Parse a variable list and store variables.
+####################################################################################################################################
+sub variableListParse
+{
+    my $self = shift;
+
+    # Assign function parameters, defaults, and log debug info
+    my
+    (
+        $strOperation,
+        $oVariableList,
+        $oVariableOverride
+    ) =
+        logDebugParam
+        (
+            OP_DOC_MANIFEST_VARIABLE_LIST_PARSE, \@_,
+            {name => '$oVariableList', required => false},
+            {name => '$oVariableOverride', required => false}
+        );
+
+    if (defined($oVariableList))
+    {
+        foreach my $oVariable ($oVariableList->nodeList('variable'))
+        {
+            if ($self->keywordMatch($oVariable->paramGet('keyword', false)))
+            {
+                my $strKey = $oVariable->paramGet('key');
+                my $strValue = $oVariable->valueGet();
+
+                if ($oVariable->paramTest('eval', 'y'))
+                {
+                    $strValue = eval $strValue;
+
+                    if ($@)
+                    {
+                        confess &log(ERROR, "unable to evaluate ${strKey}: $@\n" . $oVariable->valueGet());
+                    }
+                }
+
+                $self->variableSet($strKey, defined($$oVariableOverride{$strKey}) ? $$oVariableOverride{$strKey} : $strValue);
+
+                logDebugMisc
+                (
+                    $strOperation, '    load variable',
+                    {name => 'strKey', value => $strKey},
+                    {name => 'strValue', value => $strValue}
+                );
+            }
+        }
+    }
+
+    # Return from function and log return values if any
+    return logDebugReturn($strOperation);
 }
 
 ####################################################################################################################################

@@ -70,10 +70,10 @@
 <!ELEMENT cleanup (execute+)>
 
 <!ELEMENT variable-list (variable+)>
-<!ELEMENT variable (variable-name, variable-value)>
-    <!ATTLIST variable keyword CDATA "">
-<!ELEMENT variable-name (#PCDATA)>
-<!ELEMENT variable-value (#PCDATA)>
+<!ELEMENT variable (#PCDATA)>
+    <!ATTLIST variable key CDATA #REQUIRED>
+    <!ATTLIST variable keyword CDATA "default">
+    <!ATTLIST variable eval CDATA "n">
 
 <!ELEMENT backrest-config (title, backrest-config-option+)>
     <!ATTLIST backrest-config host CDATA #REQUIRED>

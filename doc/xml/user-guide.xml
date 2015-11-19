@@ -3,178 +3,64 @@
 <doc title="User Guide" subtitle="Ubuntu 12.04 &amp; 14.04 / {[postgres]} 9.4">
     <variable-list>
         <!-- Variables used by the rest of the script -->
-        <variable keyword="default">
-            <variable-name>perl-lib-path</variable-name>
-            <variable-value>/usr/lib/perl5</variable-value>
-        </variable>
-        <variable keyword="co6">
-            <variable-name>perl-lib-path</variable-name>
-            <variable-value>/usr/share/perl5</variable-value>
-        </variable>
-        <variable>
-            <variable-name>perl-bin-path</variable-name>
-            <variable-value>/usr/bin</variable-value>
-        </variable>
-        <variable>
-            <variable-name>backrest-repo-path</variable-name>
-            <variable-value>/var/lib/backrest</variable-value>
-        </variable>
-        <variable>
-            <variable-name>postgres-cluster-demo</variable-name>
-            <variable-value>demo</variable-value>
-        </variable>
-        <variable>
-            <variable-name>backrest-config-demo</variable-name>
-            <variable-value>/etc/{[project-exe]}.conf</variable-value>
-        </variable>
+        <variable key="perl-lib-path" keyword="default">/usr/lib/perl5</variable>
+        <variable key="perl-lib-path" keyword="co6">/usr/share/perl5</variable>
+        <variable key="perl-bin-path">/usr/bin</variable>
 
-        <variable keyword="default">
-            <variable-name>db-path</variable-name>
-            <variable-value>/var/lib/postgresql/9.4/{[postgres-cluster-demo]}</variable-value>
-        </variable>
-        <variable keyword="default">
-            <variable-name>postgres-config-demo</variable-name>
-            <variable-value>/etc/postgresql/9.4/{[postgres-cluster-demo]}/postgresql.conf</variable-value>
-        </variable>
-        <variable keyword="default">
-            <variable-name>postgres-log-demo</variable-name>
-            <variable-value>/var/log/postgresql/postgresql-9.4-{[postgres-cluster-demo]}.log</variable-value>
-        </variable>
-        <variable keyword="default">
-            <variable-name>postgres-recovery-demo</variable-name>
-            <variable-value>{[db-path]}/recovery.conf</variable-value>
-        </variable>
+        <variable key="backrest-repo-path">/var/lib/backrest</variable>
+        <variable key="postgres-cluster-demo">demo</variable>
+        <variable key="backrest-config-demo">/etc/{[project-exe]}.conf</variable>
 
-        <variable keyword="co6">
-            <variable-name>db-path</variable-name>
-            <variable-value>/var/lib/pgsql/9.4/data</variable-value>
-        </variable>
-        <variable keyword="co6">
-            <variable-name>postgres-config-demo</variable-name>
-            <variable-value>{[db-path]}/postgresql.conf</variable-value>
-        </variable>
-        <variable keyword="co6">
-            <variable-name>postgres-log-demo</variable-name>
-            <variable-value>{[db-path]}/pg_log/postgresql.log</variable-value>
-        </variable>
-        <variable keyword="co6">
-            <variable-name>postgres-log-pgstartup-demo</variable-name>
-            <variable-value>/var/lib/pgsql/9.4/pgstartup.log</variable-value>
-        </variable>
-        <variable keyword="co6">
-            <variable-name>postgres-recovery-demo</variable-name>
-            <variable-value>{[db-path]}/recovery.conf</variable-value>
-        </variable>
+        <variable key="db-path" keyword="default">/var/lib/postgresql/9.4/{[postgres-cluster-demo]}</variable>
+        <variable key="db-path" keyword="co6">/var/lib/pgsql/9.4/data</variable>
+
+        <variable key="postgres-config-demo" keyword="default">/etc/postgresql/9.4/{[postgres-cluster-demo]}/postgresql.conf</variable>
+        <variable key="postgres-config-demo" keyword="co6">{[db-path]}/postgresql.conf</variable>
+
+        <variable key="postgres-log-demo" keyword="default">/var/log/postgresql/postgresql-9.4-{[postgres-cluster-demo]}.log</variable>
+        <variable key="postgres-log-demo" keyword="co6">{[db-path]}/pg_log/postgresql.log</variable>
+
+        <variable key="postgres-log-pgstartup-demo" keyword="co6">/var/lib/pgsql/9.4/pgstartup.log</variable>
+
+        <variable key="postgres-recovery-demo" keyword="default">{[db-path]}/recovery.conf</variable>
+        <variable key="postgres-recovery-demo" keyword="co6">{[db-path]}/recovery.conf</variable>
 
         <!-- Hosts -->
-        <variable keyword="default">
-            <variable-name>host-os</variable-name>
-            <variable-value>u14</variable-value>
-        </variable>
-        <variable keyword="co6">
-            <variable-name>host-os</variable-name>
-            <variable-value>co6</variable-value>
-        </variable>
+        <variable key="host-os" keyword="default">u14</variable>
+        <variable key="host-os" keyword="co6">co6</variable>
 
-        <variable>
-            <variable-name>host-user</variable-name>
-            <variable-value>vagrant</variable-value>
-        </variable>
-        <variable>
-            <variable-name>host-mount</variable-name>
-            <variable-value>/backrest:/backrest</variable-value>
-        </variable>
-        <variable>
-            <variable-name>image-user</variable-name>
-            <variable-value>{[host-user]}</variable-value>
-        </variable>
+        <variable key="host-user">vagrant</variable>
+        <variable key="host-mount">/backrest:/backrest</variable>
+        <variable key="image-user">{[host-user]}</variable>
 
-        <variable>
-            <variable-name>host-db-master</variable-name>
-            <variable-value>db-master</variable-value>
-        </variable>
-        <variable>
-            <variable-name>host-db-master-user</variable-name>
-            <variable-value>{[host-user]}</variable-value>
-        </variable>
-        <variable>
-            <variable-name>host-db-master-image</variable-name>
-            <variable-value>{[image-user]}/{[host-os]}-db</variable-value>
-        </variable>
-        <variable>
-            <variable-name>host-db-master-mount</variable-name>
-            <variable-value>{[host-mount]}</variable-value>
-        </variable>
+        <variable key="host-db-master">db-master</variable>
+        <variable key="host-db-master-user">{[host-user]}</variable>
+        <variable key="host-db-master-image">{[image-user]}/{[host-os]}-db</variable>
+        <variable key="host-db-master-mount">{[host-mount]}</variable>
 
-        <variable>
-            <variable-name>host-backup</variable-name>
-            <variable-value>backup</variable-value>
-        </variable>
-        <variable>
-            <variable-name>host-backup-user</variable-name>
-            <variable-value>{[host-user]}</variable-value>
-        </variable>
-        <variable>
-            <variable-name>host-backup-image</variable-name>
-            <variable-value>{[image-user]}/{[host-os]}-backup</variable-value>
-        </variable>
-        <variable>
-            <variable-name>host-backup-mount</variable-name>
-            <variable-value>{[host-mount]}</variable-value>
-        </variable>
+        <variable key="host-backup">backup</variable>
+        <variable key="host-backup-user">{[host-user]}</variable>
+        <variable key="host-backup-image">{[image-user]}/{[host-os]}-backup</variable>
+        <variable key="host-backup-mount">{[host-mount]}</variable>
 
         <!-- Commands for various operations -->
-        <variable>
-            <variable-name>cmd-backup-last</variable-name>
-            <variable-value>ls -1 /var/lib/backrest/backup/demo | tail -3 | head -1</variable-value>
-        </variable>
+        <variable key="cmd-backup-last">ls -1 /var/lib/backrest/backup/demo | tail -3 | head -1</variable>
 
         <!-- Data used to demonstrate backup/restore operations -->
-        <variable>
-            <variable-name>test-table-data</variable-name>
-            <variable-value>Very important data</variable-value>
-        </variable>
+        <variable key="test-table-data">Very important data</variable>
 
         <!-- Database cluster commmands -->
-        <variable keyword="default">
-            <variable-name>db-cluster-create</variable-name>
-            <variable-value>pg_createcluster 9.4 {[postgres-cluster-demo]}</variable-value>
-        </variable>
+        <variable key="db-cluster-create" keyword="default">pg_createcluster 9.4 {[postgres-cluster-demo]}</variable>
+        <variable key="db-cluster-create" keyword="co6">service postgresql-9.4 initdb</variable>
 
-        <variable keyword="co6">
-            <variable-name>db-cluster-create</variable-name>
-            <variable-value>service postgresql-9.4 initdb</variable-value>
-        </variable>
+        <variable key="db-cluster-restart" keyword="default">pg_ctlcluster 9.4 {[postgres-cluster-demo]} restart</variable>
+        <variable key="db-cluster-restart" keyword="co6">service postgresql-9.4 restart</variable>
 
-        <variable keyword="default">
-            <variable-name>db-cluster-restart</variable-name>
-            <variable-value>pg_ctlcluster 9.4 {[postgres-cluster-demo]} restart</variable-value>
-        </variable>
+        <variable key="db-cluster-start" keyword="default">pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</variable>
+        <variable key="db-cluster-start" keyword="co6">service postgresql-9.4 start</variable>
 
-        <variable keyword="co6">
-            <variable-name>db-cluster-restart</variable-name>
-            <variable-value>service postgresql-9.4 restart</variable-value>
-        </variable>
-
-        <variable keyword="default">
-            <variable-name>db-cluster-start</variable-name>
-            <variable-value>pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</variable-value>
-        </variable>
-
-        <variable keyword="co6">
-            <variable-name>db-cluster-start</variable-name>
-            <variable-value>service postgresql-9.4 start</variable-value>
-        </variable>
-
-        <variable keyword="default">
-            <variable-name>db-cluster-stop</variable-name>
-            <variable-value>pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop</variable-value>
-        </variable>
-
-        <variable keyword="co6">
-            <variable-name>db-cluster-stop</variable-name>
-            <variable-value>service postgresql-9.4 stop</variable-value>
-        </variable>
+        <variable key="db-cluster-stop" keyword="default">pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop</variable>
+        <variable key="db-cluster-stop" keyword="co6">service postgresql-9.4 stop</variable>
     </variable-list>
 
     <!-- SECTION => INTRODUCTION -->
