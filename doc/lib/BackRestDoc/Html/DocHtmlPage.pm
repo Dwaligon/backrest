@@ -277,7 +277,7 @@ sub sectionProcess
                 {
                     next if (!$self->{oManifest}->keywordMatch($oExecute->paramGet('keyword', false)));
 
-                    my $bExeShow = defined($oExecute->fieldGet('exe-no-show', false)) ? false : true;
+                    my $bExeShow = !$oExecute->paramTest('show', 'n');
                     my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
 
                     my ($strCommand, $strOutput) = $self->execute($strHostName, $oExecute, $iDepth + 3);
