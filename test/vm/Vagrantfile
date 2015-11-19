@@ -36,7 +36,7 @@ Vagrant.configure(2) do |config|
             /backrest/test/vm/ssh/setup-cm.sh
 
             # Install required Perl modules
-            apt-get install libdbi-perl libdbd-pg-perl
+            apt-get install -y libdbi-perl libdbd-pg-perl
 
             # Install Perl modules required for building the docs
             apt-get install -y libxml-checker-perl libxml-writer-perl

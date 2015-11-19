@@ -28,6 +28,7 @@ use constant OP_DOC_NEW                                             => OP_DOC . 
 use constant OP_DOC_NODE_BLESS                                      => OP_DOC . '->nodeBless';
 use constant OP_DOC_NODE_GET                                        => OP_DOC . '->nodeGet';
 use constant OP_DOC_NODE_LIST                                       => OP_DOC . '->nodeList';
+use constant OP_DOC_NODE_REMOVE                                     => OP_DOC . '->nodeRemove';
 use constant OP_DOC_PARAM_GET                                       => OP_DOC . '->paramGet';
 use constant OP_DOC_PARAM_SET                                       => OP_DOC . '->paramSet';
 use constant OP_DOC_PARAM_TEST                                      => OP_DOC . '->paramSet';
@@ -499,6 +500,55 @@ sub nodeList
         $strOperation,
         {name => 'oyNode', value => \@oyNode, trace => true}
     );
+}
+
+####################################################################################################################################
+# nodeRemove
+#
+# Remove a child node.
+####################################################################################################################################
+sub nodeRemove
+{
+    my $self = shift;
+
+    # Assign function parameters, defaults, and log debug info
+    my
+    (
+        $strOperation,
+        $oChildRemove
+    ) =
+        logDebugParam
+        (
+            OP_DOC_NODE_REMOVE, \@_,
+            {name => 'oChildRemove', required => false, trace => true}
+        );
+
+    my $bRemove = false;
+    my $oDoc = $self->{oDoc};
+
+    # Error if there are no children
+    if (!defined($$oDoc{children}))
+    {
+        confess &log(ERROR, "node has no children");
+    }
+
+    for (my $iIndex = 0; $iIndex < @{$$oDoc{children}}; $iIndex++)
+    {
+        if ($$oDoc{children}[$iIndex] == $oChildRemove->{oDoc})
+        {
+            splice(@{$$oDoc{children}}, $iIndex, 1);
+            $bRemove = true;
+            last;
+        }
+    }
+
+    if (!$bRemove)
+    {
+        confess &log(ERROR, "child was not found in node");
+    }
+
+    # Return from function and log return values if any
+    return logDebugReturn($strOperation);
 }
 
 ####################################################################################################################################

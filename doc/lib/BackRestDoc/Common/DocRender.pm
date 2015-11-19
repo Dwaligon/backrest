@@ -207,6 +207,9 @@ sub new
         }
     }
 
+    # Build the doc
+    $self->build($self->{oDoc});
+
     # Return from function and log return values if any
     return logDebugReturn
     (
@@ -249,6 +252,48 @@ sub variableGet
     my $self = shift;
 
     return $self->{oManifest}->variableGet(shift);
+}
+
+####################################################################################################################################
+# build
+#
+# Build the section map and perform keyword matching.
+####################################################################################################################################
+sub build
+{
+    my $self = shift;
+    my $oNode = shift;
+    my $oParent = shift;
+
+    # &log(INFO, "        node " . $oNode->nameGet());
+
+    if (defined($oParent))
+    {
+        if (!$self->{oManifest}->keywordMatch($oNode->paramGet('keyword', false)))
+        {
+            my $strDescription;
+
+            if (defined($oNode->nodeGet('title', false)))
+            {
+                $strDescription = $self->processText($oNode->nodeGet('title')->textGet());
+            }
+
+            &log(INFO, '            filtered ' . $oNode->nameGet() .
+                       (defined($strDescription) ? ": ${strDescription}" : ''));
+
+            $oParent->nodeRemove($oNode);
+        }
+    }
+    else
+    {
+            &log(INFO, '        build document');
+    }
+
+    # Iterate all nodes
+    foreach my $oChild ($oNode->nodeList(undef, false))
+    {
+        $self->build($oChild, $oNode);
+    }
 }
 
 ####################################################################################################################################
