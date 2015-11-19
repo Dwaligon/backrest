@@ -167,7 +167,8 @@ sub sectionProcess
                 my $strHostName = $self->{oManifest}->variableReplace($oChild->paramGet('host'));
 
                 $strLatex .=
-                    "\n\\begin\{lstlisting\}[title=\{\\textnormal{\\textbf\{${strHostName}}} --- " . $self->processText($oChild->nodeGet('title')->textGet()) . "}]\n";
+                    "\n\\begin\{lstlisting\}[title=\{\\textnormal{\\textbf\{${strHostName}}} --- " .
+                    $self->processText($oChild->nodeGet('title')->textGet()) . "}]\n";
 
                 foreach my $oExecute ($oChild->nodeList('execute'))
                 {
@@ -183,52 +184,7 @@ sub sectionProcess
 
                         if (defined($strOutput))
                         {
-                            # $strLatex .=
-                            #     "\\end\{lstlisting\}\n" .
-                            #     "\\lstset\{title={Output:}\}\n" .
-                            #     "\\begin\{lstlisting\}\n${strOutput}\n";
-
-                            # $strOutput =~ s/^/    /smg;
-                            # $strLatex .= "\nOutput:\n\n\%\\Hilight\%${strOutput}\n";
                             $strLatex .= "\nOutput:\n\n${strOutput}\n";
-
-                            # my $strHighLight = $self->variableReplace($oExecute->fieldGet('exe-highlight', false));
-                            # my $bHighLightOld;
-                            # my $bHighLightFound = false;
-                            # my $strHighLightOutput;
-                            #
-                            # foreach my $strLine (split("\n", $strOutput))
-                            # {
-                            #     my $bHighLight = defined($strHighLight) && $strLine =~ /$strHighLight/;
-                            #
-                            #     if (defined($bHighLightOld) && $bHighLight != $bHighLightOld)
-                            #     {
-                            #         $oExecuteBodyElement->
-                            #             addNew(HTML_DIV, 'execute-body-output' . ($bHighLightOld ? '-highlight' : '') .
-                            #                    ($bExeExpectedError ? '-error' : ''), {strContent => $strHighLightOutput});
-                            #
-                            #         undef($strHighLightOutput);
-                            #     }
-                            #
-                            #     $strHighLightOutput .= "${strLine}\n";
-                            #     $bHighLightOld = $bHighLight;
-                            #
-                            #     $bHighLightFound = $bHighLightFound ? true : $bHighLight ? true : false;
-                            # }
-                            #
-                            # if (defined($bHighLightOld))
-                            # {
-                            #     $oExecuteBodyElement->
-                            #         addNew(HTML_DIV, 'execute-body-output' . ($bHighLightOld ? '-highlight' : ''),
-                            #                {strContent => $strHighLightOutput});
-                            #
-                            #     undef($strHighLightOutput);
-                            # }
-                            #
-                            # if ($self->{bExe} && defined($strHighLight) && !$bHighLightFound)
-                            # {
-                            #     confess &log(ERROR, "unable to find a match for highlight: ${strHighLight}");
-                            # }
                         }
                     }
                 }
