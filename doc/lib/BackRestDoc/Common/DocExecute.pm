@@ -114,7 +114,6 @@ sub execute
         my $bSuppressError = defined($oCommand->fieldGet('exe-err-suppress', false)) ? $oCommand->fieldGet('exe-err-suppress') : false;
         my $bSuppressStdErr = defined($oCommand->fieldGet('exe-err-suppress-stderr', false)) ?
                                   $oCommand->fieldGet('exe-err-suppress-stderr') : false;
-        my $bExeSkip = defined($oCommand->fieldGet('exe-skip', false)) ? $oCommand->fieldGet('exe-skip') : false;
         my $bExeOutput = defined($oCommand->fieldGet('exe-output', false)) ? $oCommand->fieldGet('exe-output') : false;
         my $bExeRetry = defined($oCommand->fieldGet('exe-retry', false)) ? $oCommand->fieldGet('exe-retry') : false;
         my $strExeVar = defined($oCommand->fieldGet('exe-var', false)) ? $oCommand->fieldGet('exe-var') : undef;
@@ -154,7 +153,7 @@ sub execute
 
         &log(DEBUG, ('    ' x $iIndent) . "execute: $strCommand");
 
-        if (!$bExeSkip)
+        if (!$oCommand->paramTest('skip', 'y'))
         {
             if ($self->{bExe})
             {

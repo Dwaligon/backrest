@@ -272,11 +272,10 @@
         <execute-list host="{[host-db-master]}">
             <title>Download version <id>{[version]}</id> of <backrest/></title>
 
-            <execute user="vagrant">
+            <execute user="vagrant" skip="y">
                 <exe-cmd>wget -q -O -
                     https://github.com/pgmasters/backrest/archive/release/{[version]}.tar.gz |
                     tar zx -C ~</exe-cmd>
-                <exe-skip/>
             </execute>
         </execute-list>
 
