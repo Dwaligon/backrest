@@ -61,12 +61,12 @@
     <!ATTLIST execute skip CDATA "">
     <!ATTLIST execute show CDATA "">
     <!ATTLIST execute output CDATA "">
+    <!ATTLIST execute err-expect CDATA "">
 <!ELEMENT exe-cmd (#PCDATA)>
 <!ELEMENT exe-highlight (#PCDATA)>
 <!ELEMENT exe-highlight-type (#PCDATA)>
 <!ELEMENT exe-var (#PCDATA)>
 <!ELEMENT exe-retry EMPTY>
-<!ELEMENT exe-err-expect (#PCDATA)>
 <!ELEMENT exe-err-suppress EMPTY>
 <!ELEMENT exe-err-suppress-stderr EMPTY>
 

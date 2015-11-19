@@ -530,19 +530,17 @@
             <execute-list host="{[host-db-master]}">
                 <title>Attempt to start the corrupted {[postgres-cluster-demo]} cluster</title>
 
-                <execute keyword="default" user="root" output="y">
+                <execute keyword="default" user="root" output="y" err-expect="1">
                     <exe-cmd>{[db-cluster-start]}</exe-cmd>
                     <exe-highlight>could not find the database system</exe-highlight>
-                    <exe-err-expect>1</exe-err-expect>
                 </execute>
 
                 <execute keyword="co6" user="root" show="n">
                     <exe-cmd>rm -f {[postgres-log-pgstartup-demo]}</exe-cmd>
                 </execute>
 
-                <execute keyword="co6" user="root">
+                <execute keyword="co6" user="root" err-expect="1">
                     <exe-cmd>{[db-cluster-start]}</exe-cmd>
-                    <exe-err-expect>1</exe-err-expect>
                 </execute>
 
                 <execute keyword="co6" user="root" output="y">
@@ -638,10 +636,9 @@
                     <exe-cmd>chmod 550 {[backrest-repo-path]}/temp</exe-cmd>
                 </execute>
 
-                <execute output="y">
+                <execute output="y" err-expect="199">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
                     <exe-highlight>ERROR:</exe-highlight>
-                    <exe-err-expect>199</exe-err-expect>
                 </execute>
             </execute-list>
 
@@ -654,10 +651,9 @@
                     <exe-cmd>chmod 750 {[backrest-repo-path]}/temp</exe-cmd>
                 </execute>
 
-                <execute output="y">
+                <execute output="y" err-expect="132">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
                     <exe-highlight>ERROR:</exe-highlight>
-                    <exe-err-expect>132</exe-err-expect>
                 </execute>
             </execute-list>
 
@@ -868,13 +864,12 @@
         <execute-list host="{[host-db-master]}">
             <title>Drop the important table</title>
 
-            <execute output="y">
+            <execute output="y" err-expect="1">
                 <exe-cmd>psql -c "begin;
                                   drop table important_table;
                                   commit;
                                   select * from important_table;"</exe-cmd>
                 <exe-highlight>does not exist</exe-highlight>
-                <exe-err-expect>1</exe-err-expect>
             </execute>
         </execute-list>
 
@@ -933,13 +928,12 @@
         <execute-list host="{[host-db-master]}">
             <title>Drop the important table (again)</title>
 
-            <execute output="y">
+            <execute output="y" err-expect="1">
                 <exe-cmd>psql -c "begin;
                                   drop table important_table;
                                   commit;
                                   select * from important_table;"</exe-cmd>
                 <exe-highlight>does not exist</exe-highlight>
-                <exe-err-expect>1</exe-err-expect>
             </execute>
         </execute-list>
 
@@ -974,10 +968,9 @@
                 <exe-cmd>{[db-cluster-start]}</exe-cmd>
             </execute>
 
-            <execute output="y">
+            <execute output="y" err-expect="1">
                 <exe-cmd>psql -c "select * from important_table"</exe-cmd>
                 <exe-highlight>does not exist</exe-highlight>
-                <exe-err-expect>1</exe-err-expect>
             </execute>
         </execute-list>
 

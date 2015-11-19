@@ -117,7 +117,7 @@ sub execute
         my $bExeOutput = $oCommand->paramTest('output', 'y');
         my $bExeRetry = defined($oCommand->fieldGet('exe-retry', false)) ? $oCommand->fieldGet('exe-retry') : false;
         my $strExeVar = defined($oCommand->fieldGet('exe-var', false)) ? $oCommand->fieldGet('exe-var') : undef;
-        my $iExeExpectedError = defined($oCommand->fieldGet('exe-err-expect', false)) ? $oCommand->fieldGet('exe-err-expect') : undef;
+        my $iExeExpectedError = $oCommand->paramGet('err-expect', false);
 
         if ($bExeRetry)
         {
