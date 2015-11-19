@@ -430,14 +430,12 @@
             <execute-list host="{[host-db-master]}">
                 <title>Restart the {[postgres-cluster-demo]} cluster</title>
 
-                <execute>
+                <execute show="n">
                     <exe-cmd>sh -c 'echo "log_line_prefix = '\'\''" >> {[postgres-config-demo]}'</exe-cmd>
-                    <exe-no-show/>
                 </execute>
 
-                <execute>
+                <execute show="n">
                     <exe-cmd>sh -c 'echo "log_filename = '\'postgresql.log\''" >> {[postgres-config-demo]}'</exe-cmd>
-                    <exe-no-show/>
                 </execute>
 
                 <execute user="root">
@@ -477,10 +475,9 @@
                     <exe-highlight>no prior backup exists|full backup size</exe-highlight>
                 </execute>
 
-                <execute>
+                <execute show="n">
                     <exe-cmd>{[cmd-backup-last]}</exe-cmd>
                     <exe-var>backup-full-first</exe-var>
-                    <exe-no-show/>
                 </execute>
             </execute-list>
 
@@ -547,9 +544,8 @@
                     <exe-err-expect>1</exe-err-expect>
                 </execute>
 
-                <execute keyword="co6" user="root">
+                <execute keyword="co6" user="root" show="n">
                     <exe-cmd>rm -f {[postgres-log-pgstartup-demo]}</exe-cmd>
-                    <exe-no-show/>
                 </execute>
 
                 <execute keyword="co6" user="root">
@@ -741,10 +737,9 @@
                     <exe-highlight>archive retention from backup {[backup-full-first]}|expire WAL segments</exe-highlight>
                 </execute>
 
-                <execute>
+                <execute show="n">
                     <exe-cmd>{[cmd-backup-last]}</exe-cmd>
                     <exe-var>backup-full-second</exe-var>
-                    <exe-no-show/>
                 </execute>
             </execute-list>
 
@@ -787,10 +782,9 @@
                 <execute>
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=diff backup</exe-cmd>
                 </execute>
-                <execute>
+                <execute show="n">
                     <exe-cmd>{[cmd-backup-last]}</exe-cmd>
                     <exe-var>backup-diff-second</exe-var>
-                    <exe-no-show/>
                 </execute>
                 <execute>
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=incr backup</exe-cmd>
@@ -919,9 +913,8 @@
                     {[dash]}-type=time "{[dash]}-target={[time-recovery-timestamp]}" restore</exe-cmd>
             </execute>
 
-            <execute user="root">
+            <execute user="root" show="n">
                 <exe-cmd>rm {[postgres-log-demo]}</exe-cmd>
-                <exe-no-show/>
             </execute>
 
             <execute>
@@ -980,10 +973,9 @@
         <execute-list host="{[host-db-master]}">
             <title>Perform a backup then attempt recovery from that backup</title>
 
-            <execute>
+            <execute show="n">
                 <exe-cmd>{[cmd-backup-last]}</exe-cmd>
                 <exe-var>backup-last</exe-var>
-                <exe-no-show/>
             </execute>
 
             <execute>
@@ -999,9 +991,8 @@
                      {[dash]}-type=time "{[dash]}-target={[time-recovery-timestamp]}" restore</exe-cmd>
             </execute>
 
-            <execute user="root">
+            <execute user="root" show="n">
                 <exe-cmd>rm {[postgres-log-demo]}</exe-cmd>
-                <exe-no-show/>
             </execute>
 
             <execute user="root">
@@ -1045,9 +1036,8 @@
                 </exe-cmd>
             </execute>
 
-            <execute user="root">
+            <execute user="root" show="n">
                 <exe-cmd>rm {[postgres-log-demo]}</exe-cmd>
-                <exe-no-show/>
             </execute>
 
             <execute user="root">

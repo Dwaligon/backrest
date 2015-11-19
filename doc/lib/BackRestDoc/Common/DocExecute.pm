@@ -118,7 +118,6 @@ sub execute
         my $bExeRetry = defined($oCommand->fieldGet('exe-retry', false)) ? $oCommand->fieldGet('exe-retry') : false;
         my $strExeVar = defined($oCommand->fieldGet('exe-var', false)) ? $oCommand->fieldGet('exe-var') : undef;
         my $iExeExpectedError = defined($oCommand->fieldGet('exe-err-expect', false)) ? $oCommand->fieldGet('exe-err-expect') : undef;
-        my $bExeShow = defined($oCommand->fieldGet('exe-no-show', false)) ? false : true;
 
         if ($bExeRetry)
         {
@@ -132,7 +131,7 @@ sub execute
         # Add continuation chars and proper spacing
         $strCommand =~ s/[ ]*\n[ ]*/ \\\n    /smg;
 
-        if ($bExeShow)
+        if (!$oCommand->paramTest('show', 'n'))
         {
             # Make sure that no lines are greater than 80 chars
             foreach my $strLine (split("\n", $strCommand))
