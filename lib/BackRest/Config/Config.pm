@@ -456,6 +456,8 @@ use constant OPTION_DEFAULT_BACKUP_STOP_AUTO                        => false;
     push @EXPORT, qw(OPTION_DEFAULT_BACKUP_STOP_AUTO);
 use constant OPTION_DEFAULT_BACKUP_START_FAST                       => false;
     push @EXPORT, qw(OPTION_DEFAULT_BACKUP_START_FAST);
+use constant OPTION_DEFAULT_BACKUP_USER                             => 'backrest';
+    push @EXPORT, qw(OPTION_DEFAULT_BACKUP_USER);
 
 # RESTORE SECTION
 #-----------------------------------------------------------------------------------------------------------------------------------
@@ -1165,6 +1167,7 @@ my %oOptionRule =
     &OPTION_BACKUP_USER =>
     {
         &OPTION_RULE_TYPE => OPTION_TYPE_STRING,
+        &OPTION_RULE_DEFAULT => OPTION_DEFAULT_BACKUP_USER,
         &OPTION_RULE_SECTION => CONFIG_SECTION_BACKUP,
         &OPTION_RULE_COMMAND =>
         {
