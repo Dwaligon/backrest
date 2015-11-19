@@ -304,9 +304,8 @@
         <execute-list host="{[host-db-master]}">
             <title>Make sure the installation worked</title>
 
-            <execute filter="n">
+            <execute output="y" filter="n">
                 <exe-cmd>{[project-exe]}</exe-cmd>
-                <exe-output/>
             </execute>
         </execute-list>
     </section>
@@ -326,9 +325,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Create and start the demo cluster</title>
 
-                <execute user="root" filter="n">
+                <execute user="root" output="y" filter="n">
                     <exe-cmd>{[db-cluster-create]}</exe-cmd>
-                    <exe-output/>
                 </execute>
             </execute-list>
         </section>
@@ -445,17 +443,15 @@
 
 <!--        It would be good if the info command showed xlogs so we don't have to examine directories
             <execute-list host="{[host-db-master]}">
-                <execute>
+                <execute output="y">
                     <exe-cmd>psql -c "select pg_switch_xlog()"</exe-cmd>
-                    <exe-output/>
                 </execute>
             </execute-list>
 
             <execute-list host="{[host-db-master]}">
-                <execute>
+                <execute output="y">
                     <exe-cmd>ls -lahR {[backrest-repo-path]}/archive/{[postgres-cluster-demo]}/9.4-1</exe-cmd>
                     <exe-retry/>
-                    <exe-output/>
                 </execute>
             </execute-list> -->
         </section>
@@ -469,9 +465,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Backup the {[postgres-cluster-demo]} cluster</title>
 
-                <execute>
+                <execute output="y">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} backup</exe-cmd>
-                    <exe-output/>
                     <exe-highlight>no prior backup exists|full backup size</exe-highlight>
                 </execute>
 
@@ -488,9 +483,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Differential backup of the {[postgres-cluster-demo]} cluster</title>
 
-                <execute>
+                <execute output="y">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=diff backup</exe-cmd>
-                    <exe-output/>
                     <exe-highlight>diff backup size</exe-highlight>
                 </execute>
             </execute-list>
@@ -502,9 +496,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Get info for the {[postgres-cluster-demo]} cluster</title>
 
-                <execute filter="n">
+                <execute filter="n" output="y">
                     <exe-cmd>{[project-exe]} info</exe-cmd>
-                    <exe-output/>
                     <exe-highlight>(oldest|latest) backup label</exe-highlight>
                 </execute>
             </execute-list>
@@ -537,9 +530,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Attempt to start the corrupted {[postgres-cluster-demo]} cluster</title>
 
-                <execute keyword="default" user="root">
+                <execute keyword="default" user="root" output="y">
                     <exe-cmd>{[db-cluster-start]}</exe-cmd>
-                    <exe-output/>
                     <exe-highlight>could not find the database system</exe-highlight>
                     <exe-err-expect>1</exe-err-expect>
                 </execute>
@@ -553,9 +545,8 @@
                     <exe-err-expect>1</exe-err-expect>
                 </execute>
 
-                <execute keyword="co6" user="root">
+                <execute keyword="co6" user="root" output="y">
                     <exe-cmd>cat {[postgres-log-pgstartup-demo]}</exe-cmd>
-                    <exe-output/>
                     <exe-highlight-type>error</exe-highlight-type>
                     <exe-highlight>could not find the database system</exe-highlight>
                 </execute>
@@ -604,9 +595,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Incremental backup of the {[postgres-cluster-demo]} cluster with the regularly scheduled checkpoint</title>
 
-                <execute>
+                <execute output="y">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
-                    <exe-output/>
                     <exe-highlight>backup begins after the next regular checkpoint completes</exe-highlight>
                 </execute>
             </execute-list>
@@ -626,9 +616,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Incremental backup of the {[postgres-cluster-demo]} cluster with an immediate checkpoint</title>
 
-                <execute>
+                <execute output="y">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
-                    <exe-output/>
                     <exe-highlight>backup begins after the requested immediate checkpoint completes</exe-highlight>
                 </execute>
             </execute-list>
@@ -649,9 +638,8 @@
                     <exe-cmd>chmod 550 {[backrest-repo-path]}/temp</exe-cmd>
                 </execute>
 
-                <execute>
+                <execute output="y">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
-                    <exe-output/>
                     <exe-highlight>ERROR:</exe-highlight>
                     <exe-err-expect>199</exe-err-expect>
                 </execute>
@@ -666,9 +654,8 @@
                     <exe-cmd>chmod 750 {[backrest-repo-path]}/temp</exe-cmd>
                 </execute>
 
-                <execute>
+                <execute output="y">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
-                    <exe-output/>
                     <exe-highlight>ERROR:</exe-highlight>
                     <exe-err-expect>132</exe-err-expect>
                 </execute>
@@ -691,9 +678,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Perform an incremental backup</title>
 
-                <execute>
+                <execute output="y">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
-                    <exe-output/>
                     <exe-highlight>cluster is already in backup mode|backup begins after the requested immediate checkpoint completes</exe-highlight>
                 </execute>
             </execute-list>
@@ -731,9 +717,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Perform a full backup</title>
 
-                <execute>
+                <execute output="y">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full backup</exe-cmd>
-                    <exe-output/>
                     <exe-highlight>archive retention from backup {[backup-full-first]}|expire WAL segments</exe-highlight>
                 </execute>
 
@@ -748,9 +733,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Perform a full backup</title>
 
-                <execute>
+                <execute output="y">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full backup</exe-cmd>
-                    <exe-output/>
                     <exe-highlight>remove expired full backup set\: {[backup-full-first]}|archive retention from backup {[backup-full-second]}|expire WAL segments</exe-highlight>
                 </execute>
             </execute-list>
@@ -796,9 +780,8 @@
             <execute-list host="{[host-db-master]}">
                 <title>Perform a differential backup</title>
 
-                <execute>
+                <execute output="y">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=diff backup</exe-cmd>
-                    <exe-output/>
                     <exe-highlight>remove expired diff backup set: {[backup-diff-second]}</exe-highlight>
                 </execute>
             </execute-list>
@@ -824,9 +807,8 @@
                     <exe-cmd>{[db-cluster-stop]}</exe-cmd>
                 </execute>
 
-                <execute filter="y">
+                <execute output="y" filter="y">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-delta restore</exe-cmd>
-                    <exe-output/>
                     <exe-highlight>demo\/PG_VERSION - exists and matches backup|check\/clean db path|restore global\/pg_control</exe-highlight>
                 </execute>
             </execute-list>
@@ -856,7 +838,7 @@
                 <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=diff backup</exe-cmd>
             </execute>
 
-            <execute>
+            <execute output="y">
                 <exe-cmd>
                     psql -c "begin;
                              create table important_table (message text);
@@ -864,7 +846,6 @@
                              commit;
                              select * from important_table";
                 </exe-cmd>
-                <exe-output/>
                 <exe-highlight>{[test-table-data]}</exe-highlight>
             </execute>
         </execute-list>
@@ -874,12 +855,11 @@
         <execute-list host="{[host-db-master]}">
             <title>Get the time from <postgres/></title>
 
-            <execute filter="n">
+            <execute output="y" filter="n">
                 <exe-cmd>
                     psql -Atc "select current_timestamp"
                 </exe-cmd>
                 <exe-var>time-recovery-timestamp</exe-var>
-                <exe-output/>
             </execute>
         </execute-list>
 
@@ -888,12 +868,11 @@
         <execute-list host="{[host-db-master]}">
             <title>Drop the important table</title>
 
-            <execute>
+            <execute output="y">
                 <exe-cmd>psql -c "begin;
                                   drop table important_table;
                                   commit;
                                   select * from important_table;"</exe-cmd>
-                <exe-output/>
                 <exe-highlight>does not exist</exe-highlight>
                 <exe-err-expect>1</exe-err-expect>
             </execute>
@@ -917,9 +896,8 @@
                 <exe-cmd>rm {[postgres-log-demo]}</exe-cmd>
             </execute>
 
-            <execute>
+            <execute output="y">
                 <exe-cmd>cat {[postgres-recovery-demo]}</exe-cmd>
-                <exe-output/>
                 <exe-highlight>recovery_target_time</exe-highlight>
             </execute>
         </execute-list>
@@ -933,9 +911,8 @@
                 <exe-cmd>{[db-cluster-start]}</exe-cmd>
             </execute>
 
-            <execute>
+            <execute output="y">
                 <exe-cmd>psql -c "select * from important_table"</exe-cmd>
-                <exe-output/>
                 <exe-highlight>{[test-table-data]}</exe-highlight>
             </execute>
         </execute-list>
@@ -945,9 +922,8 @@
         <execute-list host="{[host-db-master]}">
             <title>Examine the <postgres/> log output</title>
 
-            <execute>
+            <execute output="y">
                 <exe-cmd>cat {[postgres-log-demo]}</exe-cmd>
-                <exe-output/>
                 <exe-highlight>recovery stopping before|last completed transaction|starting point-in-time recovery</exe-highlight>
             </execute>
         </execute-list>
@@ -957,12 +933,11 @@
         <execute-list host="{[host-db-master]}">
             <title>Drop the important table (again)</title>
 
-            <execute>
+            <execute output="y">
                 <exe-cmd>psql -c "begin;
                                   drop table important_table;
                                   commit;
                                   select * from important_table;"</exe-cmd>
-                <exe-output/>
                 <exe-highlight>does not exist</exe-highlight>
                 <exe-err-expect>1</exe-err-expect>
             </execute>
@@ -999,9 +974,8 @@
                 <exe-cmd>{[db-cluster-start]}</exe-cmd>
             </execute>
 
-            <execute>
+            <execute output="y">
                 <exe-cmd>psql -c "select * from important_table"</exe-cmd>
-                <exe-output/>
                 <exe-highlight>does not exist</exe-highlight>
                 <exe-err-expect>1</exe-err-expect>
             </execute>
@@ -1012,9 +986,8 @@
         <execute-list host="{[host-db-master]}">
             <title>Examine the <postgres/> log output to discover the recovery was not successful</title>
 
-            <execute>
+            <execute output="y">
                 <exe-cmd>cat {[postgres-log-demo]}</exe-cmd>
-                <exe-output/>
                 <exe-highlight>starting point-in-time recovery</exe-highlight>
             </execute>
         </execute-list>
@@ -1044,9 +1017,8 @@
                 <exe-cmd>{[db-cluster-start]}</exe-cmd>
             </execute>
 
-            <execute>
+            <execute output="y">
                 <exe-cmd>psql -c "select * from important_table"</exe-cmd>
-                <exe-output/>
                 <exe-highlight>{[test-table-data]}</exe-highlight>
             </execute>
         </execute-list>
@@ -1056,9 +1028,8 @@
         <execute-list host="{[host-db-master]}">
             <title>Examine the <postgres/> log output for log messages indicating success</title>
 
-            <execute>
+            <execute output="y">
                 <exe-cmd>cat {[postgres-log-demo]}</exe-cmd>
-                <exe-output/>
                 <exe-highlight>recovery stopping before|last completed transaction|starting point-in-time recovery</exe-highlight>
             </execute>
         </execute-list>
@@ -1215,9 +1186,8 @@
         <execute-list host="{[host-db-master]}">
             <title>Get detailed information</title>
 
-            <execute filter="n">
+            <execute output="y" filter="n">
                 <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-output=json info</exe-cmd>
-                <exe-output/>
             </execute>
         </execute-list>
     </section> -->

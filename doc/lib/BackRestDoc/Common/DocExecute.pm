@@ -114,7 +114,7 @@ sub execute
         my $bSuppressError = defined($oCommand->fieldGet('exe-err-suppress', false)) ? $oCommand->fieldGet('exe-err-suppress') : false;
         my $bSuppressStdErr = defined($oCommand->fieldGet('exe-err-suppress-stderr', false)) ?
                                   $oCommand->fieldGet('exe-err-suppress-stderr') : false;
-        my $bExeOutput = defined($oCommand->fieldGet('exe-output', false)) ? $oCommand->fieldGet('exe-output') : false;
+        my $bExeOutput = $oCommand->paramTest('output', 'y');
         my $bExeRetry = defined($oCommand->fieldGet('exe-retry', false)) ? $oCommand->fieldGet('exe-retry') : false;
         my $strExeVar = defined($oCommand->fieldGet('exe-var', false)) ? $oCommand->fieldGet('exe-var') : undef;
         my $iExeExpectedError = defined($oCommand->fieldGet('exe-err-expect', false)) ? $oCommand->fieldGet('exe-err-expect') : undef;
@@ -196,8 +196,7 @@ sub execute
                 {
                     $self->{oManifest}->variableSet($strExeVar, trim($oExec->{strOutLog}));
                 }
-                elsif (!$oCommand->paramTest('filter', 'n') && defined($oCommand->fieldGet('exe-output', false)) &&
-                       defined($strOutput))
+                elsif (!$oCommand->paramTest('filter', 'n') && $bExeOutput && defined($strOutput))
                 {
                     my $strHighLight = $self->{oManifest}->variableReplace($oCommand->fieldGet('exe-highlight', false));
 

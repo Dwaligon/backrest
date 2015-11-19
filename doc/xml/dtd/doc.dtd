@@ -60,11 +60,11 @@
     <!ATTLIST execute filter-context CDATA "">
     <!ATTLIST execute skip CDATA "">
     <!ATTLIST execute show CDATA "">
+    <!ATTLIST execute output CDATA "">
 <!ELEMENT exe-cmd (#PCDATA)>
 <!ELEMENT exe-highlight (#PCDATA)>
 <!ELEMENT exe-highlight-type (#PCDATA)>
 <!ELEMENT exe-var (#PCDATA)>
-<!ELEMENT exe-output EMPTY>
 <!ELEMENT exe-retry EMPTY>
 <!ELEMENT exe-err-expect (#PCDATA)>
 <!ELEMENT exe-err-suppress EMPTY>
