@@ -66,9 +66,6 @@
 <!ELEMENT exe-highlight (#PCDATA)>
 <!ELEMENT exe-highlight-type (#PCDATA)>
 <!ELEMENT exe-var (#PCDATA)>
-<!ELEMENT exe-retry EMPTY>
-<!ELEMENT exe-err-suppress EMPTY>
-<!ELEMENT exe-err-suppress-stderr EMPTY>
 
 <!ELEMENT cleanup (execute+)>
 

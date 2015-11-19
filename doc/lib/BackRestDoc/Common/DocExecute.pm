@@ -111,18 +111,9 @@ sub execute
         # Command variables
         $strCommand = trim($oCommand->fieldGet('exe-cmd'));
         my $strUser = $oCommand->paramGet('user', false, 'postgres');
-        my $bSuppressError = defined($oCommand->fieldGet('exe-err-suppress', false)) ? $oCommand->fieldGet('exe-err-suppress') : false;
-        my $bSuppressStdErr = defined($oCommand->fieldGet('exe-err-suppress-stderr', false)) ?
-                                  $oCommand->fieldGet('exe-err-suppress-stderr') : false;
         my $bExeOutput = $oCommand->paramTest('output', 'y');
-        my $bExeRetry = defined($oCommand->fieldGet('exe-retry', false)) ? $oCommand->fieldGet('exe-retry') : false;
         my $strExeVar = defined($oCommand->fieldGet('exe-var', false)) ? $oCommand->fieldGet('exe-var') : undef;
         my $iExeExpectedError = $oCommand->paramGet('err-expect', false);
-
-        if ($bExeRetry)
-        {
-            sleep(1);
-        }
 
         $strCommand = $self->{oManifest}->variableReplace(
             (defined($strUser) && $strUser eq 'vagrant' ? '' :
@@ -165,9 +156,7 @@ sub execute
                 }
 
                 my $oExec = $oHost->execute($strCommand,
-                                            {bSuppressError => $bSuppressError,
-                                            bSuppressStdErr => $bSuppressStdErr,
-                                            iExpectedExitStatus => $iExeExpectedError});
+                                            {iExpectedExitStatus => $iExeExpectedError});
                 $oExec->begin();
                 $oExec->end();
 
