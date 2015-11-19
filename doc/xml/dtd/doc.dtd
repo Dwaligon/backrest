@@ -79,11 +79,12 @@
     <!ATTLIST backrest-config host CDATA #REQUIRED>
     <!ATTLIST backrest-config owner CDATA "">
     <!ATTLIST backrest-config show CDATA "">
+    <!ATTLIST backrest-config reset CDATA "">
     <!ATTLIST backrest-config file CDATA #REQUIRED>
-<!ELEMENT backrest-config-option (backrest-config-option-section?, backrest-config-option-key, backrest-config-option-value?)>
-<!ELEMENT backrest-config-option-section (#PCDATA)>
-<!ELEMENT backrest-config-option-key (#PCDATA)>
-<!ELEMENT backrest-config-option-value (#PCDATA)>
+<!ELEMENT backrest-config-option (#PCDATA)>
+    <!ATTLIST backrest-config-option section CDATA #REQUIRED>
+    <!ATTLIST backrest-config-option key CDATA #REQUIRED>
+    <!ATTLIST backrest-config-option remove CDATA "n">
 
 <!ELEMENT postgres-config (title, postgres-config-option+)>
     <!ATTLIST postgres-config host CDATA #REQUIRED>

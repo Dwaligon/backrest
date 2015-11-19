@@ -345,11 +345,22 @@ sub backrestConfig
                 confess &log(ERROR, "cannot configure backrest on host ${strHostName} because the host does not exist");
             }
 
+            # Reset all options
+            if ($oConfig->paramTest('reset', 'y'))
+            {
+                delete(${$self->{config}}{$strHostName}{$strFile})
+            }
+
             foreach my $oOption ($oConfig->nodeList('backrest-config-option'))
             {
-                my $strSection = $oOption->fieldGet('backrest-config-option-section');
-                my $strKey = $oOption->fieldGet('backrest-config-option-key');
-                my $strValue = $self->{oManifest}->variableReplace(trim($oOption->fieldGet('backrest-config-option-value'), false));
+                my $strSection = $oOption->paramGet('section');
+                my $strKey = $oOption->paramGet('key');
+                my $strValue;
+
+                if (!$oOption->paramTest('remove', 'y'))
+                {
+                    $strValue = $self->{oManifest}->variableReplace(trim($oOption->valueGet(false)));
+                }
 
                 if (!defined($strValue))
                 {

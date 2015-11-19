@@ -232,11 +232,7 @@
             <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
                 <title>Configure the <postgres/> cluster data directory</title>
 
-                <backrest-config-option>
-                    <backrest-config-option-section>demo</backrest-config-option-section>
-                    <backrest-config-option-key>db-path</backrest-config-option-key>
-                    <backrest-config-option-value>{[db-path]}</backrest-config-option-value>
-                </backrest-config-option>
+                <backrest-config-option section="demo" key="db-path">{[db-path]}</backrest-config-option>
             </backrest-config>
 
             <p><backrest/> configuration files follow the Windows INI convention.  Sections are denoted by text in brackets and key/value pairs are contained in each section.  Lines beginning with <id>#</id> are ignored and can be used as comments.</p>
@@ -246,17 +242,8 @@
             <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
                 <title>Set the <br-option>log-level-console</br-option> option to <br-setting>info</br-setting></title>
 
-                <backrest-config-option>
-                    <backrest-config-option-section>global:log</backrest-config-option-section>
-                    <backrest-config-option-key>log-level-console</backrest-config-option-key>
-                    <backrest-config-option-value>info</backrest-config-option-value>
-                </backrest-config-option>
-
-                <backrest-config-option>
-                    <backrest-config-option-section>global:archive</backrest-config-option-section>
-                    <backrest-config-option-key>log-level-console</backrest-config-option-key>
-                    <backrest-config-option-value>warn</backrest-config-option-value>
-                </backrest-config-option>
+                <backrest-config-option section="global:log" key="log-level-console">info</backrest-config-option>
+                <backrest-config-option section="global:archive" key="log-level-console">warn</backrest-config-option>
             </backrest-config>
         </section>
 
@@ -285,11 +272,7 @@
             <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
                 <title>Configure the <backrest/> repository path</title>
 
-                <backrest-config-option>
-                    <backrest-config-option-section>global:general</backrest-config-option-section>
-                    <backrest-config-option-key>repo-path</backrest-config-option-key>
-                    <backrest-config-option-value>{[backrest-repo-path]}</backrest-config-option-value>
-                </backrest-config-option>
+                <backrest-config-option section="global:general" key="repo-path">{[backrest-repo-path]}</backrest-config-option>
             </backrest-config>
         </section>
 
@@ -489,11 +472,7 @@
             <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
                 <title>Enable the <br-option>start-fast</br-option> option</title>
 
-                <backrest-config-option>
-                    <backrest-config-option-section>global:backup</backrest-config-option-section>
-                    <backrest-config-option-key>start-fast</backrest-config-option-key>
-                    <backrest-config-option-value>y</backrest-config-option-value>
-                </backrest-config-option>
+                <backrest-config-option section="global:backup" key="start-fast">y</backrest-config-option>
             </backrest-config>
 
             <execute-list host="{[host-db-master]}">
@@ -547,11 +526,7 @@
             <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
                 <title>Enable the <br-option>stop-auto</br-option> option</title>
 
-                <backrest-config-option>
-                    <backrest-config-option-section>global:backup</backrest-config-option-section>
-                    <backrest-config-option-key>stop-auto</backrest-config-option-key>
-                    <backrest-config-option-value>y</backrest-config-option-value>
-                </backrest-config-option>
+                <backrest-config-option section="global:backup" key="stop-auto">y</backrest-config-option>
             </backrest-config>
 
             <p>Now <backrest/> will stop the old backup and start a new one so the process completes successfully.</p>
@@ -586,11 +561,7 @@
             <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
                 <title>Configure <br-option>retention-full</br-option></title>
 
-                <backrest-config-option>
-                    <backrest-config-option-section>global:expire</backrest-config-option-section>
-                    <backrest-config-option-key>retention-full</backrest-config-option-key>
-                    <backrest-config-option-value>2</backrest-config-option-value>
-                </backrest-config-option>
+                <backrest-config-option section="global:expire" key="retention-full">2</backrest-config-option>
             </backrest-config>
 
             <p>Backup <br-setting>retention-full=2</br-setting> but currently there is only one full backup so the next full backup to run will not expire any full backups.</p>
@@ -631,11 +602,7 @@
             <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
                 <title>Configure <br-option>retention-diff</br-option></title>
 
-                <backrest-config-option>
-                    <backrest-config-option-section>global:expire</backrest-config-option-section>
-                    <backrest-config-option-key>retention-diff</backrest-config-option-key>
-                    <backrest-config-option-value>1</backrest-config-option-value>
-                </backrest-config-option>
+                <backrest-config-option section="global:expire" key="retention-diff">1</backrest-config-option>
             </backrest-config>
 
             <p>Backup <br-setting>retention-diff=2</br-setting> so two differentials will need to be performed before one is expired.  An incremental backup is added to demonstrate incremental expiration.</p>
@@ -940,11 +907,7 @@
             <backrest-config host="{[host-backup]}" show="n" owner="backrest:postgres" file="{[backrest-config-demo]}">
                 <title>Configure the <backrest/> repository path</title>
 
-                <backrest-config-option>
-                    <backrest-config-option-section>global:general</backrest-config-option-section>
-                    <backrest-config-option-key>repo-path</backrest-config-option-key>
-                    <backrest-config-option-value>{[backrest-repo-path]}</backrest-config-option-value>
-                </backrest-config-option>
+                <backrest-config-option section="global:general" key="repo-path">{[backrest-repo-path]}</backrest-config-option>
             </backrest-config>
 
             <p>For this example a new host named <host>backup</host> has been created to store the cluster backups. Follow the instructions in <link page="#installation">Installation</link> to install <backrest/> and <link page="#quickstart-create-repository">Create the Repository</link> to create the repository. The <host>backup</host> host must also be configured with the database host/user and database path.</p>
@@ -952,59 +915,29 @@
             <backrest-config host="{[host-backup]}" owner="backrest:postgres" file="{[backrest-config-demo]}">
                 <title>Configure <br-option>db-host</br-option>/<br-option>db-user</br-option> and <br-option>db-path</br-option></title>
 
-                <backrest-config-option>
-                    <backrest-config-option-section>demo</backrest-config-option-section>
-                    <backrest-config-option-key>db-path</backrest-config-option-key>
-                    <backrest-config-option-value>{[db-path]}</backrest-config-option-value>
-                </backrest-config-option>
+                <backrest-config-option section="demo" key="db-path">{[db-path]}</backrest-config-option>
+                <backrest-config-option section="demo" key="db-host">{[host-db-master]}</backrest-config-option>
+                <backrest-config-option section="demo" key="db-user">postgres</backrest-config-option>
 
-                <backrest-config-option>
-                    <backrest-config-option-section>demo</backrest-config-option-section>
-                    <backrest-config-option-key>db-host</backrest-config-option-key>
-                    <backrest-config-option-value>{[host-db-master]}</backrest-config-option-value>
-                </backrest-config-option>
-
-                <backrest-config-option>
-                    <backrest-config-option-section>demo</backrest-config-option-section>
-                    <backrest-config-option-key>db-user</backrest-config-option-key>
-                    <backrest-config-option-value>postgres</backrest-config-option-value>
-                </backrest-config-option>
-
-                <backrest-config-option>
-                    <backrest-config-option-section>global:backup</backrest-config-option-section>
-                    <backrest-config-option-key>start-fast</backrest-config-option-key>
-                    <backrest-config-option-value>y</backrest-config-option-value>
-                </backrest-config-option>
-
-                <backrest-config-option>
-                    <backrest-config-option-section>global:log</backrest-config-option-section>
-                    <backrest-config-option-key>log-level-console</backrest-config-option-key>
-                    <backrest-config-option-value>info</backrest-config-option-value>
-                </backrest-config-option>
+                <backrest-config-option section="global:backup" key="start-fast">y</backrest-config-option>
+                <backrest-config-option section="global:log" key="log-level-console">info</backrest-config-option>
             </backrest-config>
 
             <p>The database host must be configured with the backup host/user.</p>
 
-            <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
+            <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}" reset="y">
                 <title>Configure <br-option>backup-host</br-option>/<br-option>backup-user</br-option></title>
 
-                <backrest-config-option>
-                    <backrest-config-option-section>global:backup</backrest-config-option-section>
-                    <backrest-config-option-key>backup-host</backrest-config-option-key>
-                    <backrest-config-option-value>{[host-backup]}</backrest-config-option-value>
-                </backrest-config-option>
+                <backrest-config-option section="demo" key="db-path">{[db-path]}</backrest-config-option>
 
-                <backrest-config-option>
-                    <backrest-config-option-section>global:backup</backrest-config-option-section>
-                    <backrest-config-option-key>backup-user</backrest-config-option-key>
-                    <backrest-config-option-value>backrest</backrest-config-option-value>
-                </backrest-config-option>
+                <backrest-config-option section="global:general" key="repo-path">{[backrest-repo-path]}</backrest-config-option>
 
-                <backrest-config-option>
-                    <backrest-config-option-section>global:backup</backrest-config-option-section>
-                    <backrest-config-option-key>start-fast</backrest-config-option-key>
-                    <backrest-config-option-value></backrest-config-option-value>
-                </backrest-config-option>
+                <backrest-config-option section="global:log" key="log-level-console">info</backrest-config-option>
+
+                <backrest-config-option section="global:archive" key="log-level-console">warn</backrest-config-option>
+
+                <backrest-config-option section="global:backup" key="backup-host">{[host-backup]}</backrest-config-option>
+                <backrest-config-option section="global:backup" key="backup-user">backrest</backrest-config-option>
             </backrest-config>
 
             <p>Commands are run the same as on a single host configuration except that the <cmd>backup</cmd> and <cmd>expire</cmd> command are run from the <host>backup</host> host and all other commands are run from the <host>database</host> host.</p>
