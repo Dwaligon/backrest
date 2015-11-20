@@ -982,6 +982,83 @@
         </section>
     </section>
 
+    <!-- SECTION => START/STOP -->
+    <section id="start-stop" depend="/quickstart/configure-archiving">
+        <title>Starting and Stopping</title>
+
+        <p>Sometimes it is useful to prevent <backrest/> from running on a system.  For example, when failing over from a master to a replica it's best to prevent <backrest/> from running on the old master in case <postgres/> gets restarted or can't be completely killed.  This will also prevent <backrest/> from running on <id>cron</id>.</p>
+
+        <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}" show="n">
+            <title>Set <br-option>log-level-console</br-option> to <id>warn</id></title>
+
+            <backrest-config-option section="global:log" key="log-level-console">warn</backrest-config-option>
+        </backrest-config>
+
+        <execute-list host="{[host-db-master]}">
+            <title>Stop the <backrest/> services</title>
+
+            <execute>
+                <exe-cmd>{[project-exe]} stop</exe-cmd>
+            </execute>
+        </execute-list>
+
+        <p>New <backrest/> processes will no longer run.</p>
+
+        <execute-list host="{[host-db-master]}">
+            <title>Attempt a backup</title>
+
+            <execute err-expect="137" output="y">
+                <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} backup</exe-cmd>
+                <exe-highlight>stop file exists for all stanzas</exe-highlight>
+            </execute>
+        </execute-list>
+
+        <p>Specify the <br-option>--force</br-option> option to terminate any <backrest/> process that are currently running.  If <backrest/> is already stopped then stopping again will generate a warning.</p>
+
+        <execute-list host="{[host-db-master]}">
+            <title>Stop the <backrest/> services again</title>
+
+            <execute output="y" filter="n">
+                <exe-cmd>{[project-exe]} stop</exe-cmd>
+            </execute>
+        </execute-list>
+
+        <p>Start <backrest/> processes again with the <cmd>start</cmd> command.</p>
+
+        <execute-list host="{[host-db-master]}">
+            <title>Start the <backrest/> services</title>
+
+            <execute>
+                <exe-cmd>{[project-exe]} start</exe-cmd>
+            </execute>
+        </execute-list>
+
+        <p>It is also possible to stop <backrest/> for a single stanza.</p>
+
+        <execute-list host="{[host-db-master]}">
+            <title>Stop <backrest/> services for the <id>demo</id> stanza</title>
+
+            <execute>
+                <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} stop</exe-cmd>
+            </execute>
+
+            <execute err-expect="137" output="y">
+                <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} backup</exe-cmd>
+                <exe-highlight>stop file exists for stanza demo</exe-highlight>
+            </execute>
+        </execute-list>
+
+        <p>The stanza must also be specified when starting the <backrest/> processes for a single stanza.</p>
+
+        <execute-list host="{[host-db-master]}">
+            <title>Start the <backrest/> services for the <id>demo</id> stanza</title>
+
+            <execute>
+                <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} start</exe-cmd>
+            </execute>
+        </execute-list>
+    </section>
+
     <!-- SECTION => INFO -->
     <!-- <section id="info">
         <title>Repository Information</title>

@@ -266,7 +266,7 @@ sub sectionProcess
             foreach my $oExecute ($oChild->nodeList('execute'))
             {
                 my $bExeShow = !$oExecute->paramTest('show', 'n');
-                my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
+                my $bExeExpectedError = defined($oExecute->paramGet('err-expect', false));
 
                 my ($strCommand, $strOutput) = $self->execute($oSection, $strHostName, $oExecute, $iDepth + 3);
 
