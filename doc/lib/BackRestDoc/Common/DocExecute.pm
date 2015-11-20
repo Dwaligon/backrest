@@ -312,12 +312,14 @@ sub backrestConfig
     my
     (
         $strOperation,
+        $oSection,
         $oConfig,
         $iDepth
     ) =
         logDebugParam
         (
             OP_DOC_EXECUTE_BACKREST_CONFIG, \@_,
+            {name => 'oSection'},
             {name => 'oConfig'},
             {name => 'iDepth'}
         );
@@ -338,7 +340,7 @@ sub backrestConfig
 
         &log(DEBUG, ('    ' x $iDepth) . 'process backrest config: ' . $strFile);
 
-        if ($self->{bExe})
+        if ($self->{bExe} && $self->isRequired($oSection))
         {
             # Check that the host is valid
             my $strHostName = $self->{oManifest}->variableReplace($oConfig->paramGet('host'));
@@ -423,12 +425,14 @@ sub postgresConfig
     my
     (
         $strOperation,
+        $oSection,
         $oConfig,
         $iDepth
     ) =
         logDebugParam
         (
             OP_DOC_EXECUTE_POSTGRES_CONFIG, \@_,
+            {name => 'oSection'},
             {name => 'oConfig'},
             {name => 'iDepth'}
         );
@@ -447,7 +451,7 @@ sub postgresConfig
         # Get filename
         $strFile = $self->{oManifest}->variableReplace($oConfig->paramGet('file'));
 
-        if ($self->{bExe})
+        if ($self->{bExe} && $self->isRequired($oSection))
         {
             # Check that the host is valid
             my $strHostName = $self->{oManifest}->variableReplace($oConfig->paramGet('host'));

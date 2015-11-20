@@ -330,7 +330,7 @@ sub sectionProcess
         # Add/remove config options
         elsif ($oChild->nameGet() eq 'backrest-config' || $oChild->nameGet() eq 'postgres-config')
         {
-            $strLatex .= $self->configProcess($oChild, $iDepth + 3);
+            $strLatex .= $self->configProcess($oSection, $oChild, $iDepth + 3);
         }
         # Add a subsection
         elsif ($oChild->nameGet() eq 'section')
@@ -363,12 +363,14 @@ sub configProcess
     my
     (
         $strOperation,
+        $oSection,
         $oConfig,
         $iDepth
     ) =
         logDebugParam
         (
             OP_DOC_LATEX_SECTION_CONFIG_PROCESS, \@_,
+            {name => 'oSection'},
             {name => 'oConfig'},
             {name => 'iDepth'}
         );
@@ -382,11 +384,11 @@ sub configProcess
     # Generate the config
     if ($oConfig->nameGet() eq 'backrest-config')
     {
-        ($strFile, $strConfig, $bShow) = $self->backrestConfig($oConfig, $iDepth);
+        ($strFile, $strConfig, $bShow) = $self->backrestConfig($oSection, $oConfig, $iDepth);
     }
     else
     {
-        ($strFile, $strConfig) = $self->postgresConfig($oConfig, $iDepth);
+        ($strFile, $strConfig) = $self->postgresConfig($oSection, $oConfig, $iDepth);
     }
 
     if ($bShow)

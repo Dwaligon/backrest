@@ -364,7 +364,7 @@ sub sectionProcess
         # Add/remove backrest config options
         elsif ($oChild->nameGet() eq 'backrest-config')
         {
-            my $oConfigElement = $self->backrestConfigProcess($oChild, $iDepth + 3);
+            my $oConfigElement = $self->backrestConfigProcess($oSection, $oChild, $iDepth + 3);
 
             if (defined($oConfigElement))
             {
@@ -374,7 +374,7 @@ sub sectionProcess
         # Add/remove postgres config options
         elsif ($oChild->nameGet() eq 'postgres-config')
         {
-            $oSectionBodyElement->add($self->postgresConfigProcess($oChild, $iDepth + 3));
+            $oSectionBodyElement->add($self->postgresConfigProcess($oSection, $oChild, $iDepth + 3));
         }
         # Add a subsection
         elsif ($oChild->nameGet() eq 'section')
@@ -412,19 +412,21 @@ sub backrestConfigProcess
     my
     (
         $strOperation,
+        $oSection,
         $oConfig,
         $iDepth
     ) =
         logDebugParam
         (
             OP_DOC_HTML_PAGE_BACKREST_CONFIG_PROCESS, \@_,
+            {name => 'oSection'},
             {name => 'oConfig'},
             {name => 'iDepth'}
         );
 
     # Generate the config
     my $oConfigElement;
-    my ($strFile, $strConfig, $bShow) = $self->backrestConfig($oConfig, $iDepth);
+    my ($strFile, $strConfig, $bShow) = $self->backrestConfig($oSection, $oConfig, $iDepth);
 
     if ($bShow)
     {
@@ -468,18 +470,20 @@ sub postgresConfigProcess
     my
     (
         $strOperation,
+        $oSection,
         $oConfig,
         $iDepth
     ) =
         logDebugParam
         (
             OP_DOC_HTML_PAGE_POSTGRES_CONFIG_PROCESS, \@_,
+            {name => 'oSection'},
             {name => 'oConfig'},
             {name => 'iDepth'}
         );
 
     # Generate the config
-    my ($strFile, $strConfig) = $self->postgresConfig($oConfig, $iDepth);
+    my ($strFile, $strConfig) = $self->postgresConfig($oSection, $oConfig, $iDepth);
 
     # Render the config
     my $strHostName = $self->{oManifest}->variableReplace($oConfig->paramGet('host'));
