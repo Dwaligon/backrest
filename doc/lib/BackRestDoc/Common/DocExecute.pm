@@ -85,6 +85,7 @@ sub execute
     my
     (
         $strOperation,
+        $oSection,
         $strHostName,
         $oCommand,
         $iIndent
@@ -92,6 +93,7 @@ sub execute
         logDebugParam
         (
             OP_DOC_EXECUTE_EXECUTE, \@_,
+            {name => 'oSection'},
             {name => 'strHostName'},
             {name => 'oCommand'},
             {name => 'iIndent', default => 1}
@@ -100,6 +102,8 @@ sub execute
     # Working variables
     my $strCommand;
     my $strOutput;
+
+    # if ($bExe &&
 
     if ($oCommand->fieldTest('actual-command'))
     {
@@ -145,7 +149,7 @@ sub execute
 
         if (!$oCommand->paramTest('skip', 'y'))
         {
-            if ($self->{bExe})
+            if ($self->{bExe} && $self->isRequired($oSection))
             {
                 # Check that the host is valid
                 my $oHost = $self->{host}{$strHostName};
@@ -546,12 +550,14 @@ sub sectionChildProcess
     my
     (
         $strOperation,
+        $oSection,
         $oChild,
         $iDepth
     ) =
         logDebugParam
         (
             OP_DOC_EXECUTE_SECTION_CHILD_PROCESS, \@_,
+            {name => 'oSection'},
             {name => 'oChild'},
             {name => 'iDepth'}
         );
@@ -561,7 +567,7 @@ sub sectionChildProcess
     # Execute a command
     if ($oChild->nameGet() eq 'host-add')
     {
-        if ($self->{bExe})
+        if ($self->{bExe} && $self->isRequired($oSection))
         {
             my $strName = $self->{oManifest}->variableReplace($oChild->paramGet('name'));
             my $strUser = $self->{oManifest}->variableReplace($oChild->paramGet('user'));
@@ -581,7 +587,7 @@ sub sectionChildProcess
             # Execute cleanup commands
             foreach my $oExecute ($oChild->nodeList('execute'))
             {
-                $self->execute($strName, $oExecute, $iDepth + 1);
+                $self->execute($oSection, $strName, $oExecute, $iDepth + 1);
             }
 
             $oHost->executeSimple("sh -c 'echo \"\" >> /etc/hosts\'");

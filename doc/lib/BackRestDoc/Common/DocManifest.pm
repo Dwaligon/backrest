@@ -63,6 +63,7 @@ sub new
     (
         my $strOperation,
         $self->{stryKeyword},
+        $self->{stryRequire},
         my $oVariableOverride,
         $self->{strDocPath}
     ) =
@@ -70,6 +71,7 @@ sub new
         (
             OP_DOC_MANIFEST_NEW, \@_,
             {name => 'stryKeyword'},
+            {name => 'stryRequire'},
             {name => 'oVariableOverride', required => false},
             {name => 'strDocPath', required => false},
         );

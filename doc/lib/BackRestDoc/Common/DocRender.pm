@@ -210,6 +210,15 @@ sub new
     # Build the doc
     $self->build($self->{oDoc});
 
+    # Get required sections
+    foreach my $strPath (@{$self->{oManifest}->{stryRequire}})
+    {
+        if (defined(${$self->{oSection}}{$strPath}))
+        {
+            $self->required($strPath);
+        }
+    }
+
     # Return from function and log return values if any
     return logDebugReturn
     (
@@ -264,8 +273,11 @@ sub build
     my $self = shift;
     my $oNode = shift;
     my $oParent = shift;
+    my $strPath = shift;
 
     # &log(INFO, "        node " . $oNode->nameGet());
+
+    my $strName = $oNode->nameGet();
 
     if (defined($oParent))
     {
@@ -278,22 +290,107 @@ sub build
                 $strDescription = $self->processText($oNode->nodeGet('title')->textGet());
             }
 
-            &log(INFO, '            filtered ' . $oNode->nameGet() .
-                       (defined($strDescription) ? ": ${strDescription}" : ''));
+            &log(DEBUG, "            filtered ${strName}" . (defined($strDescription) ? ": ${strDescription}" : ''));
 
             $oParent->nodeRemove($oNode);
         }
     }
     else
     {
-            &log(INFO, '        build document');
+            &log(DEBUG, '        build document');
+            $self->{oSection} = {};
+    }
+
+    if ($strName eq 'section')
+    {
+        if (defined($strPath))
+        {
+            $oNode->paramSet('path-parent', $strPath);
+        }
+
+        $strPath .= '/' . $oNode->paramGet('id');
+
+        &log(DEBUG, "            path ${strPath}");
+        ${$self->{oSection}}{$strPath} = $oNode;
+        $oNode->paramSet('path', $strPath);
     }
 
     # Iterate all nodes
     foreach my $oChild ($oNode->nodeList(undef, false))
     {
-        $self->build($oChild, $oNode);
+        $self->build($oChild, $oNode, $strPath);
     }
+}
+
+####################################################################################################################################
+# required
+#
+# Build a list of required sections
+####################################################################################################################################
+sub required
+{
+    my $self = shift;
+    my $strPath = shift;
+
+    my $oNode = ${$self->{oSection}}{$strPath};
+
+    if (!defined($oNode))
+    {
+        confess &log(ERROR, "invalid path ${strPath}");
+    }
+
+    if (!defined(${$self->{oSectionRequired}}{$strPath}))
+    {
+        &log(INFO, "        require section: ${strPath}");
+
+        ${$self->{oSectionRequired}}{$strPath} = true;
+    }
+
+    my $strParentPath = $oNode->paramGet('path-parent', false);
+
+    if ($oNode->paramTest('depend'))
+    {
+        foreach my $strDepend (split(',', $oNode->paramGet('depend')))
+        {
+            if ($strDepend !~ /^\//)
+            {
+                if (!defined($strParentPath))
+                {
+                    $strDepend = "/${strDepend}";
+                }
+                else
+                {
+                    $strDepend = "${strParentPath}/${strDepend}";
+                }
+            }
+
+            $self->required($strDepend);
+        }
+    }
+    elsif (defined($strParentPath))
+    {
+        $self->required($strParentPath);
+    }
+}
+
+####################################################################################################################################
+# isRequired
+#
+# Is it required to execute the section statements?
+####################################################################################################################################
+sub isRequired
+{
+    my $self = shift;
+    my $oSection = shift;
+
+    if (!defined($self->{oSectionRequired}))
+    {
+        return true;
+    }
+
+    my $strPath = $oSection->paramGet('path');
+
+    defined(${$self->{oSectionRequired}}{$strPath}) ? true : false;
 }
 
 ####################################################################################################################################

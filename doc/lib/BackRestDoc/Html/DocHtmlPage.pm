@@ -268,7 +268,7 @@ sub sectionProcess
                 my $bExeShow = !$oExecute->paramTest('show', 'n');
                 my $bExeExpectedError = defined($oExecute->fieldGet('exe-err-expect', false)) ? true : false;
 
-                my ($strCommand, $strOutput) = $self->execute($strHostName, $oExecute, $iDepth + 3);
+                my ($strCommand, $strOutput) = $self->execute($oSection, $strHostName, $oExecute, $iDepth + 3);
 
                 if ($bExeShow)
                 {
@@ -323,7 +323,7 @@ sub sectionProcess
                         $bFirst = true;
                     }
 
-                    if ($self->{bExe} && defined($strHighLight) && !$bHighLightFound)
+                    if ($self->{bExe} && $self->isRequired($oSection) && defined($strHighLight) && !$bHighLightFound)
                     {
                         confess &log(ERROR, "unable to find a match for highlight: ${strHighLight}");
                     }
@@ -388,7 +388,7 @@ sub sectionProcess
         # Check if the child can be processed by a parent
         else
         {
-            $self->sectionChildProcess($oChild, $iDepth + 1);
+            $self->sectionChildProcess($oSection, $oChild, $iDepth + 1);
         }
     }
 

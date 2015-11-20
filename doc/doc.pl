@@ -70,6 +70,7 @@ my $oVariableOverride = {};                         # Override variables
 my $strDocPath;                                     # Document path to render
 my @stryOutput;                                     # Output types
 my @stryKeyword;                                    # Keyword used to filter output
+my @stryRequire;                                    # Required sections of the document (to speed testing)
 
 GetOptions ('help' => \$bHelp,
             'version' => \$bVersion,
@@ -77,6 +78,7 @@ GetOptions ('help' => \$bHelp,
             'log-level=s' => \$strLogLevel,
             'out=s@' => \@stryOutput,
             'keyword=s@' => \@stryKeyword,
+            'require=s@' => \@stryRequire,
             'no-exe', \$bNoExe,
             'use-cache', \$bUseCache,
             'var=s%', $oVariableOverride,
@@ -164,7 +166,7 @@ if ($bUseCache && -e $strManifestCache)
 }
 else
 {
-    $oManifest = new BackRestDoc::Common::DocManifest(\@stryKeyword, $oVariableOverride, $strDocPath);
+    $oManifest = new BackRestDoc::Common::DocManifest(\@stryKeyword, \@stryRequire, $oVariableOverride, $strDocPath);
 }
 
 # If no outputs were given

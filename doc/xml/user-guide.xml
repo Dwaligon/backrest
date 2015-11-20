@@ -248,7 +248,7 @@
         </section>
 
         <!-- SECTION => QUICKSTART - CREATE REPOSITORY -->
-        <section id="create-repository" depend="config-stanza">
+        <section id="create-repository" depend="configure-stanza">
             <title>Create the Repository</title>
 
             <p>For this simple configuration the repository will be stored on the same host as the <postgres/> server.  This is the simplest configuration and is useful in cases where traditional backup software is employed to backup the database host.</p>
@@ -326,7 +326,7 @@
         </section>
 
         <!-- SECTION => QUICKSTART - PERFORM BACKUP -->
-        <section id="perform-backup" depend="config-archiving">
+        <section id="perform-backup" depend="configure-archiving">
             <title>Perform a Backup</title>
 
             <p>To perform a backup of the <postgres/> cluster run <backrest/> with the <cmd>backup</cmd> command.</p>
@@ -877,7 +877,7 @@
     </section>
 
     <!-- SECTION => BACKUP HOST -->
-    <section id="backup-host" depend="/quick-start/configure-archiving">
+    <section id="backup-host" depend="/quickstart/configure-archiving">
         <title>Dedicated Backup Host</title>
 
         <p>The configuration described in <link page="#quickstart">Quickstart</link> is suitable for simple installations but for enterprise configurations it is more typical to have a dedicated <host>backup</host> host.  This separates the backups and WAL archive from the database server so <host>database</host> host failures have less impact.  It is still a good idea to employ traditional backup software to backup the <host>backup</host> host.</p>

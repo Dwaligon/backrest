@@ -167,7 +167,8 @@ sub sectionProcess
             foreach my $oExecute ($oChild->nodeList('execute'))
             {
                 my $bExeShow = !$oExecute->paramTest('show', 'n');
-                my ($strCommand, $strOutput) = $self->execute($self->{oManifest}->variableReplace($oChild->paramGet('host')),
+                my ($strCommand, $strOutput) = $self->execute($oSection,
+                                                              $self->{oManifest}->variableReplace($oChild->paramGet('host')),
                                                               $oExecute, $iDepth + 3);
 
                 if ($bExeShow)
@@ -339,7 +340,7 @@ sub sectionProcess
         # Check if the child can be processed by a parent
         else
         {
-            $self->sectionChildProcess($oChild, $iDepth + 1);
+            $self->sectionChildProcess($oSection, $oChild, $iDepth + 1);
         }
     }
 
