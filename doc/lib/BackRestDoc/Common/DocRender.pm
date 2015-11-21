@@ -331,7 +331,9 @@ sub required
 {
     my $self = shift;
     my $strPath = shift;
+    my $bDepend = shift;
 
+    # If node is not found that means the path is invalid
     my $oNode = ${$self->{oSection}}{$strPath};
 
     if (!defined($oNode))
@@ -339,13 +341,22 @@ sub required
         confess &log(ERROR, "invalid path ${strPath}");
     }
 
-    if (!defined(${$self->{oSectionRequired}}{$strPath}))
+    # Only add sections that are listed dependencies
+    if (!defined($bDepend) || $bDepend)
     {
-        &log(INFO, "        require section: ${strPath}");
+        # Match section and all child sections
+        foreach my $strChildPath (sort(keys($self->{oSection})))
+        {
+            if ($strChildPath =~ /^$strPath$/ || $strChildPath =~ /^$strPath\/.*$/)
+            {
+                &log(INFO, "        require section: ${strChildPath}");
 
-        ${$self->{oSectionRequired}}{$strPath} = true;
+                ${$self->{oSectionRequired}}{$strChildPath} = true;
+            }
+        }
     }
 
+    # Get the path of the current section's parent
     my $strParentPath = $oNode->paramGet('path-parent', false);
 
     if ($oNode->paramTest('depend'))
@@ -364,12 +375,12 @@ sub required
                 }
             }
 
-            $self->required($strDepend);
+            $self->required($strDepend, true);
         }
     }
     elsif (defined($strParentPath))
     {
-        $self->required($strParentPath);
+        $self->required($strParentPath, false);
     }
 }
 
