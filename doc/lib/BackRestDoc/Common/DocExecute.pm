@@ -104,8 +104,6 @@ sub execute
     my $strCommand;
     my $strOutput;
 
-    # if ($bExe &&
-
     if ($oCommand->fieldTest('actual-command'))
     {
         $strCommand = $oCommand->fieldGet('actual-command');
@@ -127,7 +125,7 @@ sub execute
         # Add continuation chars and proper spacing
         $strCommand =~ s/[ ]*\n[ ]*/ \\\n    /smg;
 
-        if (!$oCommand->paramTest('show', 'n'))
+        if (!$oCommand->paramTest('show', 'n') && $self->{bExe} && $self->isRequired($oSection))
         {
             # Make sure that no lines are greater than 80 chars
             foreach my $strLine (split("\n", $strCommand))
