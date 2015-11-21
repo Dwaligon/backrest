@@ -388,7 +388,7 @@ sub configProcess
     }
     else
     {
-        ($strFile, $strConfig) = $self->postgresConfig($oSection, $oConfig, $iDepth);
+        ($strFile, $strConfig, $bShow) = $self->postgresConfig($oSection, $oConfig, $iDepth);
     }
 
     if ($bShow)

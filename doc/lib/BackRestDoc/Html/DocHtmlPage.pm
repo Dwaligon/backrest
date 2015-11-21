@@ -374,7 +374,12 @@ sub sectionProcess
         # Add/remove postgres config options
         elsif ($oChild->nameGet() eq 'postgres-config')
         {
-            $oSectionBodyElement->add($self->postgresConfigProcess($oSection, $oChild, $iDepth + 3));
+            my $oConfigElement = $self->postgresConfigProcess($oSection, $oChild, $iDepth + 3);
+
+            if (defined($oConfigElement))
+            {
+                $oSectionBodyElement->add($oConfigElement);
+            }
         }
         # Add a subsection
         elsif ($oChild->nameGet() eq 'section')
@@ -483,28 +488,32 @@ sub postgresConfigProcess
         );
 
     # Generate the config
-    my ($strFile, $strConfig) = $self->postgresConfig($oSection, $oConfig, $iDepth);
+    my $oConfigElement;
+    my ($strFile, $strConfig, $bShow) = $self->postgresConfig($oSection, $oConfig, $iDepth);
 
-    # Render the config
-    my $strHostName = $self->{oManifest}->variableReplace($oConfig->paramGet('host'));
-    my $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");
+    if ($bShow)
+    {
+        # Render the config
+        my $strHostName = $self->{oManifest}->variableReplace($oConfig->paramGet('host'));
+        $oConfigElement = new BackRestDoc::Html::DocHtmlElement(HTML_DIV, "config");
 
-    $oConfigElement->
-        addNew(HTML_DIV, "config-title",
-               {strContent => "<span class=\"host\">${strHostName}</span>:<span class=\"file\">${strFile}</span>" .
-                              " <b>&#x21d2;</b> " . $self->processText($oConfig->nodeGet('title')->textGet())});
+        $oConfigElement->
+            addNew(HTML_DIV, "config-title",
+                   {strContent => "<span class=\"host\">${strHostName}</span>:<span class=\"file\">${strFile}</span>" .
+                                  " <b>&#x21d2;</b> " . $self->processText($oConfig->nodeGet('title')->textGet())});
 
-    my $oConfigBodyElement = $oConfigElement->addNew(HTML_DIV, "config-body");
+        my $oConfigBodyElement = $oConfigElement->addNew(HTML_DIV, "config-body");
 
-    # $oConfigBodyElement->
-    #     addNew(HTML_DIV, "config-body-title",
-    #            {strContent => "append to ${strFile}:"});
+        # $oConfigBodyElement->
+        #     addNew(HTML_DIV, "config-body-title",
+        #            {strContent => "append to ${strFile}:"});
 
-    $oConfigBodyElement->
-        addNew(HTML_DIV, "config-body-output",
-               {strContent => defined($strConfig) ? $strConfig : '<No PgBackRest Settings>'});
+        $oConfigBodyElement->
+            addNew(HTML_DIV, "config-body-output",
+                   {strContent => defined($strConfig) ? $strConfig : '<No PgBackRest Settings>'});
 
-    $oConfig->fieldSet('actual-config', $strConfig);
+        $oConfig->fieldSet('actual-config', $strConfig);
+    }
 
     # Return from function and log return values if any
     return logDebugReturn

@@ -138,13 +138,6 @@ sub execute
                 }
             }
         }
-        #
-        # my $strCommandRun = $strCommand;
-        #
-        # if ($strCommandRun =~ / pg\_backrest /)
-        # {
-        #     $strCommandRun .= ' --log-level-console=info';
-        # }
 
         &log(DEBUG, ('    ' x $iIndent) . "execute: $strCommand");
 
@@ -161,23 +154,24 @@ sub execute
                 }
 
                 my $oExec = $oHost->execute($strCommand,
-                                            {iExpectedExitStatus => $iExeExpectedError});
+                                            {iExpectedExitStatus => $iExeExpectedError,
+                                             bSuppressError => $oCommand->paramTest('err-suppress', 'y'),
+                                             iRetrySeconds => $oCommand->paramGet('retry', false)});
                 $oExec->begin();
                 $oExec->end();
 
                 if ($bExeOutput && defined($oExec->{strOutLog}) && $oExec->{strOutLog} ne '')
                 {
-                    $strOutput = trim($oExec->{strOutLog});
+                    $strOutput = $oExec->{strOutLog};
+
+                    # Trim off extra linefeeds before and after
+                    $strOutput =~ s/^\n+|\n$//g;
 
                     if ($strCommand =~ / pg\_backrest /)
                     {
                         $strOutput =~ s/^                             //smg;
                         $strOutput =~ s/^[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-6][0-9]:[0-6][0-9]\.[0-9]{3} T[0-9]{2}  //smg;
                     }
-                    # else
-                    # {
-                    #     $strOutput =~ s/^[0-9]{4}-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-6][0-9]:[0-6][0-9]\.[0-9]{3} T[0-9]{2}[ ]+INFO.*$//;
-                    # }
                 }
 
                 if (defined($iExeExpectedError))
@@ -210,17 +204,6 @@ sub execute
                     {
                         if ($stryOutput[$iIndex] =~ /$strHighLight/)
                         {
-                            # Output filtered lines
-                            # if ($iFiltered > 1)
-                            # {
-                            #     $strOutput .= (defined($strOutput) ? "\n" : '') .
-                            #                   "       [filtered ${iFiltered} line" . (${iFiltered} > 1 ? 's' : '') . ' of output]';
-                            # }
-                            # else
-                            # {
-                            #     $strOutput .= (defined($strOutput) ? "\n" : '') . $stryOutput[$iIndex - 1];
-                            # }
-
                             # Determine the first line to output
                             my $iFilterFirst = $iIndex - $iFilterContext;
 
@@ -466,12 +449,12 @@ sub postgresConfig
             my $strLocalFile = '/home/vagrant/data/db-master/etc/postgresql.conf';
             $oHost->copyFrom($strFile, $strLocalFile);
 
-            if (!defined(${$self->{'pg-config'}}{$strFile}{base}) && $self->{bExe})
+            if (!defined(${$self->{'pg-config'}}{$strHostName}{$strFile}{base}) && $self->{bExe})
             {
-                ${$self->{'pg-config'}}{$strFile}{base} = fileStringRead($strLocalFile);
+                ${$self->{'pg-config'}}{$strHostName}{$strFile}{base} = fileStringRead($strLocalFile);
             }
 
-            my $oConfigHash = $self->{'pg-config'}{$strFile};
+            my $oConfigHash = $self->{'pg-config'}{$strHostName}{$strFile};
             my $oConfigHashNew;
 
             if (!defined($$oConfigHash{old}))
@@ -540,7 +523,8 @@ sub postgresConfig
     (
         $strOperation,
         {name => 'strFile', value => $strFile, trace => true},
-        {name => 'strConfig', value => $strConfig, trace => true}
+        {name => 'strConfig', value => $strConfig, trace => true},
+        {name => 'bShow', value => $oConfig->paramTest('show', 'n') ? false : true, trace => true}
     );
 }
 

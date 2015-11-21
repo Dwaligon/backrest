@@ -61,7 +61,9 @@
     <!ATTLIST execute skip CDATA "">
     <!ATTLIST execute show CDATA "">
     <!ATTLIST execute output CDATA "">
+    <!ATTLIST execute err-suppress CDATA "">
     <!ATTLIST execute err-expect CDATA "">
+    <!ATTLIST execute retry CDATA "">
     <!ATTLIST execute variable-key CDATA "">
 <!ELEMENT exe-cmd (#PCDATA)>
 <!ELEMENT exe-highlight (#PCDATA)>
@@ -79,9 +81,11 @@
     <!ATTLIST backrest-config host CDATA #REQUIRED>
     <!ATTLIST backrest-config owner CDATA "">
     <!ATTLIST backrest-config show CDATA "">
+    <!ATTLIST backrest-config keyword CDATA "">
     <!ATTLIST backrest-config reset CDATA "">
     <!ATTLIST backrest-config file CDATA #REQUIRED>
 <!ELEMENT backrest-config-option (#PCDATA)>
+    <!ATTLIST backrest-config-option keyword CDATA "">
     <!ATTLIST backrest-config-option section CDATA #REQUIRED>
     <!ATTLIST backrest-config-option key CDATA #REQUIRED>
     <!ATTLIST backrest-config-option remove CDATA "n">
@@ -89,7 +93,10 @@
 <!ELEMENT postgres-config (title, postgres-config-option+)>
     <!ATTLIST postgres-config host CDATA #REQUIRED>
     <!ATTLIST postgres-config file CDATA #REQUIRED>
+    <!ATTLIST postgres-config keyword CDATA "">
+    <!ATTLIST postgres-config show CDATA "">
 <!ELEMENT postgres-config-option (#PCDATA)>
+    <!ATTLIST postgres-config-option keyword CDATA "">
     <!ATTLIST postgres-config-option key CDATA #REQUIRED>
 
 <!ELEMENT option-description EMPTY>

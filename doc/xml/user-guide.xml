@@ -17,6 +17,11 @@
         <variable key="postgres-config-demo" keyword="default">/etc/postgresql/9.4/{[postgres-cluster-demo]}/postgresql.conf</variable>
         <variable key="postgres-config-demo" keyword="co6">{[db-path]}/postgresql.conf</variable>
 
+        <variable key="postgres-hba-demo" keyword="default">/etc/postgresql/9.4/{[postgres-cluster-demo]}/pg_hba.conf</variable>
+        <variable key="postgres-hba-demo" keyword="co6">{[db-path]}/pg_hba.conf</variable>
+
+        <variable key="postgres-pgpass">/home/postgres/.pgpass</variable>
+
         <variable key="postgres-log-demo" keyword="default">/var/log/postgresql/postgresql-9.4-{[postgres-cluster-demo]}.log</variable>
         <variable key="postgres-log-demo" keyword="co6">{[db-path]}/pg_log/postgresql.log</variable>
 
@@ -1072,6 +1077,17 @@
             <title>Hot Standby</title>
 
             <host-add name="{[host-db-replica]}" user="{[host-db-replica-user]}" image="{[host-db-replica-image]}" os="{[host-os]}" mount="{[host-db-replica-mount]}">
+                <!-- Install packages -->
+                <execute user="root" keyword="default">
+                    <exe-cmd>apt-get -y install libdbd-pg-perl libdbi-perl
+                        libnet-daemon-perl libplrpc-perl</exe-cmd>
+                </execute>
+
+                <execute user="root" keyword="co6">
+                    <exe-cmd>yum -y install perl perl-Time-HiRes perl-parent
+                        perl-JSON perl-Digest-SHA perl-DBD-Pg</exe-cmd>
+                </execute>
+
                 <!-- Install backrest -->
                 <execute user="root">
                     <exe-cmd>cp -r /backrest/lib/BackRest {[perl-lib-path]}</exe-cmd>
@@ -1099,12 +1115,6 @@
                 <execute user="root">
                     <exe-cmd>chown postgres:postgres {[backrest-repo-path]}</exe-cmd>
                 </execute>
-
-                <!-- Install packages -->
-                <execute user="root">
-                    <exe-cmd>apt-get -y install libdbd-pg-perl libdbi-perl
-                        libnet-daemon-perl libplrpc-perl</exe-cmd>
-                </execute>
             </host-add>
 
             <!-- <postgres-config host="{[host-db-master]}" file="{[postgres-config-demo]}">
@@ -1126,12 +1136,21 @@
                 <execute user="root" output="y" filter="n">
                     <exe-cmd>{[db-cluster-create]}</exe-cmd>
                 </execute>
+
+                <!-- <execute show="n">
+                    <exe-cmd>sh -c 'echo "log_line_prefix = '\'\''" >> {[postgres-config-demo]}'</exe-cmd>
+                </execute>
+
+                <execute show="n">
+                    <exe-cmd>sh -c 'echo "log_filename = '\'postgresql.log\''" >> {[postgres-config-demo]}'</exe-cmd>
+                </execute> -->
             </execute-list>
 
-            <postgres-config host="{[host-db-replica]}" file="{[postgres-config-demo]}">
-                <title>Enable <pg-option>hot_standby</pg-option></title>
+            <postgres-config host="{[host-db-replica]}" keyword="default" file="{[postgres-config-demo]}" show="n">
+                <title>Set options</title>
 
-                <postgres-config-option key="hot_standby">on</postgres-config-option>
+                <postgres-config-option key="log_line_prefix">''</postgres-config-option>
+                <postgres-config-option key="log_filename">'postgresql.log'</postgres-config-option>
             </postgres-config>
 
             <backrest-config host="{[host-db-replica]}" file="{[backrest-config-demo]}">
@@ -1159,15 +1178,33 @@
 
                 <execute output="y" filter="n">
                     <exe-cmd>cat {[postgres-recovery-demo]}</exe-cmd>
-                    <!-- <exe-highlight>recovery_target_time</exe-highlight> -->
                 </execute>
             </execute-list>
+
+            <postgres-config host="{[host-db-replica]}" file="{[postgres-config-demo]}">
+                <title>Enable <pg-option>hot_standby</pg-option></title>
+
+                <postgres-config-option key="hot_standby">on</postgres-config-option>
+            </postgres-config>
 
             <execute-list host="{[host-db-replica]}">
                 <title>Start <postgres/></title>
 
+                <execute user="root" show="n">
+                    <exe-cmd>rm {[postgres-log-demo]}</exe-cmd>
+                </execute>
+
                 <execute user="root">
                     <exe-cmd>{[db-cluster-start]}</exe-cmd>
+                </execute>
+            </execute-list>
+
+            <execute-list host="{[host-db-replica]}">
+                <title>Examine the <postgres/> log output for log messages indicating success</title>
+
+                <execute output="y">
+                    <exe-cmd>cat {[postgres-log-demo]}</exe-cmd>
+                    <exe-highlight>entering standby mode|database system is ready to accept read only connections</exe-highlight>
                 </execute>
             </execute-list>
 
@@ -1201,20 +1238,152 @@
 
                 <execute output="y" filter="n">
                     <exe-cmd>
-                        psql -c "select pg_switch_xlog()";
+                        psql -c "select *, current_timestamp from pg_switch_xlog()";
                     </exe-cmd>
                 </execute>
             </execute-list>
 
             <execute-list host="{[host-db-replica]}">
-                <title>Now the new table exists on the replica</title>
+                <title>Now the new table exists on the replica (may require a few retries)</title>
+
+                <execute output="y" retry="15" filter="n">
+                    <exe-cmd>psql -c "
+                        select *, current_timestamp from replicated_table"</exe-cmd>
+                    <exe-highlight>{[test-table-data]}</exe-highlight>
+                </execute>
+            </execute-list>
+        </section>
+
+        <section id="streaming" depend="hot-standby">
+            <title>Streaming Replication</title>
+
+            <execute-list host="{[host-db-master]}">
+                <title>Create replication user</title>
+
+                <execute output="y" filter="n">
+                    <exe-cmd>
+                        psql -c "
+                            create user replicator password 'jw8s0F4' replication";
+                    </exe-cmd>
+                </execute>
+            </execute-list>
+
+            <execute-list host="{[host-db-master]}">
+                <title>Create <file>pg_hba.conf</file> entry for replication user</title>
 
                 <execute>
-                    <exe-cmd>sleep 30s</exe-cmd>
+                    <exe-cmd>
+                        sh -c 'echo
+                        "host    replication     replicator      {[host-db-replica-ip]}/32           md5"
+                        >> {[postgres-hba-demo]}'
+                    </exe-cmd>
+                </execute>
+            </execute-list>
+
+            <postgres-config host="{[host-db-master]}" file="{[postgres-config-demo]}">
+                <title>Enable <pg-option>hot_standby</pg-option></title>
+
+                <postgres-config-option key="listen_addresses">'{[host-db-master-ip]}'</postgres-config-option>
+                <postgres-config-option key="max_wal_senders">3</postgres-config-option>
+            </postgres-config>
+
+            <execute-list host="{[host-db-master]}">
+                <title>Restart <postgres/></title>
+
+                <execute user="root">
+                    <exe-cmd>{[db-cluster-restart]}</exe-cmd>
+                </execute>
+            </execute-list>
+
+            <backrest-config host="{[host-db-replica]}" file="{[backrest-config-demo]}">
+                <title>Configure <pg-option>primary_conn_info</pg-option></title>
+
+                <backrest-config-option section="demo:restore:recovery-option" key="primary_conninfo">host={[host-db-master-ip]} port=5432 user=replicator</backrest-config-option>
+            </backrest-config>
+
+            <execute-list host="{[host-db-replica]}">
+                <title>Configure replication password in <file>.pgpass</file> file.</title>
+
+                <execute>
+                    <exe-cmd>
+                        sh -c 'echo
+                        "{[host-db-master-ip]}:*:replication:replicator:jw8s0F4"
+                        >> {[postgres-pgpass]}'
+                    </exe-cmd>
                 </execute>
 
+                <execute>
+                    <exe-cmd>chmod 600 {[postgres-pgpass]}</exe-cmd>
+                </execute>
+            </execute-list>
+
+            <execute-list host="{[host-db-replica]}">
+                <title>Stop <postgres/> and restore the {[postgres-cluster-demo]} replica cluster</title>
+
+                <execute user="root" err-suppress="y">
+                    <exe-cmd>{[db-cluster-stop]}</exe-cmd>
+                </execute>
+
+                <execute>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-delta restore</exe-cmd>
+                </execute>
+
+                <execute output="y" filter="n">
+                    <exe-cmd>cat {[postgres-recovery-demo]}</exe-cmd>
+                </execute>
+            </execute-list>
+
+            <p keyword="co6">explain issue with CentOS/RHEL</p>
+
+            <postgres-config host="{[host-db-replica]}" keyword="co6" file="{[postgres-config-demo]}">
+                <title>Enable <pg-option>hot_standby</pg-option></title>
+
+                <postgres-config-option key="hot_standby">on</postgres-config-option>
+            </postgres-config>
+
+            <execute-list host="{[host-db-replica]}">
+                <title>Start <postgres/></title>
+
+                <execute user="root" show="n">
+                    <exe-cmd>rm {[postgres-log-demo]}</exe-cmd>
+                </execute>
+
+                <execute user="root">
+                    <exe-cmd>{[db-cluster-start]}</exe-cmd>
+                </execute>
+            </execute-list>
+
+            <execute-list host="{[host-db-replica]}">
+                <title>Examine the <postgres/> log output for log messages indicating success</title>
+
                 <execute output="y">
-                    <exe-cmd>psql -c "select * from replicated_table"</exe-cmd>
+                    <exe-cmd>cat {[postgres-log-demo]}</exe-cmd>
+                    <exe-highlight>started streaming WAL from primary</exe-highlight>
+                </execute>
+            </execute-list>
+
+            <execute-list host="{[host-db-master]}">
+                <title>Create a new table on the master</title>
+
+                <execute output="y">
+                    <exe-cmd>
+                        psql -c "
+                                 begin;
+                                 create table stream_table (message text);
+                                 insert into stream_table values ('{[test-table-data]}');
+                                 commit;
+                                 select *, current_timestamp from stream_table";
+                    </exe-cmd>
+                    <exe-highlight>{[test-table-data]}</exe-highlight>
+                </execute>
+            </execute-list>
+
+            <execute-list host="{[host-db-replica]}">
+                <title>Now the new table exists on the replica nearly instantly</title>
+
+                <execute output="y" retry="2" filter="n">
+                    <exe-cmd>psql -c "
+                        select *, current_timestamp from stream_table"</exe-cmd>
                     <exe-highlight>{[test-table-data]}</exe-highlight>
                 </execute>
             </execute-list>
