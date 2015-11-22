@@ -127,7 +127,7 @@ my $oRenderTag =
         'br-setting' => ['<span class="br-setting">', '</span>'],
         'pg-option' => ['<span class="pg-option">', '</span>'],
         'pg-setting' => ['<span class="pg-setting">', '</span>'],
-        'code' => ['<id>', '</id>'],
+        'code' => ['<span class="id">', '</span>'],
         'code-block' => ['<code-block>', '</code-block>'],
         'exe' => [undef, ''],
         'setting' => ['<span class="br-setting">', '</span>'], # !!! This will need to be fixed

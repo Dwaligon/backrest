@@ -63,14 +63,17 @@
         <variable key="db-cluster-create" keyword="default">pg_createcluster 9.4 {[postgres-cluster-demo]}</variable>
         <variable key="db-cluster-create" keyword="co6">service postgresql-9.4 initdb</variable>
 
-        <variable key="db-cluster-restart" keyword="default">pg_ctlcluster 9.4 {[postgres-cluster-demo]} restart</variable>
-        <variable key="db-cluster-restart" keyword="co6">service postgresql-9.4 restart</variable>
-
         <variable key="db-cluster-start" keyword="default">pg_ctlcluster 9.4 {[postgres-cluster-demo]} start</variable>
         <variable key="db-cluster-start" keyword="co6">service postgresql-9.4 start</variable>
 
         <variable key="db-cluster-stop" keyword="default">pg_ctlcluster 9.4 {[postgres-cluster-demo]} stop</variable>
         <variable key="db-cluster-stop" keyword="co6">service postgresql-9.4 stop</variable>
+
+        <variable key="db-cluster-restart" keyword="default">pg_ctlcluster 9.4 {[postgres-cluster-demo]} restart</variable>
+        <variable key="db-cluster-restart" keyword="co6">service postgresql-9.4 restart</variable>
+
+        <variable key="db-cluster-reload" keyword="default">pg_ctlcluster 9.4 {[postgres-cluster-demo]} reload</variable>
+        <variable key="db-cluster-reload" keyword="co6">service postgresql-9.4 reload</variable>
     </variable-list>
 
     <!-- SECTION => INTRODUCTION -->
@@ -271,21 +274,23 @@
 
             <p><backrest/> configuration files follow the Windows INI convention.  Sections are denoted by text in brackets and key/value pairs are contained in each section.  Lines beginning with <id>#</id> are ignored and can be used as comments.</p>
 
-            <p>For the purposes of demonstration set console logging to <br-setting>info</br-setting> (but leave the archive command at <br-setting>warn</br-setting>).  <backrest/> will output useful information what will be used to illustrate examples.</p>
+            <!-- <p>For the purposes of demonstration set console logging to <br-setting>info</br-setting> (but leave the archive command at <br-setting>warn</br-setting>).  <backrest/> will output useful information what will be used to illustrate examples.</p>
 
             <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}">
                 <title>Set the <br-option>log-level-console</br-option> option to <br-setting>info</br-setting></title>
 
                 <backrest-config-option section="global:log" key="log-level-console">info</backrest-config-option>
                 <backrest-config-option section="global:archive" key="log-level-console">warn</backrest-config-option>
-            </backrest-config>
+            </backrest-config> -->
         </section>
 
         <!-- SECTION => QUICKSTART - CREATE REPOSITORY -->
         <section id="create-repository" depend="configure-stanza">
             <title>Create the Repository</title>
 
-            <p>For this simple configuration the repository will be stored on the same host as the <postgres/> server.  This is the simplest configuration and is useful in cases where traditional backup software is employed to backup the database host.</p>
+            <option-description key="repo-path"/>
+
+            <p>For this demonstration the repository will be stored on the same host as the <postgres/> server.  This is the simplest configuration and is useful in cases where traditional backup software is employed to backup the database host.</p>
 
             <execute-list host="{[host-db-master]}">
                 <title>Create the <backrest/> repository</title>
@@ -322,9 +327,10 @@
                 <postgres-config-option key="archive_command">'{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} archive-push %p'</postgres-config-option>
                 <postgres-config-option key="archive_mode">on</postgres-config-option>
                 <postgres-config-option key="wal_level">hot_standby</postgres-config-option>
+                <postgres-config-option key="max_wal_senders">3</postgres-config-option>
             </postgres-config>
 
-            <p>The <pg-option>wal_level</pg-option> setting must be set to <pg-setting>archive</pg-setting> at a minimum but <pg-setting>hot_standby</pg-setting> and <pg-setting>logical</pg-setting> also work fine for backups.  Setting <pg-option>wal_level</pg-option> to <pg-setting>hot_standy</pg-setting> is a good idea even if you do not currently run a hot standby since one can be added later without restarting the primary cluster.</p>
+            <p>The <pg-option>wal_level</pg-option> setting must be set to <pg-setting>archive</pg-setting> at a minimum but <pg-setting>hot_standby</pg-setting> and <pg-setting>logical</pg-setting> also work fine for backups.  Setting <pg-option>wal_level</pg-option> to <pg-setting>hot_standy</pg-setting> and increasing <pg-option>max_wal_senders</pg-option> is a good idea even if you do not currently run a hot standby as this will allow them to be added later without restarting the master cluster.</p>
 
             <p>The <postgres/> cluster must be restarted after making these changes and before performing a backup.</p>
 
@@ -361,7 +367,8 @@
                 <title>Backup the {[postgres-cluster-demo]} cluster</title>
 
                 <execute output="y">
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]}
+                        --log-level-console=info backup</exe-cmd>
                     <exe-highlight>no prior backup exists|full backup size</exe-highlight>
                 </execute>
 
@@ -378,12 +385,13 @@
                 <title>Differential backup of the {[postgres-cluster-demo]} cluster</title>
 
                 <execute output="y">
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=diff backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=diff
+                        --log-level-console=info backup</exe-cmd>
                     <exe-highlight>diff backup size</exe-highlight>
                 </execute>
             </execute-list>
 
-            <p>This time there was no warning because a full backup already existed.  While incremental backups can be based on a full <i>or</i> differential backup, differential backups must be based on a full backup.  An incremental backup can be performed by running the <cmd>backup</cmd> command with <br-setting>{[dash]}-type=incr</br-setting>.</p>
+            <p>This time there was no warning because a full backup already existed.  While incremental backups can be based on a full <i>or</i> differential backup, differential backups must be based on a full backup.  A full backup can be performed by running the <cmd>backup</cmd> command with <br-setting>{[dash]}-type=full</br-setting>.</p>
 
             <p>Use the <cmd>info</cmd> command to get information about backups.</p>
 
@@ -488,7 +496,8 @@
                 <title>Incremental backup of the {[postgres-cluster-demo]} cluster with the regularly scheduled checkpoint</title>
 
                 <execute output="y">
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        --log-level-console=info backup</exe-cmd>
                     <exe-highlight>backup begins after the next regular checkpoint completes</exe-highlight>
                 </execute>
             </execute-list>
@@ -505,7 +514,8 @@
                 <title>Incremental backup of the {[postgres-cluster-demo]} cluster with an immediate checkpoint</title>
 
                 <execute output="y">
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        --log-level-console=info backup</exe-cmd>
                     <exe-highlight>backup begins after the requested immediate checkpoint completes</exe-highlight>
                 </execute>
             </execute-list>
@@ -515,7 +525,7 @@
         <section id="option-stop-auto">
             <title>Automatic Stop Option</title>
 
-            <p>Sometimes <backrest/> will exit unexpectedly and the backup in progress on the <postgres/> cluster will not be properly stopped.  <backrest/> exits as quickly as possible when an error occurs so that the cause can be reported accurately and is not masked by another problem that could happen during a more extensive cleanup.</p>
+            <p>Sometimes <backrest/> will exit unexpectedly and the backup in progress on the <postgres/> cluster will not be properly stopped.  <backrest/> exits as quickly as possible when an error occurs so that the cause can be reported accurately and is not masked by another problem that might happen during a more extensive cleanup.</p>
 
             <p>Here an error in intentionally caused by removing repository permissions.</p>
 
@@ -527,7 +537,8 @@
                 </execute>
 
                 <execute output="y" err-expect="199">
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        --log-level-console=info backup</exe-cmd>
                     <exe-highlight>ERROR:</exe-highlight>
                 </execute>
             </execute-list>
@@ -542,7 +553,8 @@
                 </execute>
 
                 <execute output="y" err-expect="132">
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        --log-level-console=info backup</exe-cmd>
                     <exe-highlight>ERROR:</exe-highlight>
                 </execute>
             </execute-list>
@@ -561,7 +573,8 @@
                 <title>Perform an incremental backup</title>
 
                 <execute output="y">
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-type=incr
+                        --log-level-console=info backup</exe-cmd>
                     <exe-highlight>cluster is already in backup mode|backup begins after the requested immediate checkpoint completes</exe-highlight>
                 </execute>
             </execute-list>
@@ -596,7 +609,8 @@
                 <title>Perform a full backup</title>
 
                 <execute output="y">
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full
+                        --log-level-console=info backup</exe-cmd>
                     <exe-highlight>archive retention from backup {[backup-full-first]}|expire WAL segments</exe-highlight>
                 </execute>
 
@@ -611,7 +625,8 @@
                 <title>Perform a full backup</title>
 
                 <execute output="y">
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=full
+                        --log-level-console=info backup</exe-cmd>
                     <exe-highlight>remove expired full backup set\: {[backup-full-first]}|archive retention from backup {[backup-full-second]}|expire WAL segments</exe-highlight>
                 </execute>
             </execute-list>
@@ -631,7 +646,7 @@
                 <backrest-config-option section="global:expire" key="retention-diff">1</backrest-config-option>
             </backrest-config>
 
-            <p>Backup <br-setting>retention-diff=2</br-setting> so two differentials will need to be performed before one is expired.  An incremental backup is added to demonstrate incremental expiration.</p>
+            <p>Backup <br-setting>retention-diff=2</br-setting> so two differentials will need to be performed before one is expired.  An incremental backup is added to demonstrate incremental expiration.  Incremental backups cannot be expired independently &amp;mdash; they are always expired with their related full or differential backup.</p>
 
             <execute-list host="{[host-db-master]}">
                 <title>Perform differential and incremental backups</title>
@@ -639,9 +654,11 @@
                 <execute>
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=diff backup</exe-cmd>
                 </execute>
+
                 <execute show="n" variable-key="backup-diff-second">
                     <exe-cmd>{[cmd-backup-last]}</exe-cmd>
                 </execute>
+
                 <execute>
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=incr backup</exe-cmd>
                 </execute>
@@ -653,7 +670,8 @@
                 <title>Perform a differential backup</title>
 
                 <execute output="y">
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=diff backup</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} --type=diff
+                        --log-level-console=info backup</exe-cmd>
                     <exe-highlight>remove expired diff backup set: {[backup-diff-second]}</exe-highlight>
                 </execute>
             </execute-list>
@@ -680,7 +698,8 @@
                 </execute>
 
                 <execute output="y" filter="y">
-                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-delta restore</exe-cmd>
+                    <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-delta
+                        --log-level-console=info restore</exe-cmd>
                     <exe-highlight>demo\/PG_VERSION - exists and matches backup|check\/clean db path|restore global\/pg_control</exe-highlight>
                 </execute>
             </execute-list>
@@ -701,7 +720,7 @@
 
         <p><link page="#quickstart-perform-restore">Restore a Backup</link> in <link page="#quickstart">Quick Start</link> performed default recovery, which is to play all the way to the end of the WAL stream.  In the case of a hardware failure this is probably the most appropriate action but for data corruption scenarios (whether machine or human in origin) there is a better alternative called Point-in-Time Recovery (PITR).</p>
 
-        <p>Point-in-Time Recovery (PITR) allows the WAL to be played from the last backup to a specified time, transaction id, or recovery point.  For common recovery scenarios time-based recovery is arguably the most useful.  A common recovery scenario is to restore a table or data was accidentally dropped or deleted.  Recovering a dropped table is more dramatic so that's the example given here but deleted data would be recovered in exactly the same way.</p>
+        <p>Point-in-Time Recovery (PITR) allows the WAL to be played from the last backup to a specified time, transaction id, or recovery point.  For common recovery scenarios time-based recovery is arguably the most useful.  A common recovery scenario is to restore a table that was accidentally dropped or data that was accidentally deleted.  Recovering a dropped table is more dramatic so that's the example given here but deleted data would be recovered in exactly the same way.</p>
 
         <execute-list host="{[host-db-master]}">
             <title>Backup the {[postgres-cluster-demo]} cluster and create a table with very important data</title>
@@ -945,7 +964,7 @@
                 <backrest-config-option section="demo" key="db-host">{[host-db-master]}</backrest-config-option>
 
                 <backrest-config-option section="global:backup" key="start-fast">y</backrest-config-option>
-                <backrest-config-option section="global:log" key="log-level-console">info</backrest-config-option>
+                <!-- <backrest-config-option section="global:log" key="log-level-console">info</backrest-config-option> -->
             </backrest-config>
 
             <p>The database host must be configured with the backup host/user.</p>
@@ -957,9 +976,9 @@
 
                 <backrest-config-option section="global:general" key="repo-path">{[backrest-repo-path]}</backrest-config-option>
 
-                <backrest-config-option section="global:log" key="log-level-console">info</backrest-config-option>
+                <!-- <backrest-config-option section="global:log" key="log-level-console">info</backrest-config-option>
 
-                <backrest-config-option section="global:archive" key="log-level-console">warn</backrest-config-option>
+                <backrest-config-option section="global:archive" key="log-level-console">warn</backrest-config-option> -->
 
                 <backrest-config-option section="global:backup" key="backup-host">{[host-backup]}</backrest-config-option>
             </backrest-config>
@@ -976,7 +995,7 @@
             <execute-list host="{[host-backup]}">
                 <title>Backup the {[postgres-cluster-demo]} cluster</title>
 
-                <execute user="backrest">
+                <execute user="backrest" output="y" filter="n">
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} backup</exe-cmd>
                 </execute>
             </execute-list>
@@ -1024,11 +1043,11 @@
 
         <p>Sometimes it is useful to prevent <backrest/> from running on a system.  For example, when failing over from a master to a replica it's best to prevent <backrest/> from running on the old master in case <postgres/> gets restarted or can't be completely killed.  This will also prevent <backrest/> from running on <id>cron</id>.</p>
 
-        <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}" show="n">
+        <!-- <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}" show="n">
             <title>Set <br-option>log-level-console</br-option> to <id>warn</id></title>
 
             <backrest-config-option section="global:log" key="log-level-console">warn</backrest-config-option>
-        </backrest-config>
+        </backrest-config> -->
 
         <execute-list host="{[host-db-master]}">
             <title>Stop the <backrest/> services</title>
@@ -1170,9 +1189,9 @@
 
                 <backrest-config-option section="global:general" key="repo-path">{[backrest-repo-path]}</backrest-config-option>
 
-                <backrest-config-option section="global:log" key="log-level-console">info</backrest-config-option>
+                <!-- <backrest-config-option section="global:log" key="log-level-console">info</backrest-config-option>
 
-                <backrest-config-option section="global:archive" key="log-level-console">warn</backrest-config-option>
+                <backrest-config-option section="global:archive" key="log-level-console">warn</backrest-config-option> -->
 
                 <backrest-config-option section="global:backup" key="backup-host">{[host-backup]}</backrest-config-option>
 
@@ -1300,7 +1319,7 @@
                 </execute>
             </execute-list>
 
-            <p>The <file>pg_hba.conf</file> file must be updated to allow the replica to connection as the replication user.  Be sure to replace the IP address below with the actual IP address of your <host>db-master</host>.</p>
+            <p>The <file>pg_hba.conf</file> file must be updated to allow the replica to connection as the replication user.  Be sure to replace the IP address below with the actual IP address of your <host>db-master</host>.  A reload will be required after modifying the <file>pg_hba.conf</file> file.</p>
 
             <execute-list host="{[host-db-master]}">
                 <title>Create <file>pg_hba.conf</file> entry for replication user</title>
@@ -1312,9 +1331,13 @@
                         >> {[postgres-hba-demo]}'
                     </exe-cmd>
                 </execute>
+
+                <execute user="root">
+                    <exe-cmd>{[db-cluster-reload]}</exe-cmd>
+                </execute>
             </execute-list>
 
-            <p>The <pg-option>max_wal_senders</pg-option> setting must be increased (the default is 0) to allow replicas to connect to the master.  It will be set to 3 to allow more replicas to be created later.  <postgres/> must restarted for this setting to take effect.</p>
+            <!-- <p>The <pg-option>max_wal_senders</pg-option> setting must be increased (the default is 0) to allow replicas to connect to the master.  It will be set to 3 to allow more replicas to be created later.  <postgres/> must restarted for this setting to take effect.</p>
 
             <postgres-config host="{[host-db-master]}" file="{[postgres-config-demo]}">
                 <title>Increase <pg-option>max_wal_senders</pg-option></title>
@@ -1328,9 +1351,9 @@
                 <execute user="root">
                     <exe-cmd>{[db-cluster-restart]}</exe-cmd>
                 </execute>
-            </execute-list>
+            </execute-list> -->
 
-            <p>The replica needs to know how to contact the master so the <pg-option>primary_conninfo</pg-option> will be configured in <backrest/>.</p>
+            <p>The replica needs to know how to contact the master so the <pg-option>primary_conninfo</pg-option> setting will be configured in <backrest/>.</p>
 
             <backrest-config host="{[host-db-replica]}" file="{[backrest-config-demo]}">
                 <title>Set <pg-option>primary_conninfo</pg-option></title>
