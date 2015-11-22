@@ -74,7 +74,8 @@ Menu
 {
     white-space: nowrap;
     display: inline;
-    margin-left: 6px;
+    margin-left: .5em;
+    font-size: 13pt;
 }
 
 .menu:first-of-type
