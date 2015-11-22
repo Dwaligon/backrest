@@ -231,7 +231,7 @@ DEBUG:     File->pathCreate(): bIgnoreExists = <false>, strMode = <0750>, strPat
 DEBUG:     File->pathCreate(): bIgnoreExists = <false>, strMode = <0750>, strPath = base/path-test, strPathType = backup:tmp
 DEBUG:     File->pathCreate(): bIgnoreExists = <false>, strMode = <0750>, strPath = base/pg_tblspc, strPathType = backup:tmp
 DEBUG:     File->copy(): bAppendChecksum = <false>, bDestinationCompress = false, bDestinationPathCreate = true, bIgnoreMissingSource = true, bSourceCompressed = false, lModificationTime = [MODIFICATION-TIME-1], strDestinationFile = base/global/pg_control, strDestinationPathType = backup:tmp, strGroup = [undef], strMode = <0640>, strSourceFile = [TEST_PATH]/db/common/global/pg_control, strSourcePathType = db:absolute, strUser = [undef]
-ERROR: [138]: remote process terminated : ERROR [138]: process terminated on a TERM signal
+ERROR: [138]: remote process terminated: ERROR [138]: process terminated on a TERM signal
 DEBUG:     Exit::exitSafe(): iExitCode = 138, strSignal = [undef]
  INFO: backup stop
 DEBUG:     Common:::Lock::lockRelease(): bFailOnNoLock = false
@@ -253,7 +253,7 @@ DEBUG:     BackupInfo->new(): strBackupClusterPath = [TEST_PATH]/backrest/backup
 DEBUG:     Backup->typeFind(): strBackupClusterPath = [TEST_PATH]/backrest/backup/db, strType = full
 DEBUG:     Backup->typeFind=>: strLabel = [undef]
 DEBUG:     Db->info(): oFile = [object], strDbPath = [TEST_PATH]/db/common
-ERROR: [137]: remote process terminated : ERROR [137]: stop file exists for all stanzas
+ERROR: [137]: remote process terminated: ERROR [137]: stop file exists for all stanzas
 DEBUG:     Exit::exitSafe(): iExitCode = 137, strSignal = [undef]
  INFO: backup stop
 DEBUG:     Common:::Lock::lockRelease(): bFailOnNoLock = false
@@ -290,7 +290,7 @@ DEBUG:     BackupInfo->new(): strBackupClusterPath = [TEST_PATH]/backrest/backup
 DEBUG:     Backup->typeFind(): strBackupClusterPath = [TEST_PATH]/backrest/backup/db, strType = full
 DEBUG:     Backup->typeFind=>: strLabel = [undef]
 DEBUG:     Db->info(): oFile = [object], strDbPath = [TEST_PATH]/db/common
-ERROR: [137]: remote process terminated : ERROR [137]: stop file exists for stanza db
+ERROR: [137]: remote process terminated: ERROR [137]: stop file exists for stanza db
 DEBUG:     Exit::exitSafe(): iExitCode = 137, strSignal = [undef]
  INFO: backup stop
 DEBUG:     Common:::Lock::lockRelease(): bFailOnNoLock = false
