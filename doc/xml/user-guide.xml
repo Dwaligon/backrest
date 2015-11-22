@@ -43,10 +43,10 @@
         <variable key="host-db-master-image">{[image-user]}/{[host-os]}-db</variable>
         <variable key="host-db-master-mount">{[host-mount]}</variable>
 
-        <variable key="host-db-replica">db-replica</variable>
-        <variable key="host-db-replica-user">{[host-user]}</variable>
-        <variable key="host-db-replica-image">{[image-user]}/{[host-os]}-db</variable>
-        <variable key="host-db-replica-mount">{[host-mount]}</variable>
+        <variable key="host-db-standby">db-standby</variable>
+        <variable key="host-db-standby-user">{[host-user]}</variable>
+        <variable key="host-db-standby-image">{[image-user]}/{[host-os]}-db</variable>
+        <variable key="host-db-standby-mount">{[host-mount]}</variable>
 
         <variable key="host-backup">backup</variable>
         <variable key="host-backup-user">{[host-user]}</variable>
@@ -57,7 +57,7 @@
         <variable key="cmd-backup-last">ls -1 /var/lib/backrest/backup/demo | tail -3 | head -1</variable>
 
         <!-- Data used to demonstrate backup/restore operations -->
-        <variable key="test-table-data">Very important data</variable>
+        <variable key="test-table-data">Important Data</variable>
 
         <!-- Database cluster commmands -->
         <variable key="db-cluster-create" keyword="default">pg_createcluster 9.4 {[postgres-cluster-demo]}</variable>
@@ -99,7 +99,7 @@
         <section id="backup">
             <title>Backup</title>
 
-            <p>A backup is a consistent copy of a database cluster that can be restored to recover from a hardware failure, to perform Point-In-Time Recovery, or to bring up a new replica.</p>
+            <p>A backup is a consistent copy of a database cluster that can be restored to recover from a hardware failure, to perform Point-In-Time Recovery, or to bring up a new standby.</p>
 
             <p><b>Full Backup</b>: <backrest/> copies the entire contents of the database cluster to the backup server. The first backup of the database cluster is always a Full Backup. <backrest/> is always able to restore a full backup directly. The full backup does not depend on any files outside of the full backup for consistency.</p>
 
@@ -1041,7 +1041,7 @@
     <section id="start-stop" depend="/quickstart/configure-archiving">
         <title>Starting and Stopping</title>
 
-        <p>Sometimes it is useful to prevent <backrest/> from running on a system.  For example, when failing over from a master to a replica it's best to prevent <backrest/> from running on the old master in case <postgres/> gets restarted or can't be completely killed.  This will also prevent <backrest/> from running on <id>cron</id>.</p>
+        <p>Sometimes it is useful to prevent <backrest/> from running on a system.  For example, when failing over from a master to a standby it's best to prevent <backrest/> from running on the old master in case <postgres/> gets restarted or can't be completely killed.  This will also prevent <backrest/> from running on <id>cron</id>.</p>
 
         <!-- <backrest-config host="{[host-db-master]}" file="{[backrest-config-demo]}" show="n">
             <title>Set <br-option>log-level-console</br-option> to <id>warn</id></title>
@@ -1118,16 +1118,16 @@
     <section id="replication" depend="/backup-host/perform-backup">
         <title>Replication</title>
 
-        <p>Replication allows multiple copies of a <postgres/> cluster to be created from a single master.  The replicas are useful for balancing reads and to provide redundancy in case the master host fails.</p>
+        <p>Replication allows multiple copies of a <postgres/> cluster (called standbys) to be created from a single master.  The standbys are useful for balancing reads and to provide redundancy in case the master host fails.</p>
 
         <section id="hot-standby">
             <title>Hot Standby</title>
 
             <p>A hot standby performs replication using the WAL archive and allows read-only queries.</p>
 
-            <p>A new host named <host>db-replica</host> will be created to run the replica.  Follow the instructions in <link page="#installation">Installation</link> to install <backrest/>, <link page="#quickstart-setup-demo-cluster">Setup Demo Cluster</link> to setup the demo cluster, and <link page="#quickstart-create-repository">Create the Repository</link> to create the <backrest/> repository on the <host>db-replica</host> host.</p>
+            <p>A new host named <host>db-standby</host> will be created to run the standby.  Follow the instructions in <link page="#installation">Installation</link> to install <backrest/>, <link page="#quickstart-setup-demo-cluster">Setup Demo Cluster</link> to setup the demo cluster, and <link page="#quickstart-create-repository">Create the Repository</link> to create the <backrest/> repository on the <host>db-standby</host> host.</p>
 
-            <host-add name="{[host-db-replica]}" user="{[host-db-replica-user]}" image="{[host-db-replica-image]}" os="{[host-os]}" mount="{[host-db-replica-mount]}">
+            <host-add name="{[host-db-standby]}" user="{[host-db-standby-user]}" image="{[host-db-standby-image]}" os="{[host-os]}" mount="{[host-db-standby-mount]}">
                 <!-- Install packages -->
                 <execute user="root" keyword="default">
                     <exe-cmd>apt-get -y install libdbd-pg-perl libdbi-perl
@@ -1173,7 +1173,7 @@
                 </execute>
             </host-add>
 
-            <postgres-config host="{[host-db-replica]}" keyword="default" file="{[postgres-config-demo]}" show="n">
+            <postgres-config host="{[host-db-standby]}" keyword="default" file="{[postgres-config-demo]}" show="n">
                 <title>Set options</title>
 
                 <postgres-config-option key="log_line_prefix">''</postgres-config-option>
@@ -1182,8 +1182,8 @@
 
             <p><backrest/> configuration is very similar to <host>db-master</host> except that the <pg-option>standby_mode</pg-option> setting will be enabled to keep the cluster in recovery mode when the end of the WAL stream has been reached.</p>
 
-            <backrest-config host="{[host-db-replica]}" file="{[backrest-config-demo]}">
-                <title>Configure <backrest/> on the replica</title>
+            <backrest-config host="{[host-db-standby]}" file="{[backrest-config-demo]}">
+                <title>Configure <backrest/> on the standby</title>
 
                 <backrest-config-option section="demo" key="db-path">{[db-path]}</backrest-config-option>
 
@@ -1198,10 +1198,10 @@
                 <backrest-config-option section="demo:restore:recovery-option" key="standby_mode">on</backrest-config-option>
             </backrest-config>
 
-            <p>Now the replica can be created with the <cmd>restore</cmd> command.</p>
+            <p>Now the standby can be created with the <cmd>restore</cmd> command.</p>
 
-            <execute-list host="{[host-db-replica]}">
-                <title>Restore the {[postgres-cluster-demo]} replica cluster</title>
+            <execute-list host="{[host-db-standby]}">
+                <title>Restore the {[postgres-cluster-demo]} standby cluster</title>
 
                 <execute>
                     <exe-cmd>{[project-exe]} {[dash]}-stanza={[postgres-cluster-demo]} {[dash]}-delta restore</exe-cmd>
@@ -1214,15 +1214,15 @@
 
             <p>Note that the <pg-setting>standby_mode</pg-setting> setting has been written into the <file>recovery.conf</file> file.  Configuring recovery settings in <backrest/> means that the <file>recovery.conf</file> file does not need to be stored elsewhere since it will be properly recreated with each restore.  The <br-setting>--type=preserve</br-setting> option can be used with the <cmd>restore</cmd> to leave the existing <file>recovery.conf</file> file in place if that behavior is preferred.</p>
 
-            <p>The <pg-setting>hot_standby</pg-setting> setting must be enabled before starting <postgres/> to allow read-only connections on <host>db-replica</host>.  Otherwise, connection attempts will be refused.</p>
+            <p>The <pg-setting>hot_standby</pg-setting> setting must be enabled before starting <postgres/> to allow read-only connections on <host>db-standby</host>.  Otherwise, connection attempts will be refused.</p>
 
-            <postgres-config host="{[host-db-replica]}" file="{[postgres-config-demo]}">
+            <postgres-config host="{[host-db-standby]}" file="{[postgres-config-demo]}">
                 <title>Enable <pg-option>hot_standby</pg-option></title>
 
                 <postgres-config-option key="hot_standby">on</postgres-config-option>
             </postgres-config>
 
-            <execute-list host="{[host-db-replica]}">
+            <execute-list host="{[host-db-standby]}">
                 <title>Start <postgres/></title>
 
                 <execute user="root" show="n">
@@ -1236,7 +1236,7 @@
 
             <p>The <postgres/> log gives valuable information about the recovery.  Note especially that the cluster has entered standby mode and is ready to accept read-only connections.</p>
 
-            <execute-list host="{[host-db-replica]}">
+            <execute-list host="{[host-db-standby]}">
                 <title>Examine the <postgres/> log output for log messages indicating success</title>
 
                 <execute output="y">
@@ -1263,10 +1263,10 @@
                 </execute>
             </execute-list>
 
-            <p>And then query the same table on <host>db-replica</host>.</p>
+            <p>And then query the same table on <host>db-standby</host>.</p>
 
-            <execute-list host="{[host-db-replica]}">
-                <title>Query new table on the replica</title>
+            <execute-list host="{[host-db-standby]}">
+                <title>Query new table on the standby</title>
 
                 <execute output="y" err-expect="1">
                     <exe-cmd>psql -c "select * from replicated_table;"</exe-cmd>
@@ -1274,7 +1274,7 @@
                 </execute>
             </execute-list>
 
-            <p>So, what went wrong?  Since <postgres/> is pulling WAL segments from the archive to perform replication, changes won't be seen on the replica until the WAL segment that contains those changes is pushed from <host>db-master</host>.</p>
+            <p>So, what went wrong?  Since <postgres/> is pulling WAL segments from the archive to perform replication, changes won't be seen on the standby until the WAL segment that contains those changes is pushed from <host>db-master</host>.</p>
 
             <p>This can be done manually by calling <code>pg_switch_xlog()</code> which pushes the current WAL segment to the archive (a new WAL segment is created to contain further changes).</p>
 
@@ -1288,10 +1288,10 @@
                 </execute>
             </execute-list>
 
-            <p>Now after a short delay the table will appear on <host>db-replica</host>.</p>
+            <p>Now after a short delay the table will appear on <host>db-standby</host>.</p>
 
-            <execute-list host="{[host-db-replica]}">
-                <title>Now the new table exists on the replica (may require a few retries)</title>
+            <execute-list host="{[host-db-standby]}">
+                <title>Now the new table exists on the standby (may require a few retries)</title>
 
                 <execute output="y" retry="15" filter="n">
                     <exe-cmd>psql -c "
@@ -1304,7 +1304,7 @@
         <section id="streaming" depend="hot-standby">
             <title>Streaming Replication</title>
 
-            <p>Instead of relying solely on the WAL archive, streaming replication makes a direct connection to the master and applies changes as soon as they are made on the master.  This results in much less lag between the master and replica.</p>
+            <p>Instead of relying solely on the WAL archive, streaming replication makes a direct connection to the master and applies changes as soon as they are made on the master.  This results in much less lag between the master and standby.</p>
 
             <p>Streaming replication requires a user with the replication privilege.</p>
 
@@ -1319,7 +1319,7 @@
                 </execute>
             </execute-list>
 
-            <p>The <file>pg_hba.conf</file> file must be updated to allow the replica to connection as the replication user.  Be sure to replace the IP address below with the actual IP address of your <host>db-master</host>.  A reload will be required after modifying the <file>pg_hba.conf</file> file.</p>
+            <p>The <file>pg_hba.conf</file> file must be updated to allow the standby to connection as the replication user.  Be sure to replace the IP address below with the actual IP address of your <host>db-master</host>.  A reload will be required after modifying the <file>pg_hba.conf</file> file.</p>
 
             <execute-list host="{[host-db-master]}">
                 <title>Create <file>pg_hba.conf</file> entry for replication user</title>
@@ -1327,7 +1327,7 @@
                 <execute>
                     <exe-cmd>
                         sh -c 'echo
-                        "host    replication     replicator      {[host-db-replica-ip]}/32           md5"
+                        "host    replication     replicator      {[host-db-standby-ip]}/32           md5"
                         >> {[postgres-hba-demo]}'
                     </exe-cmd>
                 </execute>
@@ -1337,7 +1337,7 @@
                 </execute>
             </execute-list>
 
-            <!-- <p>The <pg-option>max_wal_senders</pg-option> setting must be increased (the default is 0) to allow replicas to connect to the master.  It will be set to 3 to allow more replicas to be created later.  <postgres/> must restarted for this setting to take effect.</p>
+            <!-- <p>The <pg-option>max_wal_senders</pg-option> setting must be increased (the default is 0) to allow standbys to connect to the master.  It will be set to 3 to allow more standbys to be created later.  <postgres/> must restarted for this setting to take effect.</p>
 
             <postgres-config host="{[host-db-master]}" file="{[postgres-config-demo]}">
                 <title>Increase <pg-option>max_wal_senders</pg-option></title>
@@ -1353,9 +1353,9 @@
                 </execute>
             </execute-list> -->
 
-            <p>The replica needs to know how to contact the master so the <pg-option>primary_conninfo</pg-option> setting will be configured in <backrest/>.</p>
+            <p>The standby needs to know how to contact the master so the <pg-option>primary_conninfo</pg-option> setting will be configured in <backrest/>.</p>
 
-            <backrest-config host="{[host-db-replica]}" file="{[backrest-config-demo]}">
+            <backrest-config host="{[host-db-standby]}" file="{[backrest-config-demo]}">
                 <title>Set <pg-option>primary_conninfo</pg-option></title>
 
                 <backrest-config-option section="demo:restore:recovery-option" key="primary_conninfo">host={[host-db-master-ip]} port=5432 user=replicator</backrest-config-option>
@@ -1363,7 +1363,7 @@
 
             <p>It is possible to configure a password in the <pg-option>primary_conninfo</pg-option> setting but using a <file>.pgpass</file> file is more flexible and secure.</p>
 
-            <execute-list host="{[host-db-replica]}">
+            <execute-list host="{[host-db-standby]}">
                 <title>Configure the replication password in <file>.pgpass</file> file.</title>
 
                 <execute>
@@ -1379,10 +1379,10 @@
                 </execute>
             </execute-list>
 
-            <p>Now the replica can be created with the <cmd>restore</cmd> command.</p>
+            <p>Now the standby can be created with the <cmd>restore</cmd> command.</p>
 
-            <execute-list host="{[host-db-replica]}">
-                <title>Stop <postgres/> and restore the {[postgres-cluster-demo]} replica cluster</title>
+            <execute-list host="{[host-db-standby]}">
+                <title>Stop <postgres/> and restore the {[postgres-cluster-demo]} standby cluster</title>
 
                 <execute user="root" err-suppress="y">
                     <exe-cmd>{[db-cluster-stop]}</exe-cmd>
@@ -1399,13 +1399,13 @@
 
             <p keyword="co6">By default CentOS/RHEL stores the <file>postgresql.conf</file> file in the <postgres/> data directory.  That means the change made to <file>postgresql.conf</file> was overwritten by the last restore and the <pg-option>hot_standby</pg-option> setting must be enabled again.  Other solutions to this problem are to store the <file>postgresql.conf</file> file elsewhere or to enable the <pg-option>hot_standby</pg-option> setting on the <host>db-master</host> host where it will be ignored.</p>
 
-            <postgres-config host="{[host-db-replica]}" keyword="co6" file="{[postgres-config-demo]}">
+            <postgres-config host="{[host-db-standby]}" keyword="co6" file="{[postgres-config-demo]}">
                 <title>Enable <pg-option>hot_standby</pg-option></title>
 
                 <postgres-config-option key="hot_standby">on</postgres-config-option>
             </postgres-config>
 
-            <execute-list host="{[host-db-replica]}">
+            <execute-list host="{[host-db-standby]}">
                 <title>Start <postgres/></title>
 
                 <execute user="root" show="n">
@@ -1419,7 +1419,7 @@
 
             <p>The <postgres/> log will confirm that streaming replication has started.</p>
 
-            <execute-list host="{[host-db-replica]}">
+            <execute-list host="{[host-db-standby]}">
                 <title>Examine the <postgres/> log output for log messages indicating success</title>
 
                 <execute output="y">
@@ -1428,7 +1428,7 @@
                 </execute>
             </execute-list>
 
-            <p>Now when a table is created on <host>db-master</host> it will appear on <host>db-replica</host> quickly and without the need to call <code>pg_switch_xlog()</code>.</p>
+            <p>Now when a table is created on <host>db-master</host> it will appear on <host>db-standby</host> quickly and without the need to call <code>pg_switch_xlog()</code>.</p>
 
             <execute-list host="{[host-db-master]}">
                 <title>Create a new table on the master</title>
@@ -1446,8 +1446,8 @@
                 </execute>
             </execute-list>
 
-            <execute-list host="{[host-db-replica]}">
-                <title>Query table on the replica</title>
+            <execute-list host="{[host-db-standby]}">
+                <title>Query table on the standby</title>
 
                 <execute output="y" retry="2" filter="n">
                     <exe-cmd>psql -c "
