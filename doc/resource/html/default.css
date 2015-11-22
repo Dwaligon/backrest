@@ -167,7 +167,7 @@ Section
 .section1-title, .page-toc-title
 {
     border-radius: 3px;
-    background-color: #4077a5;
+    background-color: #396a93;
     color: #f8f8f8;
     font-size: 22pt;
     padding-left: .5em;
@@ -201,8 +201,8 @@ Section
 {
     display: inline;
     font-size: 14pt;
-    /*text-decoration: underline;*/
-    border-bottom: 1px #bbbbbb solid;
+    color: #396a93;
+    border-bottom: 1px #396a93 solid;
 }
 
 .section-intro
@@ -251,7 +251,8 @@ Config, Execute, and Code Block Elements
     background-color: #444444;
     font-family: monospace;
     unicode-bidi: embed;
-    color: white;
+    color: #f8f8f8;
+    /*color: white;*/
     font-size: 10pt;
 }
 
