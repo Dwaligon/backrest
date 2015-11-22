@@ -554,7 +554,7 @@ sub sectionChildProcess
     # Execute a command
     if ($oChild->nameGet() eq 'host-add')
     {
-        if ($self->{bExe} && $self->isRequired($oSection))
+        if ($self->{bExe} && $self->isRequired($oSection) && !$oChild->paramTest('created', true))
         {
             my $strName = $self->{oManifest}->variableReplace($oChild->paramGet('name'));
             my $strUser = $self->{oManifest}->variableReplace($oChild->paramGet('user'));
@@ -601,6 +601,8 @@ sub sectionChildProcess
                     $oOtherHost->executeSimple("sh -c 'echo \"$oHost->{strIP} ${strName}\" >> /etc/hosts'");
                 }
             }
+
+            $oChild->paramSet('created', true);
         }
     }
     # Skip children that have already been processed and error on others

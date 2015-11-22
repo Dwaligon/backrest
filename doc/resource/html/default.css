@@ -17,6 +17,7 @@ body
     margin: 0px auto;
     padding: 0px;
     width: 100%;
+    text-align: justify;
 }
 
 @media (min-width: 1000px)
@@ -43,7 +44,6 @@ Header
 {
     width:100%;
     text-align:center;
-    /*float:left;*/
 }
 
 .page-header-title
@@ -63,9 +63,7 @@ Header
 /*******************************************************************************
 Menu
 *******************************************************************************/
-/*.page-menu
-{
-}*/
+/*.page-menu*/
 
 .menu-body
 {
@@ -94,9 +92,7 @@ Menu
     content: "]";
 }
 
-/*.menu-link
-{
-}*/
+/*.menu-link*/
 
 a.menu-link:link, a.menu-link:visited, a.menu-link:active
 {
@@ -171,7 +167,8 @@ Section
 .section1-title, .page-toc-title
 {
     border-radius: 3px;
-    background-color: #dddddd;
+    background-color: #4077a5;
+    color: #f8f8f8;
     font-size: 22pt;
     padding-left: .5em;
     margin-bottom: .5em;
@@ -184,7 +181,8 @@ Section
 
 .section2-title
 {
-    border-bottom: 2px #cccccc solid;
+    border-bottom: 2px #396a93 solid;
+    color: #396a93;
     font-size: 16pt;
 }
 
@@ -192,7 +190,6 @@ Section
 {
     margin-left: 1em;
     margin-top: 1em;
-    /*border-top: 1px #cccccc solid;*/
 }
 
 .section3:first-of-type
@@ -213,9 +210,7 @@ Section
     margin-top: .75em;
 }
 
-/*.section-body
-{
-}*/
+/*.section-body*/
 
 /*******************************************************************************
 Config, Execute, and Code Block Elements
@@ -282,12 +277,6 @@ pre
     content: "$ ";
 }
 
-/*.execute-body-cmd,
-.execute-body-output, .execute-body-output-highlight, .execute-body-output-highlight-error,
-.code-block
-{
-}*/
-
 .execute-body-cmd:first-of-type, .execute-body-output,
 .config-body-title, .config-body-output,
 .code-block,
@@ -315,13 +304,13 @@ pre
 .execute-body-output-highlight
 {
     border-radius: 3px;
-    background-color: green;
+    background-color: #1e7b1e;
 }
 
 .execute-body-output-highlight-error
 {
     border-radius: 3px;
-    background-color: firebrick;
+    background-color: #a32929;
 }
 
 .execute-body-output, .execute-body-output-highlight, .execute-body-output-highlight-error,
@@ -330,13 +319,9 @@ pre
     padding-left: 1.75em;
 }
 
-/*.code-block
-{
-}*/
+/*.code-block*/
 
-/*.section-body-execute-output
-{
-}*/
+/*.section-body-execute-output*/
 
 /*******************************************************************************
 Keywords
@@ -353,12 +338,9 @@ Keywords
 
 .path, .br-option, .br-setting, .pg-option, .pg-setting, .id, .user, .file, .path
 {
-    /*font-weight: 600;*/
-    /*background-color: #e8e8e8;*/
     unicode-bidi: embed;
     font-family: monospace;
     white-space: nowrap;
-    /*font-size: 11pt;*/
 }
 
 /*******************************************************************************

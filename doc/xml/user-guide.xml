@@ -1364,7 +1364,7 @@
             <p>It is possible to configure a password in the <pg-option>primary_conninfo</pg-option> setting but using a <file>.pgpass</file> file is more flexible and secure.</p>
 
             <execute-list host="{[host-db-standby]}">
-                <title>Configure the replication password in <file>.pgpass</file> file.</title>
+                <title>Configure the replication password in the <file>.pgpass</file> file.</title>
 
                 <execute>
                     <exe-cmd>
