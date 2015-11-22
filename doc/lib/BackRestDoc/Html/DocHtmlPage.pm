@@ -91,7 +91,8 @@ sub process
     my $strSubTitle = $oPage->paramGet('subtitle', false);
 
     my $oHtmlBuilder = new BackRestDoc::Html::DocHtmlBuilder("{[project]} - Reliable PostgreSQL Backup",
-                                                             $strTitle . (defined($strSubTitle) ? " - ${strSubTitle}" : ''));
+                                                             $strTitle . (defined($strSubTitle) ? " - ${strSubTitle}" : ''),
+                                                             $self->{bPretty});
 
     # Generate header
     my $oPageHeader = $oHtmlBuilder->bodyGet()->addNew(HTML_DIV, 'page-header');

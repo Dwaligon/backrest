@@ -44,13 +44,15 @@ sub new
     (
         my $strOperation,
         $self->{strName},
-        $self->{strTitle}
+        $self->{strTitle},
+        $self->{bPretty}
     ) =
         logDebugParam
         (
             OP_DOC_HTML_BUILDER_NEW, \@_,
             {name => 'strName'},
-            {name => 'strTitle'}
+            {name => 'strTitle'},
+            {name => 'bPretty', default => false}
         );
 
     $self->{oBody} = new BackRestDoc::Html::DocHtmlElement(HTML_BODY);
@@ -73,7 +75,7 @@ sub indent
     my $self = shift;
     my $iDepth = shift;
 
-    return ('  ' x $iDepth);
+    return $self->{bPretty} ? ('  ' x $iDepth) : '';
 }
 
 ####################################################################################################################################
@@ -85,7 +87,7 @@ sub lf
 {
     my $self = shift;
 
-    return "\n";
+    return $self->{bPretty} ? "\n" : '';
 }
 
 ####################################################################################################################################
