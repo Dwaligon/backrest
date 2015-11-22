@@ -207,15 +207,18 @@ sub new
         }
     }
 
-    # Build the doc
-    $self->build($self->{oDoc});
-
-    # Get required sections
-    foreach my $strPath (@{$self->{oManifest}->{stryRequire}})
+    if (defined($self->{strRenderOutKey}))
     {
-        if (defined(${$self->{oSection}}{$strPath}))
+        # Build the doc
+        $self->build($self->{oDoc});
+
+        # Get required sections
+        foreach my $strPath (@{$self->{oManifest}->{stryRequire}})
         {
-            $self->required($strPath);
+            if (defined(${$self->{oSection}}{$strPath}))
+            {
+                $self->required($strPath);
+            }
         }
     }
 

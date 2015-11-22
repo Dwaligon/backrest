@@ -1,162 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE doc SYSTEM "doc.dtd">
 <doc title="User Guide">
-    <!-- <intro>
-        <text></text>
-    </intro> -->
-
-    <!-- <install title="Installation">
-        <text><backrest/> is written entirely in Perl.  Some additional modules will need to be installed depending on the OS.</text>
-
-        <install-system-list>
-            <install-system title="Ubuntu 12.04/14.04 Setup">
-                <text>* Install required Perl modules:
-                <code-block>
-                    apt-get install libdbd-pg-perl
-                </code-block></text>
-            </install-system>
-
-            <install-system title="CentOS 6 Setup">
-                <text>* Install Perl and required modules:
-                <code-block>
-                    yum install perl perl-Time-HiRes perl-parent perl-JSON perl-Digest-SHA perl-DBD-Pg
-                </code-block></text>
-            </install-system>
-
-            <install-system title="CentOS 7 Setup">
-                <text>* Install Perl and required modules:
-                <code-block>
-                    yum install perl perl-Thread-Queue perl-JSON-PP perl-Digest-SHA perl-DBD-Pg
-                </code-block></text>
-            </install-system>
-
-            <install-system title="Software Installation">
-                <text><backrest/> can be installed by downloading the most recent release:
-
-                https://github.com/pgmasters/backrest/releases
-
-                <backrest/> can be installed anywhere but it's best (though not required) to install it in the same location on all systems.</text>
-            </install-system>
-
-            <install-system title="Regression Test Setup">
-                <text>* Create the backrest user
-
-                The backrest user must be created on the same system and in the same group as the user you will use for testing (which can be any user you prefer).  For example:
-                <code-block>
-                    adduser -g &lt;test-user-group&gt; backrest
-                </code-block>
-                * Setup password-less SSH login between the test user and the backrest user
-
-                The test user should be able to `ssh backrest@127.0.0.1` and the backrest user should be able to `ssh &lt;testuser&gt;@127.0.0.1` without requiring any passwords.  This article (http://archive.oreilly.com/pub/h/66) has details on how to accomplish this.  Do the logons both ways at the command line before running regression tests.
-
-                * Give group read and execute permissions to <path>~/backrest/test</path>:
-
-                Usually this can be accomplished by running the following as the test user:
-                <code-block>
-                    chmod 750 ~
-                </code-block>
-                * Running regression:
-
-                Running the full regression suite is generally not necessary.  Run the following first:
-                <code-block>
-                    ./test.pl {[dash]}-module=backup {[dash]}-test=full {[dash]}-db-version=all {[dash]}-thread-max=&lt;# threads&gt;
-                </code-block>
-                This will run full backup/restore regression with a variety of options on all installed versions of <postgres/>.  If you are only interested in one version then modify the <setting>db-version</setting> setting to X.X (e.g. 9.4).  <setting>{[dash]}-thread-max</setting> can be omitted if you are running single-threaded.
-
-                If there are errors in this test then run full regression to help isolate problems:
-                <code-block>
-                    ./test.pl {[dash]}-db-version=all {[dash]}-thread-max=&lt;# threads&gt;
-                </code-block>
-                Report regression test failures at https://github.com/pgmasters/backrest/issues.</text>
-            </install-system>
-        </install-system-list>
-    </install> -->
-
+    <!-- CONFIG -->
     <config title="Configuration Reference">
         <text><backrest/> can be used entirely with command-line parameters but a configuration file is more practical for installations that are complex or set a lot of options. The default location for the configuration file is <file>/etc/pg_backrest.conf</file>.</text>
-<!--
-        <config-example-list title="Examples">
-            <config-example title="Confguring Postgres for Archiving">
-                <text>Modify the following settings in <file>postgresql.conf</file>:
-                <code-block>
-                    wal_level = archive
-                    archive_mode = on
-                    archive_command = '/path/to/backrest/bin/<exe/> -stanza=db archive-push %p'
-                </code-block>
-                Replace the path with the actual location where <backrest/> was installed.  The stanza parameter should be changed to the actual stanza name for your database cluster.</text>
-            </config-example>
-
-            <config-example title="Minimal Configuration">
-                <text>The absolute minimum required to run <backrest/> (if all defaults are accepted) is the database cluster path.
-
-                <file>/etc/pg_backrest.conf</file>:
-                <code-block>
-                    [main]
-                    db-path=/data/db
-                </code-block>
-                    The <setting>db-path</setting> option could also be provided on the command line, but it's best to use a configuration file as options tend to pile up quickly.</text>
-            </config-example>
-
-            <config-example title="Simple Single Host Configuration">
-                <text>This configuration is appropriate for a small installation where backups are being made locally or to a remote file system that is mounted locally.  A number of additional options are set:
-                <ul>
-                    <li><setting>db-port</setting> - Custom port for <postgres/>.</li>
-                    <li><setting>compress</setting> - Disable compression (handy if the file system is already compressed).</li>
-                    <li><setting>repo-path</setting> - Path to the <backrest/> repository where backups and WAL archive are stored.</li>
-                    <li><setting>log-level-file</setting> - Set the file log level to debug (Lots of extra info if something is not working as expected).</li>
-                    <li><setting>hardlink</setting> - Create hardlinks between backups (but never between full backups).</li>
-                    <li><setting>thread-max</setting> - Use 2 threads for backup/restore operations.</li>
-                </ul>
-                <file>/etc/pg_backrest.conf</file>:
-                <code-block>
-                    [global:general]
-                    compress=n
-                    repo-path=/path/to/db/repo
-
-                    [global:log]
-                    log-level-file=debug
-
-                    [global:backup]
-                    hardlink=y
-                    thread-max=2
-
-                    [main]
-                    db-path=/data/db
-                    db-port=5555
-                </code-block></text>
-            </config-example>
-
-            <config-example title="Simple Multiple Host Configuration">
-                <text>This configuration is appropriate for a small installation where backups are being made remotely.  Make sure that postgres@db-host has trusted ssh to backrest@backup-host and vice versa.  This configuration assumes that you have <exe/> in the same path on both servers.
-
-                <file>/etc/pg_backrest.conf</file> on the db host:
-                <code-block>
-                    [global:general]
-                    repo-path=/path/to/db/repo
-                    repo-remote-path=/path/to/backup/repo
-
-                    [global:backup]
-                    backup-host=backup.mydomain.com
-                    backup-user=backrest
-
-                    [global:archive]
-                    archive-async=y
-
-                    [main]
-                    db-path=/data/db
-                </code-block>
-                <file>/etc/pg_backrest.conf</file> on the backup host:
-                <code-block>
-                    [global:general]
-                    repo-path=/path/to/backup/repo
-
-                    [main]
-                    db-host=db.mydomain.com
-                    db-path=/data/db
-                    db-user=postgres
-                </code-block></text>
-            </config-example>
-        </config-example-list> -->
 
         <config-section-list title="Settings">
             <!-- CONFIG - COMMAND SECTION -->
@@ -583,6 +430,7 @@
         </config-section-list>
     </config>
 
+    <!-- COMMAND -->
     <operation title="Command Reference">
         <text>Commands are used to execute the various <backrest/> functions.  Here the command options are listed exhaustively, that is, each option applicable to a command is listed with that command even if it applies to one or more other commands.  This includes all the options that may also configured in <file>pg_backrest.conf</file>.</text>
 

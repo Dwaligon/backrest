@@ -173,18 +173,24 @@ else
 if (@stryOutput == 0)
 {
     @stryOutput = $oManifest->renderList();
+
+    if ($oManifest->isBackRest())
+    {
+        push(@stryOutput, 'help');
+        push(@stryOutput, 'markdown');
+    }
 }
 
 for my $strOutput (@stryOutput)
 {
-    if (!($strOutput eq 'help' && $oManifest->isBackRest()))
+    if (!(($strOutput eq 'help' || $strOutput eq 'markdown') && $oManifest->isBackRest()))
     {
         $oManifest->renderGet($strOutput);
     }
 
     &log(INFO, "render ${strOutput} output");
 
-    if ($strOutput eq 'markdown')
+    if ($strOutput eq 'markdown' && $oManifest->isBackRest())
     {
         # Generate the markdown
         docProcess("${strBasePath}/xml/index.xml", "${strBasePath}/../README.md", $oManifest);
