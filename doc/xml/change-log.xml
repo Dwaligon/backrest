@@ -9,7 +9,15 @@
         <changelog-release date="XXXX-XX-XX" version="0.90" title="UNDER DEVELOPMENT">
             <release-feature-bullet-list>
                 <release-feature>
-                    <text>Add documentation in the user guide for delta restores, expiration, dedicated backup hosts, starting and stopping <backrest/>, and replication.</text>
+                    <text></text>
+                </release-feature>
+            </release-feature-bullet-list>
+        </changelog-release>
+
+        <changelog-release date="2015-11-22" version="0.88" title="Documentation and Minor Bug Fixes">
+            <release-feature-bullet-list>
+                <release-feature>
+                    <text>Added documentation in the user guide for delta restores, expiration, dedicated backup hosts, starting and stopping <backrest/>, and replication.</text>
                 </release-feature>
                 <release-feature>
                     <text>Fixed an issue where the <cmd>start</cmd>/<cmd>stop</cmd> commands required the <setting>--config</setting> option.</text>
