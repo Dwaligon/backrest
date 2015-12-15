@@ -119,11 +119,11 @@
         <section id="wal">
             <title>Write Ahead Log (WAL)</title>
 
-            <p>WAL is the mechanism by which <postgres/> ensures that no committed changes are lost. Transactions are written sequentially to the WAL and a transaction is considered to be committed when those writes are flushed to disk. Afterwards, a background process writes the changes into the main database cluster files (also known as the heap). In the event of a crash, the WAL is replayed to make the database consistent.</p>
+            <p>WAL is the mechanism that <postgres/> uses to ensure that no committed changes are lost. Transactions are written sequentially to the WAL and a transaction is considered to be committed when those writes are flushed to disk. Afterwards, a background process writes the changes into the main database cluster files (also known as the heap). In the event of a crash, the WAL is replayed to make the database consistent.</p>
 
             <p>WAL is conceptually infinite but in practice is broken up into individual 16MB files called segments.  WAL segments follow the naming convention <id>0000000100000A1E000000FE</id> where the first 8 hexadecimal digits represent the timeline and the next 16 digits are the logical sequence number (LSN).</p>
 
-            <p>A valid backup will always include <i>at least</i> one WAL segment even if no writes were made to the database between backups.</p>
+            <p>A valid backup will always include <i>at least</i> one WAL segment even if explicit writes were made to the database between backups.</p>
         </section>
     </section>
 
@@ -720,7 +720,7 @@
 
         <p><link page="#quickstart-perform-restore">Restore a Backup</link> in <link page="#quickstart">Quick Start</link> performed default recovery, which is to play all the way to the end of the WAL stream.  In the case of a hardware failure this is probably the most appropriate action but for data corruption scenarios (whether machine or human in origin) there is a better alternative called Point-in-Time Recovery (PITR).</p>
 
-        <p>Point-in-Time Recovery (PITR) allows the WAL to be played from the last backup to a specified time, transaction id, or recovery point.  For common recovery scenarios time-based recovery is arguably the most useful.  A common recovery scenario is to restore a table that was accidentally dropped or data that was accidentally deleted.  Recovering a dropped table is more dramatic so that's the example given here but deleted data would be recovered in exactly the same way.</p>
+        <p>Point-in-Time Recovery (PITR) allows the WAL to be played from the last backup to a specified time, transaction id, or recovery point.  For common recovery scenarios time-based recovery is arguably the most useful.  A typical recovery scenario is to restore a table that was accidentally dropped or data that was accidentally deleted.  Recovering a dropped table is more dramatic so that's the example given here but deleted data would be recovered in exactly the same way.</p>
 
         <execute-list host="{[host-db-master]}">
             <title>Backup the {[postgres-cluster-demo]} cluster and create a table with very important data</title>
