@@ -316,7 +316,7 @@ push @EXPORT, qw(lockStop);
 ####################################################################################################################################
 # lockStopTest
 #
-# Test if a stop file exists for the current stanza or all stanza.
+# Test if a stop file exists for the current stanza or all stanzas.
 ####################################################################################################################################
 sub lockStopTest
 {
@@ -361,7 +361,7 @@ push @EXPORT, qw(lockStopTest);
 ####################################################################################################################################
 # lockStart
 #
-# Remove the stop file so processes can run
+# Remove the stop file so processes can run.
 ####################################################################################################################################
 sub lockStart
 {
