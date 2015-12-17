@@ -8,7 +8,7 @@
         <p>Simple, simple, simple!</p>
 
         <code-block title="Just run this">
-            /backrest/doc/doc.pl --doc-path=/backrest/doc/doc
+            /backrest/doc/doc.pl --doc-path=/backrest/doc/doc --var=project-url-root=index.html
         </code-block>
     </section>
 </doc>
