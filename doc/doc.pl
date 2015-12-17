@@ -121,7 +121,13 @@ logLevelSet(undef, uc($strLogLevel));
 
 # Get the base path
 my $strBasePath = abs_path(dirname($0));
-my $strOutputPath = "${strBasePath}/output";
+
+if (!defined($strDocPath))
+{
+    $strDocPath = $strBasePath;
+}
+
+my $strOutputPath = "${strDocPath}/output";
 
 sub docProcess
 {
