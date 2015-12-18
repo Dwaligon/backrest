@@ -39,5 +39,9 @@
         <render type="pdf" file="{[pdf-file]}">
             <render-source key="user-guide"/>
         </render>
+
+        <render type="markdown">
+            <render-source key="index" file="../../../README.md"/>
+        </render>
     </render-list>
 </doc>

@@ -20,4 +20,17 @@
 
         <p>It's simple - so simple!</p>
     </section>
+
+    <!-- SECTION => COOL -->
+    <section id="cool">
+        <title>Cool Stuff</title>
+
+        <section id="cool2">
+            <title>Cool Stuff 2</title>
+
+            <section id="cool3">
+                <title>Cool Stuff 3</title>
+            </section>
+        </section>
+    </section>
 </doc>
