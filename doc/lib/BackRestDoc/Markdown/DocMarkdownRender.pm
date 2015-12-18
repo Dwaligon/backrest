@@ -295,9 +295,7 @@ sub sectionProcess
         # Add descriptive text
         elsif ($oChild->nameGet() eq 'p')
         {
-            # $oSectionBodyElement->
-            #     addNew(HTML_DIV, 'section-body-text',
-            #            {strContent => $self->processText($oChild->textGet())});
+            $strMarkdown .= "\n\n" . $self->processText($oChild->textGet());
         }
         # Add option descriptive text
         elsif ($oChild->nameGet() eq 'option-description')

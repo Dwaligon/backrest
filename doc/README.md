@@ -2,6 +2,8 @@
 
 ## Introduction
 
+It's simple - **so** simple!
+
 ## Cool Stuff
 
 ### Cool Stuff 2

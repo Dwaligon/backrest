@@ -157,7 +157,7 @@ sub new
             {
                 if ($strType eq RENDER_TYPE_HTML || $strType eq RENDER_TYPE_MARKDOWN)
                 {
-                    $$oRenderOutHash{file} = $oRenderOut->paramGet('file', false);
+                    $$oRenderOutHash{file} = $oRenderOut->paramGet('file');
                 }
                 else
                 {
@@ -165,9 +165,16 @@ sub new
                 }
             }
 
-            if (defined($$oRenderOutHash{menu}) && $strType ne RENDER_TYPE_HTML)
+            if (defined($oRenderOut->paramGet('menu', false)))
             {
-                confess &log(ERROR, 'only the html render type can have menu set');
+                if ($strType eq RENDER_TYPE_HTML)
+                {
+                    $$oRenderOutHash{menu} = $oRenderOut->paramGet('menu', false);
+                }
+                else
+                {
+                    confess &log(ERROR, 'only the html render type can have menu set');
+                }
             }
 
             logDebugMisc
