@@ -120,12 +120,17 @@ if (!-e $strTempPath)
 ####################################################################################################################################
 # Valid OS list
 ####################################################################################################################################
+use constant OS_CO6                                                 => OS_CO6;
+use constant OS_CO7                                                 => 'co7';
+use constant OS_U12                                                 => 'u12';
+use constant OS_U14                                                 => OS_U14;
+
 my @stryOS =
 (
-    'co6',                              # CentOS 6
-    # 'co7',                              # CentOS 7
-    # 'u12',                              # Ubuntu 12.04
-    'u14'                               # Ubuntu 14.04
+    OS_CO6,                                 # CentOS 6
+    # OS_CO7,                               # CentOS 7
+    # OS_U12,                               # Ubuntu 12.04
+    OS_U12                                  # Ubuntu 14.04
 );
 
 use constant TEST_GROUP                                             => 'admin';
@@ -162,11 +167,11 @@ sub userCreate
     my $iId = shift;
     my $strGroup = shift;
 
-    if ($strOS eq 'co6')
+    if ($strOS eq OS_CO6)
     {
         return "RUN adduser -g${strGroup} -u${iId} -n ${strName}";
     }
-    elsif ($strOS eq 'u14')
+    elsif ($strOS eq OS_U14)
     {
         return "RUN adduser --uid=${iId} --ingroup=${strGroup} --disabled-password --gecos \"\" ${strName}";
     }
@@ -271,11 +276,11 @@ eval
 
         $strImage = "# Base Container\nFROM ";
 
-        if ($strOS eq 'co6')
+        if ($strOS eq OS_CO6)
         {
             $strImage .= 'centos:6.7';
         }
-        elsif ($strOS eq 'u14')
+        elsif ($strOS eq OS_U14)
         {
             $strImage .= 'ubuntu:14.04';
         }
@@ -283,11 +288,11 @@ eval
         # Intall SSH
         $strImage .= "\n\n# Install SSH\n";
 
-        if ($strOS eq 'co6')
+        if ($strOS eq OS_CO6)
         {
             $strImage .= 'RUN yum -y install openssh-server openssh-clients';
         }
-        elsif ($strOS eq 'u14')
+        elsif ($strOS eq OS_U14)
         {
             $strImage .= 'RUN apt-get -y install openssh-server';
         }
@@ -295,11 +300,11 @@ eval
         # Add PostgreSQL packages
         $strImage .= "\n\n# Add PostgreSQL packages\n";
 
-        if ($strOS eq 'co6')
+        if ($strOS eq OS_CO6)
         {
             $strImage .= 'RUN rpm -ivh http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-centos94-9.4-1.noarch.rpm'
         }
-        elsif ($strOS eq 'u14')
+        elsif ($strOS eq OS_U14)
         {
             $strImage .=
                 "RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main 9.5' >> /etc/apt/sources.list.d/pgdg.list\n" .
@@ -312,14 +317,14 @@ eval
             "\n\n# Create test group\n" .
             groupCreate($strOS, TEST_GROUP, TEST_GROUP_ID) . "\n";
 
-        if ($strOS eq 'co6')
+        if ($strOS eq OS_CO6)
         {
             $strImage .=
                 "RUN yum -y install sudo\n" .
                 "RUN echo '%" . TEST_GROUP . "        ALL=(ALL)       NOPASSWD: ALL' > /etc/sudoers.d/" . TEST_GROUP . "\n" .
                 "RUN sed -i 's/^Defaults    requiretty\$/\\# Defaults    requiretty/' /etc/sudoers";
         }
-        elsif ($strOS eq 'u14')
+        elsif ($strOS eq OS_U14)
         {
             $strImage .=
                 "RUN sed -i 's/^\\\%admin.*\$/\\\%" . TEST_GROUP . " ALL\\=\\(ALL\\) NOPASSWD\\: ALL/' /etc/sudoers";
@@ -331,7 +336,7 @@ eval
             userCreate($strOS, TEST_USER, TEST_USER_ID, TEST_GROUP);
 
         # Suppress dpkg interactive output
-        if ($strOS eq 'u14')
+        if ($strOS eq OS_U14)
         {
             $strImage .=
                 "\n\n# Suppress dpkg interactive output\n" .
@@ -369,16 +374,26 @@ eval
         $strImage .=
             "\n\n# Install PostgreSQL\n";
 
-        if ($strOS eq 'co6')
+        if ($strOS eq OS_CO6)
         {
             $strImage .=
                 "RUN yum -y install postgresql94-server";
         }
-        elsif ($strOS eq 'u14')
+        elsif ($strOS eq OS_U14)
         {
             $strImage .=
+                "RUN apt-get install -y postgresql-9.5\n" .
+                "RUN pg_dropcluster --stop 9.5 main\n" .
                 "RUN apt-get install -y postgresql-9.4\n" .
-                "RUN pg_dropcluster --stop 9.4 main";
+                "RUN pg_dropcluster --stop 9.4 main\n" .
+                "RUN apt-get install -y postgresql-9.3\n" .
+                "RUN pg_dropcluster --stop 9.3 main\n" .
+                "RUN apt-get install -y postgresql-9.2\n" .
+                "RUN pg_dropcluster --stop 9.2 main\n" .
+                "RUN apt-get install -y postgresql-9.1\n" .
+                "RUN pg_dropcluster --stop 9.1 main\n" .
+                "RUN apt-get install -y postgresql-9.0\n" .
+                "RUN pg_dropcluster --stop 9.0 main";
         }
 
         # Write the image
@@ -411,12 +426,12 @@ eval
         $strImage .=
             "\n\n# Install Perl packages\n";
 
-        if ($strOS eq 'co6')
+        if ($strOS eq OS_CO6)
         {
             $strImage .=
                 "RUN yum -y install perl perl-Time-HiRes perl-parent perl-JSON perl-Digest-SHA perl-DBD-Pg";
         }
-        elsif ($strOS eq 'u14')
+        elsif ($strOS eq OS_U14)
         {
             $strImage .=
                 "RUN apt-get -y install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl";
