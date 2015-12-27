@@ -3,6 +3,7 @@
 *.swp
 test/test
 test/vm/.vagrant
+test/vm/docker
 test/nytprof.out
 test/nytprof/*
 doc/output/*
