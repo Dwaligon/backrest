@@ -1,18 +1,28 @@
-# Ubuntu 14.04 Backup Container
-FROM vagrant/u14-base
+# Database Container
+FROM backrest/u14-base
 
-# Create backrest user
-RUN adduser --ingroup=postgres --disabled-password --gecos "" backrest
+# Create BackRest user/group
+RUN groupadd -g5000 postgres
+RUN adduser --uid=5001 --ingroup=postgres --disabled-password --gecos "" backrest
 
 # Setup SSH
-RUN mkdir -p /home/backrest/.ssh
-RUN cp /root/resource/.ssh/* /home/backrest/.ssh
+RUN mkdir /home/backrest/.ssh
+COPY id_rsa  /home/backrest/.ssh/id_rsa
+COPY id_rsa.pub  /home/backrest/.ssh/authorized_keys
 RUN chown -R backrest:postgres /home/backrest/.ssh
 RUN chmod 700 /home/backrest/.ssh
+RUN echo 'Host *' > /home/backrest/.ssh/config
+RUN echo '    StrictHostKeyChecking no' >> /home/backrest/.ssh/config
+RUN echo '    LogLevel quiet' >> /home/backrest/.ssh/config
+
+# Create pg_backrest.conf
+RUN touch /etc/pg_backrest.conf
+RUN chmod 640 /etc/pg_backrest.conf
+RUN chown backrest:postgres /etc/pg_backrest.conf
 
 # Setup repository
 RUN mkdir /var/lib/backrest
-RUN chown backrest:postgres /var/lib/backrest
+RUN chown -R backrest:postgres /var/lib/backrest
 RUN chmod 750 /var/lib/backrest
 
 # Install Perl packages

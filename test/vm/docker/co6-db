@@ -1,16 +1,24 @@
-# CentOS 6 Database Container
-FROM vagrant/co6-base
+# Database Container
+FROM backrest/co6-base
 
-# Install Postgres
-RUN yum -y install postgresql94-server
+# Create PostgreSQL user/group
+RUN groupadd -g5000 postgres
+RUN adduser -gpostgres -u5000 -n postgres
+
+# Setup SSH
+RUN mkdir /home/postgres/.ssh
+COPY id_rsa  /home/postgres/.ssh/id_rsa
+COPY id_rsa.pub  /home/postgres/.ssh/authorized_keys
+RUN chown -R postgres:postgres /home/postgres/.ssh
+RUN chmod 700 /home/postgres/.ssh
+RUN echo 'Host *' > /home/postgres/.ssh/config
+RUN echo '    StrictHostKeyChecking no' >> /home/postgres/.ssh/config
+RUN echo '    LogLevel quiet' >> /home/postgres/.ssh/config
 
 # Create pg_backrest.conf
 RUN touch /etc/pg_backrest.conf
 RUN chmod 640 /etc/pg_backrest.conf
 RUN chown postgres:postgres /etc/pg_backrest.conf
 
-# Setup SSH
-RUN mkdir /home/postgres/.ssh
-RUN cp /root/resource/.ssh/* /home/postgres/.ssh
-RUN chown -R postgres:postgres /home/postgres/.ssh
-RUN chmod 700 /home/postgres/.ssh
+# Install PostgreSQL
+RUN yum -y install postgresql94-server

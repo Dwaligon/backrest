@@ -128,17 +128,18 @@ my @stryOS =
     'u14'                               # Ubuntu 14.04
 );
 
-use constant TEST_GROUP                                             => 'testgroup';
+use constant TEST_GROUP                                             => 'admin';
 use constant TEST_GROUP_ID                                          => 6000;
-use constant TEST_USER                                              => 'testuser';
+use constant TEST_USER                                              => 'vagrant';
 use constant TEST_USER_ID                                           => TEST_GROUP_ID;
 
 use constant POSTGRES_GROUP                                         => 'postgres';
 use constant POSTGRES_GROUP_ID                                      => 5000;
-use constant POSTGRES_USER                                          => 'postgres';
+use constant POSTGRES_USER                                          => POSTGRES_GROUP;
 use constant POSTGRES_USER_ID                                       => POSTGRES_GROUP_ID;
 
-use constant BACKREST_GROUP                                         => 'postgres';
+use constant BACKREST_GROUP                                         => POSTGRES_GROUP;
+use constant BACKREST_GROUP_ID                                      => POSTGRES_GROUP_ID;
 use constant BACKREST_USER                                          => 'backrest';
 use constant BACKREST_USER_ID                                       => 5001;
 
@@ -182,6 +183,15 @@ sub postgresUserCreate
            userCreate($strOS, POSTGRES_USER, POSTGRES_USER_ID, POSTGRES_GROUP);
 }
 
+sub backrestUserCreate
+{
+    my $strOS = shift;
+
+    return "# Create BackRest user/group\n" .
+           groupCreate($strOS, BACKREST_GROUP, BACKREST_GROUP_ID) . "\n" .
+           userCreate($strOS, BACKREST_USER, BACKREST_USER_ID, BACKREST_GROUP);
+}
+
 ####################################################################################################################################
 # Create pg_backrest.conf
 ####################################################################################################################################
@@ -211,7 +221,25 @@ sub sshSetup
            "COPY id_rsa  /home/${strUser}/.ssh/id_rsa\n" .
            "COPY id_rsa.pub  /home/${strUser}/.ssh/authorized_keys\n" .
            "RUN chown -R ${strUser}:${strGroup} /home/${strUser}/.ssh\n" .
-           "RUN chmod 700 /home/${strUser}/.ssh";
+           "RUN chmod 700 /home/${strUser}/.ssh\n" .
+           "RUN echo 'Host *' > /home/${strUser}/.ssh/config\n" .
+           "RUN echo '    StrictHostKeyChecking no' >> /home/${strUser}/.ssh/config\n" .
+           "RUN echo '    LogLevel quiet' >> /home/${strUser}/.ssh/config";
+}
+
+####################################################################################################################################
+# Repo Setup
+####################################################################################################################################
+sub repoSetup
+{
+    my $strOS = shift;
+    my $strUser = shift;
+    my $strGroup = shift;
+
+    return "# Setup repository\n" .
+           "RUN mkdir /var/lib/backrest\n" .
+           "RUN chown -R ${strUser}:${strGroup} /var/lib/backrest\n" .
+           "RUN chmod 750 /var/lib/backrest";
 }
 
 ####################################################################################################################################
@@ -228,7 +256,7 @@ eval
     {
         &log(INFO, "Building SSH keys...");
 
-        executeTest("ssh-keygen -f ${strTempPath}/id_rsa -t rsa -N ''");
+        executeTest("ssh-keygen -f ${strTempPath}/id_rsa -t rsa -b 768 -N ''");
     }
 
     foreach my $strOS (@stryOS)
@@ -294,13 +322,21 @@ eval
         elsif ($strOS eq 'u14')
         {
             $strImage .=
-                "RUN sed -i 's/^\\\%" . TEST_GROUP . ".*\$/\\\%" . TEST_GROUP . " ALL\\=\\(ALL\\) NOPASSWD\\: ALL/' /etc/sudoers";
+                "RUN sed -i 's/^\\\%admin.*\$/\\\%" . TEST_GROUP . " ALL\\=\\(ALL\\) NOPASSWD\\: ALL/' /etc/sudoers";
         }
 
         # Create test user
         $strImage .=
             "\n\n# Create test user\n" .
             userCreate($strOS, TEST_USER, TEST_USER_ID, TEST_GROUP);
+
+        # Suppress dpkg interactive output
+        if ($strOS eq 'u14')
+        {
+            $strImage .=
+                "\n\n# Suppress dpkg interactive output\n" .
+                "RUN rm /etc/apt/apt.conf.d/70debconf";
+        }
 
         # Start SSH when container starts
         $strImage .=
@@ -343,6 +379,47 @@ eval
             $strImage .=
                 "RUN apt-get install -y postgresql-9.4\n" .
                 "RUN pg_dropcluster --stop 9.4 main";
+        }
+
+        # Write the image
+        fileStringWrite("${strTempPath}/${strImageName}", "${strImage}\n", false);
+        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}");
+
+        # Backup image
+        ###########################################################################################################################
+        $strImageName = "${strOS}-backup";
+        &log(INFO, "Building ${strImageName} image...");
+
+        $strImage = "# Database Container\nFROM backrest/${strOS}-base";
+
+        # Create BackRest User
+        $strImage .= "\n\n" . backrestUserCreate($strOS);
+
+        # Install SSH key
+        $strImage .=
+            "\n\n" . sshSetup($strOS, BACKREST_USER, BACKREST_GROUP);
+
+        # Create pg_backrest.conf
+        $strImage .=
+            "\n\n" . backrestConfigCreate($strOS, BACKREST_USER, BACKREST_GROUP);
+
+        # Setup repository
+        $strImage .=
+            "\n\n" . repoSetup($strOS, BACKREST_USER, BACKREST_GROUP);
+
+        # Install Perl packages
+        $strImage .=
+            "\n\n# Install Perl packages\n";
+
+        if ($strOS eq 'co6')
+        {
+            $strImage .=
+                "RUN yum -y install perl perl-Time-HiRes perl-parent perl-JSON perl-Digest-SHA perl-DBD-Pg";
+        }
+        elsif ($strOS eq 'u14')
+        {
+            $strImage .=
+                "RUN apt-get -y install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl";
         }
 
         # Write the image
