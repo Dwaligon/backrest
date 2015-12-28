@@ -120,17 +120,17 @@ if (!-e $strTempPath)
 ####################################################################################################################################
 # Valid OS list
 ####################################################################################################################################
-use constant OS_CO6                                                 => OS_CO6;
+use constant OS_CO6                                                 => 'co6';
 use constant OS_CO7                                                 => 'co7';
 use constant OS_U12                                                 => 'u12';
-use constant OS_U14                                                 => OS_U14;
+use constant OS_U14                                                 => 'u14';
 
 my @stryOS =
 (
     OS_CO6,                                 # CentOS 6
     # OS_CO7,                               # CentOS 7
     # OS_U12,                               # Ubuntu 12.04
-    OS_U12                                  # Ubuntu 14.04
+    OS_U14                                  # Ubuntu 14.04
 );
 
 use constant TEST_GROUP                                             => 'admin';
@@ -179,12 +179,19 @@ sub userCreate
     confess &log(ERROR, "unable to create user for os '${strOS}'");
 }
 
+sub postgresGroupCreate
+{
+    my $strOS = shift;
+
+    return "# Create PostgreSQL group\n" .
+           groupCreate($strOS, POSTGRES_GROUP, POSTGRES_GROUP_ID);
+}
+
 sub postgresUserCreate
 {
     my $strOS = shift;
 
-    return "# Create PostgreSQL user/group\n" .
-           groupCreate($strOS, POSTGRES_GROUP, POSTGRES_GROUP_ID) . "\n" .
+    return "# Create PostgreSQL user\n" .
            userCreate($strOS, POSTGRES_USER, POSTGRES_USER_ID, POSTGRES_GROUP);
 }
 
@@ -192,8 +199,7 @@ sub backrestUserCreate
 {
     my $strOS = shift;
 
-    return "# Create BackRest user/group\n" .
-           groupCreate($strOS, BACKREST_GROUP, BACKREST_GROUP_ID) . "\n" .
+    return "# Create BackRest group\n" .
            userCreate($strOS, BACKREST_USER, BACKREST_USER_ID, BACKREST_GROUP);
 }
 
@@ -248,6 +254,30 @@ sub repoSetup
 }
 
 ####################################################################################################################################
+# Install Perl packages
+####################################################################################################################################
+sub perlInstall
+{
+    my $strOS = shift;
+
+    my $strImage =
+        "# Install Perl packages\n";
+
+    if ($strOS eq OS_CO6)
+    {
+        $strImage .=
+            "RUN yum -y install perl perl-Time-HiRes perl-parent perl-JSON perl-Digest-SHA perl-DBD-Pg";
+    }
+    elsif ($strOS eq OS_U14)
+    {
+        $strImage .=
+            "RUN apt-get -y install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl";
+    }
+
+    return $strImage;
+}
+
+####################################################################################################################################
 # Build containers
 ####################################################################################################################################
 eval
@@ -297,19 +327,27 @@ eval
             $strImage .= 'RUN apt-get -y install openssh-server';
         }
 
+        # Create PostgreSQL Group
+        $strImage .= "\n\n" . postgresGroupCreate($strOS);
+
         # Add PostgreSQL packages
         $strImage .= "\n\n# Add PostgreSQL packages\n";
 
         if ($strOS eq OS_CO6)
         {
-            $strImage .= 'RUN rpm -ivh http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-centos94-9.4-1.noarch.rpm'
+            $strImage .=
+                "RUN rpm -ivh http://yum.postgresql.org/9.0/redhat/rhel-6-x86_64/pgdg-centos90-9.0-5.noarch.rpm\n" .
+                "RUN rpm -ivh http://yum.postgresql.org/9.1/redhat/rhel-6-x86_64/pgdg-centos91-9.1-4.noarch.rpm\n" .
+                "RUN rpm -ivh http://yum.postgresql.org/9.2/redhat/rhel-6-x86_64/pgdg-centos92-9.2-6.noarch.rpm\n" .
+                "RUN rpm -ivh http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-centos93-9.3-1.noarch.rpm\n" .
+                "RUN rpm -ivh http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-centos94-9.4-1.noarch.rpm";
         }
         elsif ($strOS eq OS_U14)
         {
             $strImage .=
                 "RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main 9.5' >> /etc/apt/sources.list.d/pgdg.list\n" .
                 "RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -\n" .
-                "RUN sudo apt-get update";
+                "RUN apt-get update";
         }
 
         # Create test group
@@ -366,10 +404,6 @@ eval
         $strImage .=
             "\n\n" . sshSetup($strOS, POSTGRES_USER, POSTGRES_GROUP);
 
-        # Create pg_backrest.conf
-        $strImage .=
-            "\n\n" . backrestConfigCreate($strOS, POSTGRES_USER, POSTGRES_GROUP);
-
         # Install PostgreSQL
         $strImage .=
             "\n\n# Install PostgreSQL\n";
@@ -377,6 +411,10 @@ eval
         if ($strOS eq OS_CO6)
         {
             $strImage .=
+                "RUN yum -y install postgresql90-server\n" .
+                "RUN yum -y install postgresql91-server\n" .
+                "RUN yum -y install postgresql92-server\n" .
+                "RUN yum -y install postgresql93-server\n" .
                 "RUN yum -y install postgresql94-server";
         }
         elsif ($strOS eq OS_U14)
@@ -400,12 +438,27 @@ eval
         fileStringWrite("${strTempPath}/${strImageName}", "${strImage}\n", false);
         executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}");
 
+        # Db Doc image
+        ###########################################################################################################################
+        $strImageName = "${strOS}-db-doc";
+        &log(INFO, "Building ${strImageName} image...");
+
+        $strImage = "# Database Doc Container\nFROM backrest/${strOS}-db";
+
+        # Create pg_backrest.conf
+        $strImage .=
+            "\n\n" . backrestConfigCreate($strOS, POSTGRES_USER, POSTGRES_GROUP);
+
+        # Write the image
+        fileStringWrite("${strTempPath}/${strImageName}", "${strImage}\n", false);
+        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}");
+
         # Backup image
         ###########################################################################################################################
         $strImageName = "${strOS}-backup";
         &log(INFO, "Building ${strImageName} image...");
 
-        $strImage = "# Database Container\nFROM backrest/${strOS}-base";
+        $strImage = "# Backup Container\nFROM backrest/${strOS}-base";
 
         # Create BackRest User
         $strImage .= "\n\n" . backrestUserCreate($strOS);
@@ -413,6 +466,17 @@ eval
         # Install SSH key
         $strImage .=
             "\n\n" . sshSetup($strOS, BACKREST_USER, BACKREST_GROUP);
+
+        # Write the image
+        fileStringWrite("${strTempPath}/${strImageName}", "${strImage}\n", false);
+        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}");
+
+        # Backup Doc image
+        ###########################################################################################################################
+        $strImageName = "${strOS}-backup-doc";
+        &log(INFO, "Building ${strImageName} image...");
+
+        $strImage = "# Backup Doc Container\nFROM backrest/${strOS}-backup";
 
         # Create pg_backrest.conf
         $strImage .=
@@ -424,18 +488,29 @@ eval
 
         # Install Perl packages
         $strImage .=
-            "\n\n# Install Perl packages\n";
+            "\n\n" . perlInstall($strOS) . "\n";
 
-        if ($strOS eq OS_CO6)
-        {
-            $strImage .=
-                "RUN yum -y install perl perl-Time-HiRes perl-parent perl-JSON perl-Digest-SHA perl-DBD-Pg";
-        }
-        elsif ($strOS eq OS_U14)
-        {
-            $strImage .=
-                "RUN apt-get -y install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl";
-        }
+        # Write the image
+        fileStringWrite("${strTempPath}/${strImageName}", "${strImage}\n", false);
+        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}");
+
+        # Test image
+        ###########################################################################################################################
+        $strImageName = "${strOS}-test";
+        &log(INFO, "Building ${strImageName} image...");
+
+        $strImage = "# Test Container\nFROM backrest/${strOS}-db";
+
+        # Create BackRest User
+        $strImage .= "\n\n" . backrestUserCreate($strOS);
+
+        # Install SSH key
+        $strImage .=
+            "\n\n" . sshSetup($strOS, BACKREST_USER, BACKREST_GROUP);
+
+        # Install Perl packages
+        $strImage .=
+            "\n\n" . perlInstall($strOS) . "\n";
 
         # Write the image
         fileStringWrite("${strTempPath}/${strImageName}", "${strImage}\n", false);
