@@ -109,7 +109,7 @@ if ($bQuiet)
 logLevelSet(undef, uc($strLogLevel));
 
 # Create temp path
-my $strTempPath = dirname(abs_path($0)) . '/vm/docker';
+my $strTempPath = dirname(abs_path($0)) . '/.vagrant/docker';
 
 if (!-e $strTempPath)
 {
@@ -129,7 +129,7 @@ my @stryOS =
 (
     OS_CO6,                                 # CentOS 6
     OS_CO7,                                 # CentOS 7
-    # OS_U12,                               # Ubuntu 12.04
+    OS_U12,                                 # Ubuntu 12.04
     OS_U14                                  # Ubuntu 14.04
 );
 
@@ -171,7 +171,7 @@ sub userCreate
     {
         return "RUN adduser -g${strGroup} -u${iId} -n ${strName}";
     }
-    elsif ($strOS eq OS_U14)
+    elsif ($strOS eq OS_U12 || $strOS eq OS_U14)
     {
         return "RUN adduser --uid=${iId} --ingroup=${strGroup} --disabled-password --gecos \"\" ${strName}";
     }
@@ -273,7 +273,7 @@ sub perlInstall
         $strImage .=
             "RUN yum -y install perl perl-Thread-Queue perl-JSON-PP perl-Digest-SHA perl-DBD-Pg";
     }
-    elsif ($strOS eq OS_U14)
+    elsif ($strOS eq OS_U12 || $strOS eq OS_U14)
     {
         $strImage .=
             "RUN apt-get -y install libdbd-pg-perl libdbi-perl libnet-daemon-perl libplrpc-perl";
@@ -319,6 +319,10 @@ eval
         {
             $strImage .= 'centos:7';
         }
+        elsif ($strOS eq OS_U12)
+        {
+            $strImage .= 'ubuntu:12.04';
+        }
         elsif ($strOS eq OS_U14)
         {
             $strImage .= 'ubuntu:14.04';
@@ -329,12 +333,16 @@ eval
 
         if ($strOS eq OS_CO6 || $strOS eq OS_CO7)
         {
-            $strImage .= 'RUN yum -y install openssh-server openssh-clients';
+            $strImage .= "RUN yum -y install openssh-server openssh-clients\n";
         }
-        elsif ($strOS eq OS_U14)
+        elsif ($strOS eq OS_U12 || $strOS eq OS_U14)
         {
-            $strImage .= 'RUN apt-get -y install openssh-server';
+            $strImage .= "RUN apt-get -y install openssh-server\n";
         }
+
+        $strImage .=
+            "RUN rm -f /etc/ssh/ssh_host_rsa_key*\n" .
+            "RUN ssh-keygen -t rsa -b 768 -f /etc/ssh/ssh_host_rsa_key";
 
         # Create PostgreSQL Group
         $strImage .= "\n\n" . postgresGroupCreate($strOS);
@@ -358,11 +366,19 @@ eval
                 "RUN rpm -ivh http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-1.noarch.rpm\n" .
                 "RUN rpm -ivh http://yum.postgresql.org/9.5/redhat/rhel-7-x86_64/pgdg-centos95-9.5-1.noarch.rpm";
         }
-        elsif ($strOS eq OS_U14)
+        elsif ($strOS eq OS_U12 || $strOS eq OS_U14)
         {
+            if ($strOS eq OS_U12)
+            {
+                $strImage .=
+                    "RUN apt-get install -y sudo\n";
+            }
+
             $strImage .=
-                "RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main 9.5' >> /etc/apt/sources.list.d/pgdg.list\n" .
-                "RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -\n" .
+                "RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ " .
+                    ($strOS eq OS_U12 ? 'precise' : 'trusty') .
+                    "-pgdg main 9.5' >> /etc/apt/sources.list.d/pgdg.list\n" .
+                "RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -\n" .
                 "RUN apt-get update";
         }
 
@@ -378,7 +394,7 @@ eval
                 "RUN echo '%" . TEST_GROUP . "        ALL=(ALL)       NOPASSWD: ALL' > /etc/sudoers.d/" . TEST_GROUP . "\n" .
                 "RUN sed -i 's/^Defaults    requiretty\$/\\# Defaults    requiretty/' /etc/sudoers";
         }
-        elsif ($strOS eq OS_U14)
+        elsif ($strOS eq OS_U12 || $strOS eq OS_U14)
         {
             $strImage .=
                 "RUN sed -i 's/^\\\%admin.*\$/\\\%" . TEST_GROUP . " ALL\\=\\(ALL\\) NOPASSWD\\: ALL/' /etc/sudoers";
@@ -390,7 +406,7 @@ eval
             userCreate($strOS, TEST_USER, TEST_USER_ID, TEST_GROUP);
 
         # Suppress dpkg interactive output
-        if ($strOS eq OS_U14)
+        if ($strOS eq OS_U12 || $strOS eq OS_U14)
         {
             $strImage .=
                 "\n\n# Suppress dpkg interactive output\n" .
@@ -399,11 +415,27 @@ eval
 
         # Start SSH when container starts
         $strImage .=
-            "\n\n# Start SSH when container starts\n" .
-            "ENTRYPOINT service ssh restart && bash\n";
+            "\n\n# Start SSH when container starts\n";
+
+        if ($strOS eq OS_CO6)
+        {
+            $strImage .=
+                "ENTRYPOINT service sshd restart && bash";
+        }
+        elsif ($strOS eq OS_CO7)
+        {
+            $strImage .=
+                # "ENTRYPOINT systemctl start sshd.service && bash";
+                "ENTRYPOINT /usr/sbin/sshd -D && bash";
+        }
+        elsif ($strOS eq OS_U12 || $strOS eq OS_U14)
+        {
+            $strImage .=
+                "ENTRYPOINT service ssh restart && bash";
+        }
 
         # Write the image
-        fileStringWrite("${strTempPath}/${strImageName}", $strImage, false);
+        fileStringWrite("${strTempPath}/${strImageName}", "$strImage\n", false);
         executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}");
 
         # Db image
@@ -439,6 +471,22 @@ eval
                 "RUN yum -y install postgresql93-server\n" .
                 "RUN yum -y install postgresql94-server\n" .
                 "RUN yum -y install postgresql95-server";
+        }
+        elsif ($strOS eq OS_U12)
+        {
+            $strImage .=
+                "RUN apt-get install -y postgresql-9.4\n" .
+                "RUN pg_dropcluster --stop 9.4 main\n" .
+                "RUN apt-get install -y postgresql-9.3\n" .
+                "RUN pg_dropcluster --stop 9.3 main\n" .
+                "RUN apt-get install -y postgresql-9.2\n" .
+                "RUN pg_dropcluster --stop 9.2 main\n" .
+                "RUN apt-get install -y postgresql-9.1\n" .
+                "RUN pg_dropcluster --stop 9.1 main\n" .
+                "RUN apt-get install -y postgresql-9.0\n" .
+                "RUN pg_dropcluster --stop 9.0 main\n" .
+                "RUN apt-get install -y postgresql-8.4\n" .
+                "RUN pg_dropcluster --stop 8.4 main";
         }
         elsif ($strOS eq OS_U14)
         {
@@ -534,6 +582,11 @@ eval
         # Install Perl packages
         $strImage .=
             "\n\n" . perlInstall($strOS) . "\n";
+
+        # Make PostgreSQL home group readable
+        $strImage .=
+            "\n\n# Make PostgreSQL home group readable\n" .
+            "RUN chmod g+r,g+x /home/postgres\n";
 
         # Write the image
         fileStringWrite("${strTempPath}/${strImageName}", "${strImage}\n", false);
