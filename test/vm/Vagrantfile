@@ -129,9 +129,9 @@ Vagrant.configure(2) do |config|
 
             # Sample docker commands
             # docker inspect --format '{{ .NetworkSettings.IPAddress }}' db-master
-            # docker run -itd --name=db-master -v /backrest:/backrest vagrant/u14-db
-            # docker run -itd --name=backup -v /backrest:/backrest vagrant/u14-backup
-            # docker exec -it db-master bash
+            # docker run -itd --name=u14-test -v /backrest:/backrest backrest/u14-test
+            # docker run -itd --name=u14-test -v /backrest:/backrest vagrant/u14-backup
+            # docker exec -it -u postgres u14-test bash -c '/backrest/test/test.pl --test-path=/home/postgres/test'
         SHELL
     end
 

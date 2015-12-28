@@ -128,7 +128,7 @@ use constant OS_U14                                                 => 'u14';
 my @stryOS =
 (
     OS_CO6,                                 # CentOS 6
-    # OS_CO7,                               # CentOS 7
+    OS_CO7,                                 # CentOS 7
     # OS_U12,                               # Ubuntu 12.04
     OS_U14                                  # Ubuntu 14.04
 );
@@ -167,7 +167,7 @@ sub userCreate
     my $iId = shift;
     my $strGroup = shift;
 
-    if ($strOS eq OS_CO6)
+    if ($strOS eq OS_CO6 || $strOS eq OS_CO7)
     {
         return "RUN adduser -g${strGroup} -u${iId} -n ${strName}";
     }
@@ -268,6 +268,11 @@ sub perlInstall
         $strImage .=
             "RUN yum -y install perl perl-Time-HiRes perl-parent perl-JSON perl-Digest-SHA perl-DBD-Pg";
     }
+    elsif ($strOS eq OS_CO7)
+    {
+        $strImage .=
+            "RUN yum -y install perl perl-Thread-Queue perl-JSON-PP perl-Digest-SHA perl-DBD-Pg";
+    }
     elsif ($strOS eq OS_U14)
     {
         $strImage .=
@@ -308,17 +313,21 @@ eval
 
         if ($strOS eq OS_CO6)
         {
-            $strImage .= 'centos:6.7';
+            $strImage .= 'centos:6';
+        }
+        elsif ($strOS eq OS_CO7)
+        {
+            $strImage .= 'centos:7';
         }
         elsif ($strOS eq OS_U14)
         {
             $strImage .= 'ubuntu:14.04';
         }
 
-        # Intall SSH
+        # Install SSH
         $strImage .= "\n\n# Install SSH\n";
 
-        if ($strOS eq OS_CO6)
+        if ($strOS eq OS_CO6 || $strOS eq OS_CO7)
         {
             $strImage .= 'RUN yum -y install openssh-server openssh-clients';
         }
@@ -342,6 +351,13 @@ eval
                 "RUN rpm -ivh http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-centos93-9.3-1.noarch.rpm\n" .
                 "RUN rpm -ivh http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-centos94-9.4-1.noarch.rpm";
         }
+        elsif ($strOS eq OS_CO7)
+        {
+            $strImage .=
+                "RUN rpm -ivh http://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-1.noarch.rpm\n" .
+                "RUN rpm -ivh http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-1.noarch.rpm\n" .
+                "RUN rpm -ivh http://yum.postgresql.org/9.5/redhat/rhel-7-x86_64/pgdg-centos95-9.5-1.noarch.rpm";
+        }
         elsif ($strOS eq OS_U14)
         {
             $strImage .=
@@ -355,7 +371,7 @@ eval
             "\n\n# Create test group\n" .
             groupCreate($strOS, TEST_GROUP, TEST_GROUP_ID) . "\n";
 
-        if ($strOS eq OS_CO6)
+        if ($strOS eq OS_CO6 || $strOS eq OS_CO7)
         {
             $strImage .=
                 "RUN yum -y install sudo\n" .
@@ -416,6 +432,13 @@ eval
                 "RUN yum -y install postgresql92-server\n" .
                 "RUN yum -y install postgresql93-server\n" .
                 "RUN yum -y install postgresql94-server";
+        }
+        elsif ($strOS eq OS_CO7)
+        {
+            $strImage .=
+                "RUN yum -y install postgresql93-server\n" .
+                "RUN yum -y install postgresql94-server\n" .
+                "RUN yum -y install postgresql95-server";
         }
         elsif ($strOS eq OS_U14)
         {
