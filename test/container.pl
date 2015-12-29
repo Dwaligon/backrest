@@ -134,7 +134,7 @@ my @stryOS =
 );
 
 use constant TEST_GROUP                                             => 'admin';
-use constant TEST_GROUP_ID                                          => 6000;
+use constant TEST_GROUP_ID                                          => 1000;
 use constant TEST_USER                                              => 'vagrant';
 use constant TEST_USER_ID                                           => TEST_GROUP_ID;
 
@@ -584,14 +584,24 @@ eval
         $strImage .=
             "\n\n" . sshSetup($strOS, BACKREST_USER, BACKREST_GROUP);
 
+        # Install SSH key for vagrant user
+        $strImage .=
+            "\n\n" . sshSetup($strOS, TEST_USER, TEST_GROUP);
+
+        # Put vagrant user in postgres group so tests work properly (this will be removed in the future)
+        $strImage .=
+            "\n\n# Add postgres group to vagrant user\n" .
+            "RUN usermod -g " . BACKREST_GROUP . " -G " . TEST_GROUP . " " . TEST_USER;
+
         # Install Perl packages
         $strImage .=
             "\n\n" . perlInstall($strOS) . "\n";
 
         # Make PostgreSQL home group readable
         $strImage .=
-            "\n\n# Make PostgreSQL home group readable\n" .
-            "RUN chmod g+r,g+x /home/postgres\n";
+            "\n\n# Make vagrant home dir readable\n" .
+            "RUN chown -R vagrant:postgres /home/vagrant\n" .
+            "RUN chmod g+r,g+x /home/vagrant";
 
         # Write the image
         fileStringWrite("${strTempPath}/${strImageName}", "${strImage}\n", false);

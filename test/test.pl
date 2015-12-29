@@ -142,7 +142,7 @@ if (defined($strOS))
     $strCommandLine =~ s/\-\-os\=\S*//g;
     $strCommandLine =~ s/\-\-test-path\=\S*//g;
 
-    system("docker exec -it -u postgres ${strOS}-test $0 ${strCommandLine} --test-path=/home/postgres/test");
+    system("docker exec -it -u vagrant ${strOS}-test $0 ${strCommandLine} --test-path=/home/vagrant/test");
 
     if (!$bNoCleanup)
     {
