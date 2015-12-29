@@ -428,7 +428,12 @@ eval
                 # "ENTRYPOINT systemctl start sshd.service && bash";
                 "ENTRYPOINT /usr/sbin/sshd -D && bash";
         }
-        elsif ($strOS eq OS_U12 || $strOS eq OS_U14)
+        elsif ($strOS eq OS_U12)
+        {
+            $strImage .=
+                "ENTRYPOINT /etc/init.d/ssh start && bash";
+        }
+        elsif ($strOS eq OS_U14)
         {
             $strImage .=
                 "ENTRYPOINT service ssh restart && bash";
