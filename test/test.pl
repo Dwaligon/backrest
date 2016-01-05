@@ -47,7 +47,8 @@ test.pl - pgBackRest Unit Tests
 test.pl [options]
 
  Test Options:
-   --module             test module to execute:
+   --os                 execute os in a docker container (u12, u14, co6, co7)
+   --module             test module to execute
    --test               execute the specified test in a module
    --run                execute only the specified test run
    --thread-max         max threads to run for backup/restore (default 4)
@@ -58,7 +59,7 @@ test.pl [options]
    --log-force          force overwrite of current test log files
 
  Configuration Options:
-   --exe                backup executable
+   --exe                pgBackRest executable
    --psql-bin           path to the psql executables (e.g. /usr/lib/postgresql/9.3/bin/)
    --test-path          path where tests are executed (defaults to ./test)
    --log-level          log level to use for tests (defaults to INFO)
