@@ -133,27 +133,6 @@ if (@ARGV > 0)
 }
 
 ####################################################################################################################################
-# Start OS VM and run
-####################################################################################################################################
-if (defined($strOS))
-{
-    executeTest("docker rm -f ${strOS}-test", {bSuppressError => true});
-    executeTest("docker run -itd -h ${strOS}-test --name=${strOS}-test -v /backrest:/backrest backrest/${strOS}-test");
-
-    $strCommandLine =~ s/\-\-os\=\S*//g;
-    $strCommandLine =~ s/\-\-test-path\=\S*//g;
-
-    system("docker exec -it -u vagrant ${strOS}-test $0 ${strCommandLine} --test-path=/home/vagrant/test");
-
-    if (!$bNoCleanup)
-    {
-        executeTest("docker rm -f ${strOS}-test");
-    }
-
-    exit 0;
-}
-
-####################################################################################################################################
 # Setup
 ####################################################################################################################################
 # Set a neutral umask so tests work as expected
@@ -182,7 +161,131 @@ if (defined($iModuleTestRun) && $strModuleTest eq 'all')
     confess "--test must be provided for --run=\"${iModuleTestRun}\"";
 }
 
-# Search for psql bin
+####################################################################################################################################
+# Define tests
+####################################################################################################################################
+my $oTestDefinition =
+{
+    module =>
+    [
+        {
+            name => 'backup',
+            test =>
+            [
+                {
+                    name => 'archive-push',
+                    total => 8
+                },
+                {
+                    name => 'archive-stop',
+                    total => 6
+                },
+                {
+                    name => 'archive-get',
+                    total => 8
+                },
+                {
+                    name => 'expire',
+                    total => 1
+                },
+                {
+                    name => 'synthetic',
+                    total => 8
+                },
+                {
+                    name => 'full',
+                    total => 8
+                }
+            ]
+        }
+    ]
+};
+
+my $oyTestRun = [];
+
+####################################################################################################################################
+# Start OS VM and run
+####################################################################################################################################
+if (defined($strOS))
+{
+    # Determine which tests to run
+    my $iTestsToRun = 0;
+
+    foreach my $oModule (@{$$oTestDefinition{module}})
+    {
+        if ($strModule eq $$oModule{name} || $strModule eq 'all')
+        {
+            &log(DEBUG, "Select Module $$oModule{name}");
+
+            foreach my $oTest (@{$$oModule{test}})
+            {
+                if ($strModuleTest eq $$oTest{name} || $strModuleTest eq 'all')
+                {
+                    &log(DEBUG, "    Select Test $$oTest{name}");
+
+                    my $iTestRunMin = defined($iModuleTestRun) ? $iModuleTestRun : 1;
+                    my $iTestRunMax = defined($iModuleTestRun) ? $iModuleTestRun : $$oTest{total};
+
+                    if ($iTestRunMax > $$oTest{total})
+                    {
+                        confess &log(ERROR, "invalid run - must be >= 1 and <= $$oTest{total}")
+                    }
+
+                    for (my $iTestRunIdx = $iTestRunMin; $iTestRunIdx <= $iTestRunMax; $iTestRunIdx++)
+                    {
+                        &log(DEBUG, "        Select Run $iTestRunIdx");
+
+                        my $oTestRun =
+                        {
+                            module => $$oModule{name},
+                            test => $$oTest{name},
+                            run => $iTestRunIdx
+                        };
+
+                        push($oyTestRun, $oTestRun);
+                        $iTestsToRun++;
+                    }
+                }
+            }
+        }
+    }
+
+    if ($iTestsToRun == 0)
+    {
+        confess &log(ERROR, 'no tests were selected');
+    }
+
+    foreach my $oTest (@{$oyTestRun})
+    {
+        &log(INFO, "Execute os=${strOS}, module=$$oTest{module}, test=$$oTest{test}, run=$$oTest{run}");
+
+        executeTest("docker rm -f ${strOS}-test", {bSuppressError => true});
+        executeTest("docker run -itd -h ${strOS}-test --name=${strOS}-test -v /backrest:/backrest backrest/${strOS}-test");
+
+        $strCommandLine =~ s/\-\-os\=\S*//g;
+        $strCommandLine =~ s/\-\-test-path\=\S*//g;
+        $strCommandLine =~ s/\-\-module\=\S*//g;
+        $strCommandLine =~ s/\-\-test\=\S*//g;
+        $strCommandLine =~ s/\-\-run\=\S*//g;
+
+        my $strCommand = "docker exec -i -u vagrant ${strOS}-test $0 ${strCommandLine} --test-path=/home/vagrant/test" .
+                         " --module=$$oTest{module} --test=$$oTest{test} --run=$$oTest{run}";
+
+        &log(DEBUG, $strCommand);
+        executeTest($strCommand, {iExpectedExitStatus => -1});
+    }
+
+    if (!$bNoCleanup)
+    {
+        executeTest("docker rm -f ${strOS}-test");
+    }
+
+    exit 0;
+}
+
+####################################################################################################################################
+# Search for psql
+####################################################################################################################################
 my @stryTestVersion;
 my @stryVersionSupport = versionSupport();
 
@@ -358,9 +461,8 @@ if ($@)
     }
 
     syswrite(*STDOUT, $oMessage);
-    exit 255;;
+    exit 250;
 }
-
 
 if (!$bDryRun)
 {
