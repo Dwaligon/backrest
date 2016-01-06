@@ -235,15 +235,30 @@ if (defined($strOS))
                     {
                         &log(DEBUG, "        Select Run $iTestRunIdx");
 
-                        my $oTestRun =
-                        {
-                            module => $$oModule{name},
-                            test => $$oTest{name},
-                            run => $iTestRunIdx
-                        };
+                        my $stryTestOS = [];
 
-                        push($oyTestRun, $oTestRun);
-                        $iTestsToRun++;
+                        if ($strOS eq 'all')
+                        {
+                            $stryTestOS = ['u12', 'u14', 'co6', 'co7'];
+                        }
+                        else
+                        {
+                            $stryTestOS = [$strOS];
+                        }
+
+                        foreach my $strTestOS (@{$stryTestOS})
+                        {
+                            my $oTestRun =
+                            {
+                                os => $strTestOS,
+                                module => $$oModule{name},
+                                test => $$oTest{name},
+                                run => $iTestRunIdx
+                            };
+
+                            push($oyTestRun, $oTestRun);
+                            $iTestsToRun++;
+                        }
                     }
                 }
             }
@@ -255,12 +270,16 @@ if (defined($strOS))
         confess &log(ERROR, 'no tests were selected');
     }
 
+    my $iTestFail = 0;
+
     foreach my $oTest (@{$oyTestRun})
     {
-        &log(INFO, "Execute os=${strOS}, module=$$oTest{module}, test=$$oTest{test}, run=$$oTest{run}");
+        my $strTest = "os=$$oTest{os}, module=$$oTest{module}, test=$$oTest{test}, run=$$oTest{run}";
 
-        executeTest("docker rm -f ${strOS}-test", {bSuppressError => true});
-        executeTest("docker run -itd -h ${strOS}-test --name=${strOS}-test -v /backrest:/backrest backrest/${strOS}-test");
+        &log(INFO, " EXEC ${strTest}");
+
+        executeTest("docker rm -f $$oTest{os}-test", {bSuppressError => true});
+        executeTest("docker run -itd -h $$oTest{os}-test --name=$$oTest{os}-test -v /backrest:/backrest backrest/$$oTest{os}-test");
 
         $strCommandLine =~ s/\-\-os\=\S*//g;
         $strCommandLine =~ s/\-\-test-path\=\S*//g;
@@ -268,16 +287,32 @@ if (defined($strOS))
         $strCommandLine =~ s/\-\-test\=\S*//g;
         $strCommandLine =~ s/\-\-run\=\S*//g;
 
-        my $strCommand = "docker exec -i -u vagrant ${strOS}-test $0 ${strCommandLine} --test-path=/home/vagrant/test" .
+        my $strCommand = "docker exec -i -u vagrant $$oTest{os}-test $0 ${strCommandLine} --test-path=/home/vagrant/test" .
                          " --module=$$oTest{module} --test=$$oTest{test} --run=$$oTest{run}";
 
         &log(DEBUG, $strCommand);
-        executeTest($strCommand, {iExpectedExitStatus => -1});
-    }
 
-    if (!$bNoCleanup)
+        my $oExec = new BackRestTest::Common::ExecuteTest($strCommand, {bSuppressError => true});
+        $oExec->begin();
+        my $iExitStatus = $oExec->end();
+
+        if (!($iExitStatus == 0 || $iExitStatus == 255))
+        {
+            &log(INFO, "ERROR ${strTest}" . (defined($oExec->{strOutLog}) ? ":\n" . $oExec->{strOutLog} : ''));
+            $iTestFail++;
+        }
+
+        # executeTest($strCommand, {iExpectedExitStatus => -1});
+    }
+    #
+    # if (!$bNoCleanup)
+    # {
+    #     executeTest("docker rm -f $$oTest{os}-test");
+    # }
+
+    if ($iTestFail > 0)
     {
-        executeTest("docker rm -f ${strOS}-test");
+        &log(INFO, "${iTestFail} test(s) failed!");
     }
 
     exit 0;
