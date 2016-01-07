@@ -278,7 +278,7 @@ if (defined($strOS))
     my $oyProcess = [];
 
     # 2 = 122s
-    # 4 = 2:50
+    # 4 = 135s
 
     for (my $iProcessIdx = 0; $iProcessIdx < 32; $iProcessIdx++)
     {
