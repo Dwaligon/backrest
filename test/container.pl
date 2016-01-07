@@ -296,7 +296,7 @@ eval
     {
         &log(INFO, "Building SSH keys...");
 
-        executeTest("ssh-keygen -f ${strTempPath}/id_rsa -t rsa -b 768 -N ''");
+        executeTest("ssh-keygen -f ${strTempPath}/id_rsa -t rsa -b 768 -N ''", {bSuppressStdErr => true});
     }
 
     foreach my $strOS (@stryOS)
@@ -441,7 +441,8 @@ eval
 
         # Write the image
         fileStringWrite("${strTempPath}/${strImageName}", "$strImage\n", false);
-        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}");
+        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}",
+                    {bSuppressStdErr => true});
 
         # Db image
         ###########################################################################################################################
@@ -512,7 +513,9 @@ eval
 
         # Write the image
         fileStringWrite("${strTempPath}/${strImageName}", "${strImage}\n", false);
-        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}");
+        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}",
+                    {bSuppressStdErr => true});
+
 
         # Db Doc image
         ###########################################################################################################################
@@ -527,7 +530,9 @@ eval
 
         # Write the image
         fileStringWrite("${strTempPath}/${strImageName}", "${strImage}\n", false);
-        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}");
+        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}",
+                    {bSuppressStdErr => true});
+
 
         # Backup image
         ###########################################################################################################################
@@ -545,7 +550,9 @@ eval
 
         # Write the image
         fileStringWrite("${strTempPath}/${strImageName}", "${strImage}\n", false);
-        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}");
+        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}",
+                    {bSuppressStdErr => true});
+
 
         # Backup Doc image
         ###########################################################################################################################
@@ -568,7 +575,9 @@ eval
 
         # Write the image
         fileStringWrite("${strTempPath}/${strImageName}", "${strImage}\n", false);
-        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}");
+        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}",
+                    {bSuppressStdErr => true});
+
 
         # Test image
         ###########################################################################################################################
@@ -605,7 +614,9 @@ eval
 
         # Write the image
         fileStringWrite("${strTempPath}/${strImageName}", "${strImage}\n", false);
-        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}");
+        executeTest("docker build -f ${strTempPath}/${strImageName} -t backrest/${strImageName} ${strTempPath}",
+                    {bSuppressStdErr => true});
+
     }
 };
 
