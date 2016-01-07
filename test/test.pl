@@ -273,106 +273,116 @@ if (defined($strOS))
 
     my $iTestFail = 0;
     my $oyProcess = [];
-    my $iProcessMax = 8;
+    my $iProcessMax = 4;
 
-    for (my $iProcessIdx = 0; $iProcessIdx < $iProcessMax; $iProcessIdx++)
+    # 2 = 4:49
+
+    for (my $iProcessIdx = 0; $iProcessIdx < 32; $iProcessIdx++)
     {
         # &log(INFO, "stop test-${iProcessIdx}");
         push(@{$oyProcess}, undef);
         executeTest("docker rm -f test-${iProcessIdx}", {bSuppressError => true});
     }
 
-    foreach my $oTest (@{$oyTestRun})
-    {
-        my $iFreeTotal = 0;
+    my $iTestIdx = 0;
+    my $iProcessTotal;
 
+    # foreach my $oTest (@{$oyTestRun})
+    do
+    {
         do
         {
+            $iProcessTotal = 0;
+
             for (my $iProcessIdx = 0; $iProcessIdx < $iProcessMax; $iProcessIdx++)
             {
                 if (defined($$oyProcess[$iProcessIdx]))
                 {
                     my $oExecDone = $$oyProcess[$iProcessIdx]{exec};
                     my $strTestDone = $$oyProcess[$iProcessIdx]{test};
+                    my $iTestDoneIdx = $$oyProcess[$iProcessIdx]{idx};
 
-                    &log(INFO, "     BEFORE CHCK ${strTestDone}");
+                    # &log(INFO, "     BEFORE CHCK ${strTestDone}");
 
                     my $iExitStatus = $oExecDone->end(undef, false);
 
-                    &log(INFO, "     AFTER CHCK ${strTestDone}");
+                    # &log(INFO, "     AFTER CHCK ${strTestDone}");
 
                     if (defined($iExitStatus))
                     {
                         if (!($iExitStatus == 0 || $iExitStatus == 255))
                         {
-                            &log(INFO, "ERROR ${strTestDone} (${iExitStatus})" .
+                            &log(INFO, "ERROR ${iProcessIdx}-${iTestDoneIdx} ${strTestDone} (${iExitStatus})" .
                                  (defined($oExecDone->{strOutLog}) ? ":\n" . $oExecDone->{strOutLog} : ''));
                             $iTestFail++;
                         }
                         else
                         {
-                            &log(INFO, " DONE ${strTestDone}");
+                            &log(DEBUG, " DONE ${iProcessIdx}-${iTestDoneIdx} ${strTestDone}");
                         }
 
                         executeTest("docker rm -f test-${iProcessIdx}");
                         $$oyProcess[$iProcessIdx] = undef;
                     }
-                }
-                else
-                {
-                    $iFreeTotal++;
+                    else
+                    {
+                        $iProcessTotal++;
+                    }
                 }
             }
 
-            # if ($iFreeTotal == 0)
-            # {
-            #     waitHiRes(.1);
-            # }
-        }
-        while ($iFreeTotal == 0);
+            # &log(INFO, "LOOP ${iProcessTotal}");
 
-        my $iProcessIdx = 0;
-
-        for (; $iProcessIdx < $iProcessMax; $iProcessIdx++)
-        {
-            if (!defined($$oyProcess[$iProcessIdx]))
+            if ($iProcessTotal == $iProcessMax)
             {
-                last;
+                waitHiRes(.1);
             }
         }
+        while ($iProcessTotal == $iProcessMax);
 
-        my $strTest = "os=$$oTest{os}, module=$$oTest{module}, test=$$oTest{test}, run=$$oTest{run}";
-        my $strImage = 'test-' . $iProcessIdx;
-
-        &log(INFO, " EXEC ${strTest}");
-
-        executeTest("docker run -itd -h $$oTest{os}-test --name=${strImage} -v /backrest:/backrest backrest/$$oTest{os}-test");
-
-        $strCommandLine =~ s/\-\-os\=\S*//g;
-        $strCommandLine =~ s/\-\-test-path\=\S*//g;
-        $strCommandLine =~ s/\-\-module\=\S*//g;
-        $strCommandLine =~ s/\-\-test\=\S*//g;
-        $strCommandLine =~ s/\-\-run\=\S*//g;
-
-        my $strCommand = "docker exec -i -u vagrant ${strImage} $0 ${strCommandLine} --test-path=/home/vagrant/test" .
-                         " --module=$$oTest{module} --test=$$oTest{test} --run=$$oTest{run}";
-
-        &log(DEBUG, $strCommand);
-
-        my $oExec = new BackRestTest::Common::ExecuteTest($strCommand, {bSuppressError => true});
-
-        $oExec->begin();
-
-        my $oProcess =
+        for (my $iProcessIdx = 0; $iProcessIdx < $iProcessMax; $iProcessIdx++)
         {
-            exec => $oExec,
-            test => $strTest
-        };
+            if (!defined($$oyProcess[$iProcessIdx]) && $iTestIdx < @{$oyTestRun})
+            {
+                my $oTest = $$oyTestRun[$iTestIdx];
 
-        $$oyProcess[$iProcessIdx] = $oProcess;
+                my $strTest = "os=$$oTest{os}, module=$$oTest{module}, test=$$oTest{test}, run=$$oTest{run}";
+                my $strImage = 'test-' . $iProcessIdx;
 
-        # executeTest($strCommand, {iExpectedExitStatus => -1});
+                &log(INFO, " EXEC ${iProcessIdx}-${iTestIdx} ${strTest}");
+
+                executeTest("docker run -itd -h $$oTest{os}-test --name=${strImage}" .
+                            " -v /backrest:/backrest backrest/$$oTest{os}-test");
+
+                $strCommandLine =~ s/\-\-os\=\S*//g;
+                $strCommandLine =~ s/\-\-test-path\=\S*//g;
+                $strCommandLine =~ s/\-\-module\=\S*//g;
+                $strCommandLine =~ s/\-\-test\=\S*//g;
+                $strCommandLine =~ s/\-\-run\=\S*//g;
+
+                my $strCommand = "docker exec -i -u vagrant ${strImage} $0 ${strCommandLine} --test-path=/home/vagrant/test" .
+                                 " --module=$$oTest{module} --test=$$oTest{test} --run=$$oTest{run}";
+
+                &log(DEBUG, $strCommand);
+
+                my $oExec = new BackRestTest::Common::ExecuteTest($strCommand, {bSuppressError => true});
+
+                $oExec->begin();
+
+                my $oProcess =
+                {
+                    exec => $oExec,
+                    test => $strTest,
+                    idx => $iTestIdx
+                };
+
+                $$oyProcess[$iProcessIdx] = $oProcess;
+                $iProcessTotal++;
+                $iTestIdx++;
+            }
+        }
     }
+    while ($iProcessTotal > 0);
     #
     # if (!$bNoCleanup)
     # {
