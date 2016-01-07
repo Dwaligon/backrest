@@ -22,6 +22,7 @@ use Scalar::Util qw(blessed);
 use lib dirname($0) . '/../lib';
 use BackRest::Common::Ini;
 use BackRest::Common::Log;
+use BackRest::Common::String;
 use BackRest::Common::Wait;
 use BackRest::Db;
 
@@ -295,7 +296,7 @@ if (defined($strOS))
     # 2 = 122s
     # 4 = 135s
 
-    for (my $iProcessIdx = 0; $iProcessIdx < 32; $iProcessIdx++)
+    for (my $iProcessIdx = 0; $iProcessIdx < 8; $iProcessIdx++)
     {
         # &log(INFO, "stop test-${iProcessIdx}");
         push(@{$oyProcess}, undef);
@@ -322,20 +323,25 @@ if (defined($strOS))
                     my $strTestDone = $$oyProcess[$iProcessIdx]{test};
                     my $iTestDoneIdx = $$oyProcess[$iProcessIdx]{idx};
 
+                    $strTestDone = sprintf('P%0' . length($iProcessMax) . 'd-T%0' . length($iTestMax) . 'd/%0' .
+                                           length($iTestMax) . "d - ${strTestDone}",
+                                           $iProcessIdx, $iTestDoneIdx, $iTestMax);
+
                     my $iExitStatus = $oExecDone->end(undef, $iProcessMax == 1);
 
                     if (defined($iExitStatus))
                     {
                         if (!($iExitStatus == 0 || $iExitStatus == 255))
                         {
-                            &log(INFO, "ERROR ${iProcessIdx}-${iTestDoneIdx}/${iTestMax} ${strTestDone} (${iExitStatus})" .
-                                 (defined($oExecDone->{strOutLog}) ? ":\n" . $oExecDone->{strOutLog} : ''));
+                            &log(ERROR, "${strTestDone} (${iExitStatus})" .
+                                 (defined($oExecDone->{strOutLog}) ? ":\n\n" . trim($oExecDone->{strOutLog}) . "\n" : ''),
+                                 undef, undef, 4);
                             $iTestFail++;
                         }
                         else
                         {
-                            &log( INFO, " DONE ${iProcessIdx}-${iTestDoneIdx}/${iTestMax} ${strTestDone}".
-                                        ($bVmOut ? ":\n" . $oExecDone->{strOutLog} : ''));
+                            &log( INFO, "${strTestDone}".
+                                        ($bVmOut ? ":\n\n" . trim($oExecDone->{strOutLog}) . "\n" : ''), undef, undef, 4);
                         }
 
                         if (!$bNoCleanup)
