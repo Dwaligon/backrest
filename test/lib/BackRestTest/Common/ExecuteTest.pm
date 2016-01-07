@@ -122,6 +122,9 @@ sub begin
 
     $self->{pId} = open3(undef, $self->{hOut}, $self->{hError}, $self->{strCommand});
 
+    # Create select objects
+    $self->{oIO} = new BackRest::Protocol::IO($self->{hOut}, undef, $self->{hError}, undef, 30, 65536);
+
     if (!defined($self->{hError}))
     {
         confess 'STDERR handle is undefined';
@@ -149,22 +152,19 @@ sub endRetry
             {name => 'bWait', required => false, default => true, trace => true}
         );
 
-    # Create select objects
-    my $oIO = new BackRest::Protocol::IO($self->{hOut}, undef, $self->{hError}, undef, 30, 65536);
-
     # Drain the output and error streams and look for test points
     my $iWait = $bWait ? .05 : 0;
 
     while(waitpid($self->{pId}, WNOHANG) == 0)
     {
-        # Drain the stderr stream
-        while (my $strLine = $oIO->lineRead($iWait, false, false))
-        {
-            $self->{strErrorLog} .= "$strLine\n";
-        }
+        # # Drain the stderr stream
+        # while (my $strLine = $self->{oIO}->lineRead($iWait, false, false))
+        # {
+        #     $self->{strErrorLog} .= "$strLine\n";
+        # }
 
         # Drain the stdout stream and look for test points
-        while (my $strLine = $oIO->lineRead($iWait, true, false))
+        while (defined(my $strLine = $self->{oIO}->lineRead($iWait, true, false)))
         {
             $self->{strOutLog} .= "$strLine\n";
 
@@ -184,16 +184,16 @@ sub endRetry
     # Check the exit status
     my $iExitStatus = ${^CHILD_ERROR_NATIVE} >> 8;
 
-    # Drain the stderr stream
-    while (my $strLine = $oIO->lineRead(0, false, false))
-    {
-        $self->{strErrorLog} .= "$strLine\n";
-    }
-
     # Drain the stdout stream
-    while (my $strLine = $oIO->lineRead(0, true, false))
+    while (defined(my $strLine = $self->{oIO}->lineRead(0, true, false)))
     {
         $self->{strOutLog} .= "$strLine\n";
+    }
+
+    # Drain the stderr stream
+    while (defined(my $strLine = $self->{oIO}->lineRead(0, false, false)))
+    {
+        $self->{strErrorLog} .= "$strLine\n";
     }
 
     # Pass the log to the LogTest object
@@ -279,8 +279,8 @@ sub end
         logDebugParam
         (
             OP_EXECUTE_TEST_END, \@_,
-            {name => 'strTest', required => false},
-            {name => 'bWait', required => false, default => true}
+            {name => 'strTest', required => false, trace => true},
+            {name => 'bWait', required => false, default => true, trace => true}
         );
 
     # If retry is not defined then run endRetry() one time

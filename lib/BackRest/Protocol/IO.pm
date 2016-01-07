@@ -297,7 +297,8 @@ sub lineRead
     }
 
     # Return the line that was found and adjust the buffer position
-    my $strLine = substr($self->{strBuffer}, $self->{iBufferPos}, $iLineFeedPos - $self->{iBufferPos});
+    my $strLine = $iLineFeedPos - $self->{iBufferPos} == 0 ? '' :
+                      substr($self->{strBuffer}, $self->{iBufferPos}, $iLineFeedPos - $self->{iBufferPos});
     $self->{iBufferPos} = $iLineFeedPos + 1;
 
     return $strLine;
