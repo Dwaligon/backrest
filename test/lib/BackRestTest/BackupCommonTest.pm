@@ -378,7 +378,7 @@ sub BackRestTestBackup_ClusterCreate
     # Defaults
     $strPath = defined($strPath) ? $strPath : BackRestTestCommon_DbCommonPathGet();
 
-    executeTest(BackRestTestCommon_PgSqlBinPathGet() . "/initdb -D ${strPath} -A trust");
+    executeTest(BackRestTestCommon_PgSqlBinPathGet() . "/initdb -D ${strPath} -A trust", {bSuppressStdErr => true});
 
     BackRestTestBackup_ClusterStart($strPath, $iPort, undef, $bArchive);
 

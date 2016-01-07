@@ -153,16 +153,18 @@ sub endRetry
     my $oIO = new BackRest::Protocol::IO($self->{hOut}, undef, $self->{hError}, undef, 30, 65536);
 
     # Drain the output and error streams and look for test points
+    my $iWait = $bWait ? .05 : 0;
+
     while(waitpid($self->{pId}, WNOHANG) == 0)
     {
         # Drain the stderr stream
-        while (my $strLine = $oIO->lineRead(0, false, false))
+        while (my $strLine = $oIO->lineRead($iWait, false, false))
         {
             $self->{strErrorLog} .= "$strLine\n";
         }
 
         # Drain the stdout stream and look for test points
-        while (my $strLine = $oIO->lineRead(0, true, false))
+        while (my $strLine = $oIO->lineRead($iWait, true, false))
         {
             $self->{strOutLog} .= "$strLine\n";
 

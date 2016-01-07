@@ -277,7 +277,8 @@ if (defined($strOS))
     my $iTestFail = 0;
     my $oyProcess = [];
 
-    # 2 = 4:49
+    # 2 = 122s
+    # 4 = 2:50
 
     for (my $iProcessIdx = 0; $iProcessIdx < 32; $iProcessIdx++)
     {
@@ -289,6 +290,7 @@ if (defined($strOS))
     my $iTestIdx = 0;
     my $iProcessTotal;
     my $iTestMax = @{$oyTestRun};
+    my $lStartTime = time();
 
     # foreach my $oTest (@{$oyTestRun})
     do
@@ -305,11 +307,7 @@ if (defined($strOS))
                     my $strTestDone = $$oyProcess[$iProcessIdx]{test};
                     my $iTestDoneIdx = $$oyProcess[$iProcessIdx]{idx};
 
-                    # &log(INFO, "     BEFORE CHCK ${strTestDone}");
-
                     my $iExitStatus = $oExecDone->end(undef, $iProcessMax == 1);
-
-                    # &log(INFO, "     AFTER CHCK ${strTestDone}");
 
                     if (defined($iExitStatus))
                     {
@@ -333,8 +331,6 @@ if (defined($strOS))
                     }
                 }
             }
-
-            # &log(INFO, "LOOP ${iProcessTotal}");
 
             if ($iProcessTotal == $iProcessMax)
             {
@@ -365,7 +361,7 @@ if (defined($strOS))
                 $strCommandLine =~ s/\-\-run\=\S*//g;
 
                 my $strCommand = "docker exec -i -u vagrant ${strImage} $0 ${strCommandLine} --test-path=/home/vagrant/test" .
-                                 " --module=$$oTest{module} --test=$$oTest{test} --run=$$oTest{run} --thread-max=1";
+                                 " --module=$$oTest{module} --test=$$oTest{test} --run=$$oTest{run} --thread-max=1 --no-cleanup";
 
                 &log(DEBUG, $strCommand);
 
@@ -392,10 +388,8 @@ if (defined($strOS))
     #     executeTest("docker rm -f $$oTest{os}-test");
     # }
 
-    if ($iTestFail > 0)
-    {
-        &log(INFO, "${iTestFail} test(s) failed!");
-    }
+    &log(INFO, 'TESTS COMPLETED ' . ($iTestFail == 0 ? 'SUCCESSFULLY' : "WITH ${iTestFail} FAILURE(S)") .
+               ' (' . (time() - $lStartTime) . 's)');
 
     exit 0;
 }
