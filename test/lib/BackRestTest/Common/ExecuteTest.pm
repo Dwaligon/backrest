@@ -138,12 +138,14 @@ sub endRetry
     my
     (
         $strOperation,
-        $strTest
+        $strTest,
+        $bWait
     ) =
         logDebugParam
         (
             OP_EXECUTE_TEST_END_RETRY, \@_,
-            {name => 'strTest', required => false, trace => true}
+            {name => 'strTest', required => false, trace => true},
+            {name => 'bWait', required => false, default => true, trace => true}
         );
 
     # Create select objects
@@ -165,7 +167,7 @@ sub endRetry
         }
 
         # Drain the stdout stream and look for test points
-        if ($oOutSelect->can_read(.05))
+        if ($oOutSelect->can_read(0))
         {
             while (my $strLine = readline($self->{hOut}))
             {
@@ -177,6 +179,11 @@ sub endRetry
                     return true;
                 }
             }
+        }
+
+        if (!$bWait)
+        {
+            return undef;
         }
     }
 
@@ -278,12 +285,14 @@ sub end
     my
     (
         $strOperation,
-        $strTest
+        $strTest,
+        $bWait
     ) =
         logDebugParam
         (
             OP_EXECUTE_TEST_END, \@_,
-            {name => 'strTest', required => false}
+            {name => 'strTest', required => false},
+            {name => 'bWait', required => false, default => true}
         );
 
     # If retry is not defined then run endRetry() one time
@@ -291,7 +300,7 @@ sub end
 
     if (!defined($self->{iRetrySeconds}))
     {
-        $iExitStatus = $self->endRetry($strTest);
+        $iExitStatus = $self->endRetry($strTest, $bWait);
     }
     # Else loop until success or timeout
     else
@@ -302,7 +311,7 @@ sub end
         {
             $self->{bRetry} = false;
             $self->begin();
-            $iExitStatus = $self->endRetry($strTest);
+            $iExitStatus = $self->endRetry($strTest, $bWait);
 
             if ($self->{bRetry})
             {
@@ -314,7 +323,7 @@ sub end
         if ($self->{bRetry})
         {
             $self->begin();
-            $iExitStatus = $self->endRetry($strTest);
+            $iExitStatus = $self->endRetry($strTest, $bWait);
         }
     }
 

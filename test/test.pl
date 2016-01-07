@@ -22,6 +22,7 @@ use Scalar::Util qw(blessed);
 use lib dirname($0) . '/../lib';
 use BackRest::Common::Ini;
 use BackRest::Common::Log;
+use BackRest::Common::Wait;
 use BackRest::Db;
 
 use lib dirname($0) . '/lib';
@@ -271,15 +272,81 @@ if (defined($strOS))
     }
 
     my $iTestFail = 0;
+    my $oyProcess = [];
+    my $iProcessMax = 8;
+
+    for (my $iProcessIdx = 0; $iProcessIdx < $iProcessMax; $iProcessIdx++)
+    {
+        # &log(INFO, "stop test-${iProcessIdx}");
+        push(@{$oyProcess}, undef);
+        executeTest("docker rm -f test-${iProcessIdx}", {bSuppressError => true});
+    }
 
     foreach my $oTest (@{$oyTestRun})
     {
+        my $iFreeTotal = 0;
+
+        do
+        {
+            for (my $iProcessIdx = 0; $iProcessIdx < $iProcessMax; $iProcessIdx++)
+            {
+                if (defined($$oyProcess[$iProcessIdx]))
+                {
+                    my $oExecDone = $$oyProcess[$iProcessIdx]{exec};
+                    my $strTestDone = $$oyProcess[$iProcessIdx]{test};
+
+                    &log(INFO, "     BEFORE CHCK ${strTestDone}");
+
+                    my $iExitStatus = $oExecDone->end(undef, false);
+
+                    &log(INFO, "     AFTER CHCK ${strTestDone}");
+
+                    if (defined($iExitStatus))
+                    {
+                        if (!($iExitStatus == 0 || $iExitStatus == 255))
+                        {
+                            &log(INFO, "ERROR ${strTestDone} (${iExitStatus})" .
+                                 (defined($oExecDone->{strOutLog}) ? ":\n" . $oExecDone->{strOutLog} : ''));
+                            $iTestFail++;
+                        }
+                        else
+                        {
+                            &log(INFO, " DONE ${strTestDone}");
+                        }
+
+                        executeTest("docker rm -f test-${iProcessIdx}");
+                        $$oyProcess[$iProcessIdx] = undef;
+                    }
+                }
+                else
+                {
+                    $iFreeTotal++;
+                }
+            }
+
+            # if ($iFreeTotal == 0)
+            # {
+            #     waitHiRes(.1);
+            # }
+        }
+        while ($iFreeTotal == 0);
+
+        my $iProcessIdx = 0;
+
+        for (; $iProcessIdx < $iProcessMax; $iProcessIdx++)
+        {
+            if (!defined($$oyProcess[$iProcessIdx]))
+            {
+                last;
+            }
+        }
+
         my $strTest = "os=$$oTest{os}, module=$$oTest{module}, test=$$oTest{test}, run=$$oTest{run}";
+        my $strImage = 'test-' . $iProcessIdx;
 
         &log(INFO, " EXEC ${strTest}");
 
-        executeTest("docker rm -f $$oTest{os}-test", {bSuppressError => true});
-        executeTest("docker run -itd -h $$oTest{os}-test --name=$$oTest{os}-test -v /backrest:/backrest backrest/$$oTest{os}-test");
+        executeTest("docker run -itd -h $$oTest{os}-test --name=${strImage} -v /backrest:/backrest backrest/$$oTest{os}-test");
 
         $strCommandLine =~ s/\-\-os\=\S*//g;
         $strCommandLine =~ s/\-\-test-path\=\S*//g;
@@ -287,20 +354,22 @@ if (defined($strOS))
         $strCommandLine =~ s/\-\-test\=\S*//g;
         $strCommandLine =~ s/\-\-run\=\S*//g;
 
-        my $strCommand = "docker exec -i -u vagrant $$oTest{os}-test $0 ${strCommandLine} --test-path=/home/vagrant/test" .
+        my $strCommand = "docker exec -i -u vagrant ${strImage} $0 ${strCommandLine} --test-path=/home/vagrant/test" .
                          " --module=$$oTest{module} --test=$$oTest{test} --run=$$oTest{run}";
 
         &log(DEBUG, $strCommand);
 
         my $oExec = new BackRestTest::Common::ExecuteTest($strCommand, {bSuppressError => true});
-        $oExec->begin();
-        my $iExitStatus = $oExec->end();
 
-        if (!($iExitStatus == 0 || $iExitStatus == 255))
+        $oExec->begin();
+
+        my $oProcess =
         {
-            &log(INFO, "ERROR ${strTest}" . (defined($oExec->{strOutLog}) ? ":\n" . $oExec->{strOutLog} : ''));
-            $iTestFail++;
-        }
+            exec => $oExec,
+            test => $strTest
+        };
+
+        $$oyProcess[$iProcessIdx] = $oProcess;
 
         # executeTest($strCommand, {iExpectedExitStatus => -1});
     }
