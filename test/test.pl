@@ -65,6 +65,7 @@ test.pl [options]
    --psql-bin           path to the psql executables (e.g. /usr/lib/postgresql/9.3/bin/)
    --test-path          path where tests are executed (defaults to ./test)
    --log-level          log level to use for tests (defaults to INFO)
+   --vm-out             Show VM output (default false)
    --quiet, -q          equivalent to --log-level=off
 
  General Options:
@@ -77,6 +78,7 @@ test.pl [options]
 ####################################################################################################################################
 my $strLogLevel = 'info';
 my $strOS = undef;
+my $bVmOut = false;
 my $strModule = 'all';
 my $strModuleTest = 'all';
 my $iModuleTestRun = undef;
@@ -104,6 +106,7 @@ GetOptions ('q|quiet' => \$bQuiet,
             'test-path=s' => \$strTestPath,
             'log-level=s' => \$strLogLevel,
             'os=s' => \$strOS,
+            'vm-out' => \$bVmOut,
             'module=s' => \$strModule,
             'test=s' => \$strModuleTest,
             'run=s' => \$iModuleTestRun,
@@ -173,6 +176,18 @@ my $oTestDefinition =
     module =>
     [
         {
+            name => 'config',
+            test =>
+            [
+                {
+                    name => 'option'
+                },
+                {
+                    name => 'config'
+                }
+            ]
+        },
+        {
             name => 'backup',
             test =>
             [
@@ -227,10 +242,10 @@ if (defined($strOS))
                 {
                     &log(DEBUG, "    Select Test $$oTest{name}");
 
-                    my $iTestRunMin = defined($iModuleTestRun) ? $iModuleTestRun : 1;
-                    my $iTestRunMax = defined($iModuleTestRun) ? $iModuleTestRun : $$oTest{total};
+                    my $iTestRunMin = defined($iModuleTestRun) ? $iModuleTestRun : (defined($$oTest{total}) ? 1 : -1);
+                    my $iTestRunMax = defined($iModuleTestRun) ? $iModuleTestRun : (defined($$oTest{total}) ? $$oTest{total} : -1);
 
-                    if ($iTestRunMax > $$oTest{total})
+                    if (defined($$oTest{total}) && $iTestRunMax > $$oTest{total})
                     {
                         confess &log(ERROR, "invalid run - must be >= 1 and <= $$oTest{total}")
                     }
@@ -257,10 +272,10 @@ if (defined($strOS))
                                 os => $strTestOS,
                                 module => $$oModule{name},
                                 test => $$oTest{name},
-                                run => $iTestRunIdx
+                                run => $iTestRunIdx == -1 ? undef : $iTestRunIdx
                             };
 
-                            push($oyTestRun, $oTestRun);
+                            push(@{$oyTestRun}, $oTestRun);
                             $iTestsToRun++;
                         }
                     }
@@ -319,10 +334,15 @@ if (defined($strOS))
                         }
                         else
                         {
-                            &log(DEBUG, " DONE ${iProcessIdx}-${iTestDoneIdx}/${iTestMax} ${strTestDone}");
+                            &log( INFO, " DONE ${iProcessIdx}-${iTestDoneIdx}/${iTestMax} ${strTestDone}".
+                                        ($bVmOut ? ":\n" . $oExecDone->{strOutLog} : ''));
                         }
 
-                        executeTest("docker rm -f test-${iProcessIdx}");
+                        if (!$bNoCleanup)
+                        {
+                            executeTest("docker rm -f test-${iProcessIdx}");
+                        }
+
                         $$oyProcess[$iProcessIdx] = undef;
                     }
                     else
@@ -346,10 +366,11 @@ if (defined($strOS))
                 my $oTest = $$oyTestRun[$iTestIdx];
                 $iTestIdx++;
 
-                my $strTest = "os=$$oTest{os}, module=$$oTest{module}, test=$$oTest{test}, run=$$oTest{run}";
+                my $strTest = "os=$$oTest{os}, module=$$oTest{module}, test=$$oTest{test}" .
+                              (defined($$oTest{run}) ? ", run=$$oTest{run}" : '');
                 my $strImage = 'test-' . $iProcessIdx;
 
-                &log(INFO, " EXEC ${iProcessIdx}-${iTestIdx}/${iTestMax} ${strTest}");
+                # &log(INFO, " EXEC ${iProcessIdx}-${iTestIdx}/${iTestMax} ${strTest}");
 
                 executeTest("docker run -itd -h $$oTest{os}-test --name=${strImage}" .
                             " -v /backrest:/backrest backrest/$$oTest{os}-test");
@@ -361,7 +382,9 @@ if (defined($strOS))
                 $strCommandLine =~ s/\-\-run\=\S*//g;
 
                 my $strCommand = "docker exec -i -u vagrant ${strImage} $0 ${strCommandLine} --test-path=/home/vagrant/test" .
-                                 " --module=$$oTest{module} --test=$$oTest{test} --run=$$oTest{run} --thread-max=1 --no-cleanup";
+                                 " --module=$$oTest{module} --test=$$oTest{test}" .
+                                 (defined($$oTest{run}) ? " --run=$$oTest{run}" : '') .
+                                 " --thread-max=1 --no-cleanup";
 
                 &log(DEBUG, $strCommand);
 
