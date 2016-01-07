@@ -21,6 +21,7 @@ use Symbol 'gensym';
 use lib dirname($0) . '/../lib';
 use BackRest::Common::Log;
 use BackRest::Common::Wait;
+use BackRest::Protocol::IO;
 
 ####################################################################################################################################
 # Operation constants
@@ -149,35 +150,26 @@ sub endRetry
         );
 
     # Create select objects
-    my $oErrorSelect = IO::Select->new();
-    $oErrorSelect->add($self->{hError});
-    my $oOutSelect = IO::Select->new();
-    $oOutSelect->add($self->{hOut});
+    my $oIO = new BackRest::Protocol::IO($self->{hOut}, undef, $self->{hError}, undef, 30, 65536);
 
     # Drain the output and error streams and look for test points
     while(waitpid($self->{pId}, WNOHANG) == 0)
     {
         # Drain the stderr stream
-        if ($oErrorSelect->can_read(0))
+        while (my $strLine = $oIO->lineRead(0, false, false))
         {
-            while (my $strLine = readline($self->{hError}))
-            {
-                $self->{strErrorLog} .= $strLine;
-            }
+            $self->{strErrorLog} .= "$strLine\n";
         }
 
         # Drain the stdout stream and look for test points
-        if ($oOutSelect->can_read(0))
+        while (my $strLine = $oIO->lineRead(0, true, false))
         {
-            while (my $strLine = readline($self->{hOut}))
-            {
-                $self->{strOutLog} .= $strLine;
+            $self->{strOutLog} .= "$strLine\n";
 
-                if (defined($strTest) && testCheck($strLine, $strTest))
-                {
-                    &log(DEBUG, "Found test ${strTest}");
-                    return true;
-                }
+            if (defined($strTest) && testCheck($strLine, $strTest))
+            {
+                &log(DEBUG, "Found test ${strTest}");
+                return true;
             }
         }
 
@@ -191,21 +183,15 @@ sub endRetry
     my $iExitStatus = ${^CHILD_ERROR_NATIVE} >> 8;
 
     # Drain the stderr stream
-    if ($oErrorSelect->can_read(0))
+    while (my $strLine = $oIO->lineRead(0, false, false))
     {
-        while (my $strLine = readline($self->{hError}))
-        {
-            $self->{strErrorLog} .= $strLine;
-        }
+        $self->{strErrorLog} .= "$strLine\n";
     }
 
     # Drain the stdout stream
-    if ($oOutSelect->can_read(0))
+    while (my $strLine = $oIO->lineRead(0, true, false))
     {
-        while (my $strLine = readline($self->{hOut}))
-        {
-            $self->{strOutLog} .= $strLine;
-        }
+        $self->{strOutLog} .= "$strLine\n";
     }
 
     # Pass the log to the LogTest object

@@ -53,6 +53,7 @@ test.pl [options]
    --test               execute the specified test in a module
    --run                execute only the specified test run
    --thread-max         max threads to run for backup/restore (default 4)
+   --process-max        max test processes to run in parallel (default 2)
    --dry-run            show only the tests that would be executed but don't execute them
    --no-cleanup         don't cleaup after the last test is complete - useful for debugging
    --infinite           repeat selected tests forever
@@ -80,6 +81,7 @@ my $strModule = 'all';
 my $strModuleTest = 'all';
 my $iModuleTestRun = undef;
 my $iThreadMax = undef;
+my $iProcessMax = 1;
 my $bDryRun = false;
 my $bNoCleanup = false;
 my $strPgSqlBin;
@@ -106,6 +108,7 @@ GetOptions ('q|quiet' => \$bQuiet,
             'test=s' => \$strModuleTest,
             'run=s' => \$iModuleTestRun,
             'thread-max=s' => \$iThreadMax,
+            'process-max=s' => \$iProcessMax,
             'dry-run' => \$bDryRun,
             'no-cleanup' => \$bNoCleanup,
             'infinite' => \$bInfinite,
@@ -273,7 +276,6 @@ if (defined($strOS))
 
     my $iTestFail = 0;
     my $oyProcess = [];
-    my $iProcessMax = 4;
 
     # 2 = 4:49
 
@@ -286,6 +288,7 @@ if (defined($strOS))
 
     my $iTestIdx = 0;
     my $iProcessTotal;
+    my $iTestMax = @{$oyTestRun};
 
     # foreach my $oTest (@{$oyTestRun})
     do
@@ -304,7 +307,7 @@ if (defined($strOS))
 
                     # &log(INFO, "     BEFORE CHCK ${strTestDone}");
 
-                    my $iExitStatus = $oExecDone->end(undef, false);
+                    my $iExitStatus = $oExecDone->end(undef, $iProcessMax == 1);
 
                     # &log(INFO, "     AFTER CHCK ${strTestDone}");
 
@@ -312,13 +315,13 @@ if (defined($strOS))
                     {
                         if (!($iExitStatus == 0 || $iExitStatus == 255))
                         {
-                            &log(INFO, "ERROR ${iProcessIdx}-${iTestDoneIdx} ${strTestDone} (${iExitStatus})" .
+                            &log(INFO, "ERROR ${iProcessIdx}-${iTestDoneIdx}/${iTestMax} ${strTestDone} (${iExitStatus})" .
                                  (defined($oExecDone->{strOutLog}) ? ":\n" . $oExecDone->{strOutLog} : ''));
                             $iTestFail++;
                         }
                         else
                         {
-                            &log(DEBUG, " DONE ${iProcessIdx}-${iTestDoneIdx} ${strTestDone}");
+                            &log(DEBUG, " DONE ${iProcessIdx}-${iTestDoneIdx}/${iTestMax} ${strTestDone}");
                         }
 
                         executeTest("docker rm -f test-${iProcessIdx}");
@@ -345,11 +348,12 @@ if (defined($strOS))
             if (!defined($$oyProcess[$iProcessIdx]) && $iTestIdx < @{$oyTestRun})
             {
                 my $oTest = $$oyTestRun[$iTestIdx];
+                $iTestIdx++;
 
                 my $strTest = "os=$$oTest{os}, module=$$oTest{module}, test=$$oTest{test}, run=$$oTest{run}";
                 my $strImage = 'test-' . $iProcessIdx;
 
-                &log(INFO, " EXEC ${iProcessIdx}-${iTestIdx} ${strTest}");
+                &log(INFO, " EXEC ${iProcessIdx}-${iTestIdx}/${iTestMax} ${strTest}");
 
                 executeTest("docker run -itd -h $$oTest{os}-test --name=${strImage}" .
                             " -v /backrest:/backrest backrest/$$oTest{os}-test");
@@ -361,7 +365,7 @@ if (defined($strOS))
                 $strCommandLine =~ s/\-\-run\=\S*//g;
 
                 my $strCommand = "docker exec -i -u vagrant ${strImage} $0 ${strCommandLine} --test-path=/home/vagrant/test" .
-                                 " --module=$$oTest{module} --test=$$oTest{test} --run=$$oTest{run}";
+                                 " --module=$$oTest{module} --test=$$oTest{test} --run=$$oTest{run} --thread-max=1";
 
                 &log(DEBUG, $strCommand);
 
@@ -378,7 +382,6 @@ if (defined($strOS))
 
                 $$oyProcess[$iProcessIdx] = $oProcess;
                 $iProcessTotal++;
-                $iTestIdx++;
             }
         }
     }

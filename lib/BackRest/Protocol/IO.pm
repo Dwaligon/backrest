@@ -251,7 +251,7 @@ sub lineRead
                     $self->waitPid();
 
                     # Only error if reading from the input stream
-                    if (!defined($bInRead) || $bInRead)
+                    if (defined($bError) && $bError)
                     {
                         confess &log(ERROR, "unexpected EOF", ERROR_FILE_READ);
                     }
