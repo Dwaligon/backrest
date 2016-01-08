@@ -421,12 +421,13 @@ eval
                         my $oExecDone = $$oyProcess[$iProcessIdx]{exec};
                         my $strTestDone = $$oyProcess[$iProcessIdx]{test};
                         my $iTestDoneIdx = $$oyProcess[$iProcessIdx]{idx};
-                        my $fTestElapsedTime = ceil((gettimeofday() - $$oyProcess[$iProcessIdx]{start_time}) * 100) / 100;
 
                         my $iExitStatus = $oExecDone->end(undef, $iProcessMax == 1);
 
                         if (defined($iExitStatus))
                         {
+                            my $fTestElapsedTime = ceil((gettimeofday() - $$oyProcess[$iProcessIdx]{start_time}) * 100) / 100;
+
                             if (!($iExitStatus == 0 || $iExitStatus == 255))
                             {
                                 &log(ERROR, "${strTestDone} (err${iExitStatus}-${fTestElapsedTime}s)" .
