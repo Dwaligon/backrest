@@ -158,6 +158,7 @@ sub endRetry
     while(waitpid($self->{pId}, WNOHANG) == 0)
     {
         # # Drain the stderr stream
+        # !!! This is a good idea but can only be done with the IO object has separate buffers for stdin and stderr
         # while (my $strLine = $self->{oIO}->lineRead($iWait, false, false))
         # {
         #     $self->{strErrorLog} .= "$strLine\n";
