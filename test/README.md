@@ -13,7 +13,8 @@ Note that this is not required for normal operation of pgBackRest.
 The easiest way to start testing pgBackRest is with the included Vagrantfile.
 
 Build Vagrant and Logon:
-```cd test
+```
+cd test
             vagrant up
             vagrant ssh
 ```

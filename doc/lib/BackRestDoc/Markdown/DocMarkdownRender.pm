@@ -295,7 +295,7 @@ sub sectionProcess
                 $strMarkdown .= "\n\n" . $oChild->paramGet('title') . ":";
             }
 
-            $strMarkdown .= "\n```" . trim($oChild->valueGet()) . "\n```";
+            $strMarkdown .= "\n```\n" . trim($oChild->valueGet()) . "\n```";
 
             # $oSectionBodyElement->
             #     addNew(HTML_DIV, 'code-block',
