@@ -15,7 +15,7 @@ The easiest way to start testing pgBackRest is with the included Vagrantfile.
 Build Vagrant and Logon:
 ```
 cd test
-            vagrant up
-            vagrant ssh
+vagrant up
+vagrant ssh
 ```
 The `vagrant up` step could take some time as a number of Docker containers must also be built.

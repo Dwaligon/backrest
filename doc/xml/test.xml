@@ -18,9 +18,9 @@
         <p>The easiest way to start testing <backrest/> is with the included Vagrantfile.</p>
 
         <code-block title="Build Vagrant and Logon">
-            cd test
-            vagrant up
-            vagrant ssh
+cd test
+vagrant up
+vagrant ssh
         </code-block>
 
         <p>The <code>vagrant up</code> step could take some time as a number of Docker containers must also be built.</p>
