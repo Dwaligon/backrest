@@ -169,6 +169,39 @@ if (defined($iModuleTestRun) && $strModuleTest eq 'all')
     confess "--test must be provided for --run=\"${iModuleTestRun}\"";
 }
 
+# Check thread total
+if (defined($iThreadMax) && ($iThreadMax < 1 || $iThreadMax > 32))
+{
+    confess 'thread-max must be between 1 and 32';
+}
+
+####################################################################################################################################
+# Make sure version number matches in the change log.
+####################################################################################################################################
+my $hReadMe;
+my $strLine;
+my $bMatch = false;
+my $strChangeLogFile = abs_path(dirname($0) . '/../CHANGELOG.md');
+
+if (!open($hReadMe, '<', $strChangeLogFile))
+{
+    confess "unable to open ${strChangeLogFile}";
+}
+
+while ($strLine = readline($hReadMe))
+{
+    if ($strLine =~ /^\#\# v/)
+    {
+        $bMatch = substr($strLine, 4, length(BACKREST_VERSION)) eq BACKREST_VERSION;
+        last;
+    }
+}
+
+if (!$bMatch)
+{
+    confess 'unable to find version ' . BACKREST_VERSION . " as last revision in ${strChangeLogFile}";
+}
+
 ####################################################################################################################################
 # Define tests
 ####################################################################################################################################
@@ -176,6 +209,17 @@ my $oTestDefinition =
 {
     module =>
     [
+        # Help tests
+        {
+            name => 'help',
+            test =>
+            [
+                {
+                    name => 'help'
+                }
+            ]
+        },
+        # Config tests
         {
             name => 'config',
             test =>
@@ -188,6 +232,44 @@ my $oTestDefinition =
                 }
             ]
         },
+        # File tests
+        {
+            name => 'file',
+            test =>
+            [
+                {
+                    name => 'path_create'
+                },
+                {
+                    name => 'move'
+                },
+                {
+                    name => 'compress'
+                },
+                {
+                    name => 'wait'
+                },
+                {
+                    name => 'manifest'
+                },
+                {
+                    name => 'list'
+                },
+                {
+                    name => 'remove'
+                },
+                {
+                    name => 'hash'
+                },
+                {
+                    name => 'exists'
+                },
+                {
+                    name => 'copy'
+                }
+            ]
+        },
+        # Backup tests
         {
             name => 'backup',
             test =>
@@ -210,11 +292,13 @@ my $oTestDefinition =
                 },
                 {
                     name => 'synthetic',
-                    total => 8
+                    total => 8,
+                    thread => true
                 },
                 {
                     name => 'full',
-                    total => 8
+                    total => 8,
+                    thread => true
                 }
             ]
         }
@@ -266,18 +350,29 @@ if (defined($strOS))
                             $stryTestOS = [$strOS];
                         }
 
-                        foreach my $strTestOS (@{$stryTestOS})
-                        {
-                            my $oTestRun =
-                            {
-                                os => $strTestOS,
-                                module => $$oModule{name},
-                                test => $$oTest{name},
-                                run => $iTestRunIdx == -1 ? undef : $iTestRunIdx
-                            };
+                        my $iyThreadMax = [defined($iThreadMax) ? $iThreadMax : 1];
 
-                            push(@{$oyTestRun}, $oTestRun);
-                            $iTestsToRun++;
+                        if (defined($$oTest{thread}) && $$oTest{thread} && !defined($iThreadMax))
+                        {
+                            $iyThreadMax = [1, 4];
+                        }
+
+                        foreach my $iThreadTestMax (@{$iyThreadMax})
+                        {
+                            foreach my $strTestOS (@{$stryTestOS})
+                            {
+                                my $oTestRun =
+                                {
+                                    os => $strTestOS,
+                                    module => $$oModule{name},
+                                    test => $$oTest{name},
+                                    run => $iTestRunIdx == -1 ? undef : $iTestRunIdx,
+                                    thread => $iThreadTestMax
+                                };
+
+                                push(@{$oyTestRun}, $oTestRun);
+                                $iTestsToRun++;
+                            }
                         }
                     }
                 }
@@ -296,11 +391,14 @@ if (defined($strOS))
     # 2 = 122s
     # 4 = 135s
 
-    for (my $iProcessIdx = 0; $iProcessIdx < 8; $iProcessIdx++)
+    if (!$bDryRun)
     {
-        # &log(INFO, "stop test-${iProcessIdx}");
-        push(@{$oyProcess}, undef);
-        executeTest("docker rm -f test-${iProcessIdx}", {bSuppressError => true});
+        for (my $iProcessIdx = 0; $iProcessIdx < 8; $iProcessIdx++)
+        {
+            # &log(INFO, "stop test-${iProcessIdx}");
+            push(@{$oyProcess}, undef);
+            executeTest("docker rm -f test-${iProcessIdx}", {bSuppressError => true});
+        }
     }
 
     my $iTestIdx = 0;
@@ -373,13 +471,17 @@ if (defined($strOS))
                 $iTestIdx++;
 
                 my $strTest = "os=$$oTest{os}, module=$$oTest{module}, test=$$oTest{test}" .
-                              (defined($$oTest{run}) ? ", run=$$oTest{run}" : '');
+                              (defined($$oTest{run}) ? ", run=$$oTest{run}" : '') .
+                              (defined($$oTest{thread}) ? ", thread-max=$$oTest{thread}" : '');
                 my $strImage = 'test-' . $iProcessIdx;
 
-                # &log(INFO, " EXEC ${iProcessIdx}-${iTestIdx}/${iTestMax} ${strTest}");
+                &log($bDryRun ? INFO : DEBUG, "${iProcessIdx}-${iTestIdx}/${iTestMax} ${strTest}");
 
-                executeTest("docker run -itd -h $$oTest{os}-test --name=${strImage}" .
-                            " -v /backrest:/backrest backrest/$$oTest{os}-test");
+                if (!$bDryRun)
+                {
+                    executeTest("docker run -itd -h $$oTest{os}-test --name=${strImage}" .
+                                " -v /backrest:/backrest backrest/$$oTest{os}-test");
+                }
 
                 $strCommandLine =~ s/\-\-os\=\S*//g;
                 $strCommandLine =~ s/\-\-test-path\=\S*//g;
@@ -390,22 +492,27 @@ if (defined($strOS))
                 my $strCommand = "docker exec -i -u vagrant ${strImage} $0 ${strCommandLine} --test-path=/home/vagrant/test" .
                                  " --module=$$oTest{module} --test=$$oTest{test}" .
                                  (defined($$oTest{run}) ? " --run=$$oTest{run}" : '') .
-                                 " --thread-max=1 --no-cleanup";
+                                 (defined($$oTest{thread}) ? " --thread-max=$$oTest{thread}" : '') .
+                                 " --no-cleanup";
 
                 &log(DEBUG, $strCommand);
 
-                my $oExec = new BackRestTest::Common::ExecuteTest($strCommand, {bSuppressError => true});
-
-                $oExec->begin();
-
-                my $oProcess =
+                if (!$bDryRun)
                 {
-                    exec => $oExec,
-                    test => $strTest,
-                    idx => $iTestIdx
-                };
+                    my $oExec = new BackRestTest::Common::ExecuteTest($strCommand, {bSuppressError => true});
 
-                $$oyProcess[$iProcessIdx] = $oProcess;
+                    $oExec->begin();
+
+                    my $oProcess =
+                    {
+                        exec => $oExec,
+                        test => $strTest,
+                        idx => $iTestIdx
+                    };
+
+                    $$oyProcess[$iProcessIdx] = $oProcess;
+                }
+
                 $iProcessTotal++;
             }
         }
@@ -468,50 +575,17 @@ else
     push @stryTestVersion, $strPgSqlBin;
 }
 
-# Check thread total
-if (defined($iThreadMax) && ($iThreadMax < 1 || $iThreadMax > 32))
-{
-    confess 'thread-max must be between 1 and 32';
-}
-
-####################################################################################################################################
-# Make sure version number matches in the change log.
-####################################################################################################################################
-my $hReadMe;
-my $strLine;
-my $bMatch = false;
-my $strChangeLogFile = abs_path(dirname($0) . '/../CHANGELOG.md');
-
-if (!open($hReadMe, '<', $strChangeLogFile))
-{
-    confess "unable to open ${strChangeLogFile}";
-}
-
-while ($strLine = readline($hReadMe))
-{
-    if ($strLine =~ /^\#\# v/)
-    {
-        $bMatch = substr($strLine, 4, length(BACKREST_VERSION)) eq BACKREST_VERSION;
-        last;
-    }
-}
-
-if (!$bMatch)
-{
-    confess 'unable to find version ' . BACKREST_VERSION . " as last revision in ${strChangeLogFile}";
-}
-
 ####################################################################################################################################
 # Clean whitespace only if test.pl is being run from the test directory in the backrest repo
 ####################################################################################################################################
-if (-e './test.pl' && -e '../bin/pg_backrest')
-{
-    BackRestTestCommon_Execute(
-        "find .. -type f -not -path \"../.git/*\" -not -path \"*.DS_Store\" -not -path \"../test/test/*\" " .
-        "-not -path \"../test/data/*\" " .
-        "-exec sh -c 'for i;do echo \"\$i\" && sed 's/[[:space:]]*\$//' \"\$i\">/tmp/.\$\$ && cat /tmp/.\$\$ " .
-        "> \"\$i\";done' arg0 {} + > /dev/null", false, true);
-}
+# if (-e './test.pl' && -e '../bin/pg_backrest')
+# {
+#     BackRestTestCommon_Execute(
+#         "find .. -type f -not -path \"../.git/*\" -not -path \"*.DS_Store\" -not -path \"../test/test/*\" " .
+#         "-not -path \"../test/data/*\" " .
+#         "-exec sh -c 'for i;do echo \"\$i\" && sed 's/[[:space:]]*\$//' \"\$i\">/tmp/.\$\$ && cat /tmp/.\$\$ " .
+#         "> \"\$i\";done' arg0 {} + > /dev/null", false, true);
+# }
 
 ####################################################################################################################################
 # Runs tests
