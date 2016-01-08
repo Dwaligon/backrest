@@ -86,7 +86,7 @@ my $strModule = 'all';
 my $strModuleTest = 'all';
 my $iModuleTestRun = undef;
 my $iThreadMax = undef;
-my $iProcessMax = 2;
+my $iProcessMax = 1;
 my $bDryRun = false;
 my $bNoCleanup = false;
 my $strPgSqlBin;
