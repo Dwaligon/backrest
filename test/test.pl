@@ -521,11 +521,6 @@ eval
             }
         }
         while ($iProcessTotal > 0);
-        #
-        # if (!$bNoCleanup)
-        # {
-        #     executeTest("docker rm -f $$oTest{os}-test");
-        # }
 
         &log(INFO, 'TESTS COMPLETED ' . ($iTestFail == 0 ? 'SUCCESSFULLY' : "WITH ${iTestFail} FAILURE(S)") .
                    ' (' . (time() - $lStartTime) . 's)');
