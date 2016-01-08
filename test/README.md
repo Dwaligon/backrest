@@ -18,4 +18,30 @@ cd test
 vagrant up
 vagrant ssh
 ```
-The `vagrant up` step could take some time as a number of Docker containers must also be built.
+The `vagrant up` step could take some time as a number of Docker containers must also be built. The `vagrant up` command automatically logs onto the VM.
+
+Run All Tests:
+```
+/backrest/test/test.pl
+```
+
+Run Tests for a Specific OS:
+```
+/backrest/test/test.pl --vm=co6
+```
+
+Run Tests for a Specific OS and Module:
+```
+/backrest/test/test.pl --vm=co6 --module=backup
+```
+
+Run Tests for a Specific OS, Module, and Test:
+```
+/backrest/test/test.pl --vm=co6 --module=backup --full
+```
+
+Run Tests for a Specific OS, Module, Test, and Thread Max:
+```
+/backrest/test/test.pl --vm=co6 --module=backup --full --thread-max=4
+```
+Note that thread-max is only applicable to the `synthetic` and full tests in the `backup` module.

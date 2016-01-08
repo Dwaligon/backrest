@@ -23,6 +23,29 @@ vagrant up
 vagrant ssh
         </code-block>
 
-        <p>The <code>vagrant up</code> step could take some time as a number of Docker containers must also be built.</p>
+        <p>The <code>vagrant up</code> step could take some time as a number of Docker containers must also be built.  The <code>vagrant up</code> command automatically logs onto the VM.</p>
+
+        <code-block title="Run All Tests">
+/backrest/test/test.pl
+        </code-block>
+
+        <code-block title="Run Tests for a Specific OS">
+/backrest/test/test.pl --vm=co6
+        </code-block>
+
+        <code-block title="Run Tests for a Specific OS and Module">
+/backrest/test/test.pl --vm=co6 --module=backup
+        </code-block>
+
+        <code-block title="Run Tests for a Specific OS, Module, and Test">
+/backrest/test/test.pl --vm=co6 --module=backup --full
+        </code-block>
+
+        <code-block title="Run Tests for a Specific OS, Module, Test, and Thread Max">
+/backrest/test/test.pl --vm=co6 --module=backup --full --thread-max=4
+        </code-block>
+
+        <p>Note that thread-max is only applicable to the <id>synthetic</id> and full tests in the <id>backup</id> module.</p>
+
     </section>
 </doc>
