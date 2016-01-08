@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE doc SYSTEM "doc.dtd">
+<doc subtitle="Testing" toc="y">
+
+    <section id="introduction">
+        <title>Introduction</title>
+
+        <p><backrest/> aims to be a simple, reliable backup and restore system that can seamlessly scale up to the largest databases and workloads.</p>
+    </section>
+</doc>
