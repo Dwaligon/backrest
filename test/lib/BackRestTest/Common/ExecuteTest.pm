@@ -153,21 +153,24 @@ sub endRetry
         );
 
     # Drain the output and error streams and look for test points
-    my $iWait = $bWait ? .05 : 0;
+    # my $iWait = $bWait ? .05 : 0;
 
     while(waitpid($self->{pId}, WNOHANG) == 0)
     {
+        my $bFound = false;
         # # Drain the stderr stream
         # !!! This is a good idea but can only be done with the IO object has separate buffers for stdin and stderr
-        # while (my $strLine = $self->{oIO}->lineRead($iWait, false, false))
+        # while (my $strLine = $self->{oIO}->lineRead(0, false, false))
         # {
+        #     $bFound = true;
         #     $self->{strErrorLog} .= "$strLine\n";
         # }
 
         # Drain the stdout stream and look for test points
-        while (defined(my $strLine = $self->{oIO}->lineRead($iWait, true, false)))
+        while (defined(my $strLine = $self->{oIO}->lineRead(0, true, false)))
         {
             $self->{strOutLog} .= "$strLine\n";
+            $bFound = true;
 
             if (defined($strTest) && testCheck($strLine, $strTest))
             {
@@ -179,6 +182,11 @@ sub endRetry
         if (!$bWait)
         {
             return undef;
+        }
+
+        if (!$bFound)
+        {
+            waitHiRes(.05);
         }
     }
 
