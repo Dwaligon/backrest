@@ -252,7 +252,9 @@ sub containerBuild
         }
         elsif ($strOS eq OS_U12 || $strOS eq OS_U14)
         {
-            $strImage .= "RUN apt-get -y install openssh-server\n";
+            $strImage .=
+                "RUN apt-get update\n" .
+                "RUN apt-get -y install openssh-server\n";
         }
 
         $strImage .=
