@@ -424,7 +424,7 @@ sub BackRestTestBackup_Test
                                                 ($bRemote ? DB : undef));
 
                 # Helper function to push archive logs
-                sub archivePushStop
+                sub archivePush
                 {
                     my $oLogTest = shift;
                     my $oFile = shift;
@@ -452,7 +452,7 @@ sub BackRestTestBackup_Test
                 }
 
                 # Push a WAL segment
-                archivePushStop($oLogTest, $oFile, $strXlogPath, $strArchiveTestFile, 1);
+                archivePush($oLogTest, $oFile, $strXlogPath, $strArchiveTestFile, 1);
 
                 # load the archive info file so it can be munged for testing
                 my $strInfoFile = $oFile->pathGet(PATH_BACKUP_ARCHIVE, ARCHIVE_INFO_FILE);
@@ -469,14 +469,14 @@ sub BackRestTestBackup_Test
                 }
 
                 # Push two more segments with errors to exceed archive-max-mb
-                archivePushStop($oLogTest, $oFile, $strXlogPath, $strArchiveTestFile, 2,
-                                $iError ? ERROR_HOST_CONNECT : ERROR_ARCHIVE_MISMATCH);
+                archivePush($oLogTest, $oFile, $strXlogPath, $strArchiveTestFile, 2,
+                            $iError ? ERROR_HOST_CONNECT : ERROR_ARCHIVE_MISMATCH);
 
-                archivePushStop($oLogTest, $oFile, $strXlogPath, $strArchiveTestFile, 3,
-                                $iError ? ERROR_HOST_CONNECT : ERROR_ARCHIVE_MISMATCH);
+                archivePush($oLogTest, $oFile, $strXlogPath, $strArchiveTestFile, 3,
+                            $iError ? ERROR_HOST_CONNECT : ERROR_ARCHIVE_MISMATCH);
 
                 # Now this segment will get dropped
-                archivePushStop($oLogTest, $oFile, $strXlogPath, $strArchiveTestFile, 4);
+                archivePush($oLogTest, $oFile, $strXlogPath, $strArchiveTestFile, 4);
 
                 # Fix the database version
                 if ($iError == 0)
@@ -493,8 +493,8 @@ sub BackRestTestBackup_Test
                     or die "unable to remove stop file ${strStopFile}";
 
                 # Push two more segments - only #4 should be missing from the archive at the end
-                archivePushStop($oLogTest, $oFile, $strXlogPath, $strArchiveTestFile, 5);
-                archivePushStop($oLogTest, $oFile, $strXlogPath, $strArchiveTestFile, 6);
+                archivePush($oLogTest, $oFile, $strXlogPath, $strArchiveTestFile, 5);
+                archivePush($oLogTest, $oFile, $strXlogPath, $strArchiveTestFile, 6);
             }
             }
 
