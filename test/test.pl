@@ -34,9 +34,9 @@ use BackRestTest::Common::ExecuteTest;
 use BackRestTest::CommonTest;
 use BackRestTest::CompareTest;
 use BackRestTest::ConfigTest;
+use BackRestTest::Docker::Container;
 use BackRestTest::FileTest;
 use BackRestTest::HelpTest;
-# use BackRestTest::IniTest;
 
 ####################################################################################################################################
 # Usage
@@ -51,7 +51,6 @@ test.pl - pgBackRest Unit Tests
 test.pl [options]
 
  Test Options:
-   --os                 execute os in a docker container (u12, u14, co6, co7)
    --module             test module to execute
    --test               execute the specified test in a module
    --run                execute only the specified test run
@@ -68,8 +67,12 @@ test.pl [options]
    --psql-bin           path to the psql executables (e.g. /usr/lib/postgresql/9.3/bin/)
    --test-path          path where tests are executed (defaults to ./test)
    --log-level          log level to use for tests (defaults to INFO)
-   --vm-out             Show VM output (default false)
    --quiet, -q          equivalent to --log-level=off
+
+ VM Options:
+   --vm-build           build Docker containers
+   --vm                 execute in a docker container (u12, u14, co6, co7)
+   --vm-out             Show VM output (default false)
 
  General Options:
    --version            display version and exit
@@ -98,6 +101,7 @@ my $bQuiet = false;
 my $bInfinite = false;
 my $strDbVersion = 'all';
 my $bLogForce = false;
+my $bVmBuild = false;
 
 my $strCommandLine = join(' ', @ARGV);
 
@@ -110,6 +114,7 @@ GetOptions ('q|quiet' => \$bQuiet,
             'log-level=s' => \$strLogLevel,
             'vm=s' => \$strOS,
             'vm-out' => \$bVmOut,
+            'vm-build' => \$bVmBuild,
             'module=s' => \$strModule,
             'test=s' => \$strModuleTest,
             'run=s' => \$iModuleTestRun,
@@ -175,6 +180,15 @@ if (defined($iModuleTestRun) && $strModuleTest eq 'all')
 if (defined($iThreadMax) && ($iThreadMax < 1 || $iThreadMax > 32))
 {
     confess 'thread-max must be between 1 and 32';
+}
+
+####################################################################################################################################
+# Build Docker containers
+####################################################################################################################################
+if ($bVmBuild)
+{
+    containerBuild();
+    exit 0;
 }
 
 ####################################################################################################################################
