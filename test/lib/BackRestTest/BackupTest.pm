@@ -163,14 +163,16 @@ sub BackRestTestBackup_Test
                 my $strCommand = BackRestTestCommon_CommandMainGet() . ' --config=' . BackRestTestCommon_DbPathGet() .
                                  '/pg_backrest.conf --no-fork --stanza=db archive-push';
 
-                sub archivePush
+                sub archiveGenerate
                 {
                     my $oFile = shift;
                     my $strXlogPath = shift;
                     my $iSourceNo = shift;
                     my $iArchiveNo = shift;
+                    my $bPartial = shift;
 
-                    my $strArchiveFile = uc(sprintf('0000000100000001%08x', $iArchiveNo));
+                    my $strArchiveFile = uc(sprintf('0000000100000001%08x', $iArchiveNo)) .
+                                         (defined($bPartial) && $bPartial ? '.partial' : '');
                     my $strArchiveTestFile = BackRestTestCommon_DataPathGet() . "/test.archive${iSourceNo}.bin";
 
                     my $strSourceFile = "${strXlogPath}/${strArchiveFile}";
@@ -233,7 +235,7 @@ sub BackRestTestBackup_Test
                             confess 'backup total * archive total cannot be greater than 255';
                         }
 
-                        ($strArchiveFile, $strSourceFile) = archivePush($oFile, $strXlogPath, 2, $iArchiveNo);
+                        ($strArchiveFile, $strSourceFile) = archiveGenerate($oFile, $strXlogPath, 2, $iArchiveNo);
                         &log(INFO, '    backup ' . sprintf('%02d', $iBackup) .
                                    ', archive ' .sprintf('%02x', $iArchive) .
                                    " - ${strArchiveFile}");
@@ -289,7 +291,6 @@ sub BackRestTestBackup_Test
                                     BackRestTestBackup_Stop(undef, undef, true);
 
                                     $oExecArchive->end();
-
                                 }
                                 else
                                 {
@@ -330,6 +331,22 @@ sub BackRestTestBackup_Test
                                 unlink ($strDuplicateWal)
                                         or confess "unable to remove duplicate WAL segment created for testing: ${strDuplicateWal}";
                             }
+
+                            # Test .partial archive
+                            &log(INFO, '        test .partial archive');
+                            ($strArchiveFile, $strSourceFile) = archiveGenerate($oFile, $strXlogPath, 2, $iArchiveNo, true);
+                            executeTest($strCommand . " ${strSourceFile}", {oLogTest => $oLogTest});
+                            archiveCheck($oFile, $strArchiveFile, $strArchiveChecksum, $bCompress);
+
+                            # Test .partial archive duplicate
+                            &log(INFO, '        test .partial archive duplicate');
+                            executeTest($strCommand . " ${strSourceFile}", {oLogTest => $oLogTest});
+
+                            # Test .partial archive with different checksum
+                            &log(INFO, '        test .partial archive with different checksum');
+                            ($strArchiveFile, $strSourceFile) = archiveGenerate($oFile, $strXlogPath, 1, $iArchiveNo, true);
+                            executeTest($strCommand . " ${strSourceFile}",
+                                        {iExpectedExitStatus => ERROR_ARCHIVE_DUPLICATE, oLogTest => $oLogTest});
                         }
 
                         archiveCheck($oFile, $strArchiveFile, $strArchiveChecksum, $bCompress);
