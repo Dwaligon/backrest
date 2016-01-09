@@ -55,7 +55,6 @@ test.pl [options]
    --test               execute the specified test in a module
    --run                execute only the specified test run
    --thread-max         max threads to run for backup/restore (default 4)
-   --process-max        max test processes to run in parallel (default 2)
    --dry-run            show only the tests that would be executed but don't execute them
    --no-cleanup         don't cleaup after the last test is complete - useful for debugging
    --infinite           repeat selected tests forever
@@ -73,6 +72,7 @@ test.pl [options]
    --vm-build           build Docker containers
    --vm                 execute in a docker container (u12, u14, co6, co7)
    --vm-out             Show VM output (default false)
+   --process-max        max VMs to run in parallel (default 1)
 
  General Options:
    --version            display version and exit
