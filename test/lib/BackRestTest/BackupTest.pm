@@ -312,13 +312,7 @@ sub BackRestTestBackup_Test
                             # Now it should break on archive duplication (because checksum is different
                             &log(INFO, '        test archive duplicate error');
 
-                            $oFile->copy(PATH_DB_ABSOLUTE, $strArchiveTestFile2, # Source file
-                                         PATH_DB_ABSOLUTE, $strSourceFile,       # Destination file
-                                         false,                                  # Source is not compressed
-                                         false,                                  # Destination is not compressed
-                                         undef, undef, undef,                    # Unused params
-                                         true);                                  # Create path if it does not exist
-
+                            ($strArchiveFile, $strSourceFile) = archiveGenerate($oFile, $strXlogPath, 1, $iArchiveNo);
                             executeTest($strCommand . " ${strSourceFile}",
                                         {iExpectedExitStatus => ERROR_ARCHIVE_DUPLICATE, oLogTest => $oLogTest});
 
