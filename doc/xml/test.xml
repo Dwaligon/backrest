@@ -52,5 +52,9 @@ vagrant ssh
         </code-block>
 
         <p>Note that db-version is only applicable to the <id>full</id> test in the <id>backup</id> module.</p>
+
+        <code-block title="Iterate All Possible Test Combinations">
+/backrest/test/test.pl --dry-run
+        </code-block>
     </section>
 </doc>

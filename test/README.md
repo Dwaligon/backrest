@@ -51,3 +51,8 @@ Run Tests for a Specific OS, Module, Test, Thread Max, and Database Version:
 /backrest/test/test.pl --vm=co6 --module=backup --full --thread-max=4 --db-version=9.4
 ```
 Note that db-version is only applicable to the `full` test in the `backup` module.
+
+Iterate All Possible Test Combinations:
+```
+/backrest/test/test.pl --dry-run
+```
