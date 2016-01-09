@@ -292,7 +292,7 @@ sub sectionProcess
         {
             if ($oChild->paramTest('title'))
             {
-                $strMarkdown .= "\n\n" . $oChild->paramGet('title') . ":";
+                $strMarkdown .= "\n\n_" . $oChild->paramGet('title') . "_:";
             }
 
             $strMarkdown .= "\n```\n" . trim($oChild->valueGet()) . "\n```";
