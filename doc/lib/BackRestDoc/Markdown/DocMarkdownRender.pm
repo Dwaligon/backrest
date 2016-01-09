@@ -296,10 +296,6 @@ sub sectionProcess
             }
 
             $strMarkdown .= "\n```\n" . trim($oChild->valueGet()) . "\n```";
-
-            # $oSectionBodyElement->
-            #     addNew(HTML_DIV, 'code-block',
-            #            {strContent => $oChild->valueGet()});
         }
         # Add descriptive text
         elsif ($oChild->nameGet() eq 'p')
