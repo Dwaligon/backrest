@@ -828,7 +828,7 @@ sub xfer
 
     foreach my $strFile (sort(keys(%{$oManifestHash{name}})))
     {
-        if ($strFile =~ "^[0-F]{24}(-[0-f]{40})(\\.$oFile->{strCompressExtension}){0,1}\$" ||
+        if ($strFile =~ "^[0-F]{24}(\\.partial){0,1}(-[0-f]{40})(\\.$oFile->{strCompressExtension}){0,1}\$" ||
             $strFile =~ /^[0-F]{8}\.history$/ || $strFile =~ /^[0-F]{24}\.[0-F]{8}\.backup$/)
         {
             CORE::push(@stryFile, $strFile);
@@ -881,7 +881,7 @@ sub xfer
 
                 # Determine if this is an archive file (don't want to do compression or checksum on .backup files)
                 my $bArchiveFile = basename($strFile) =~
-                    "^[0-F]{24}(-[0-f]+){0,1}(\\.partial){0,1}(\\.$oFile->{strCompressExtension}){0,1}\$" ? true : false;
+                    "^[0-F]{24}(\\.partial){0,1}(-[0-f]+){0,1}(\\.$oFile->{strCompressExtension}){0,1}\$" ? true : false;
 
                 # Determine if this is a partial archive file
                 my $bPartial = $bArchiveFile && basename($strFile) =~ /\.partial/ ? true : false;

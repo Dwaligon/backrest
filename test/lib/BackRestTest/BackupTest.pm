@@ -341,6 +341,16 @@ sub BackRestTestBackup_Test
                             ($strArchiveFile, $strSourceFile) = archiveGenerate($oFile, $strXlogPath, 1, $iArchiveNo, true);
                             executeTest($strCommand . " ${strSourceFile}",
                                         {iExpectedExitStatus => ERROR_ARCHIVE_DUPLICATE, oLogTest => $oLogTest});
+
+                            if ($bArchiveAsync)
+                            {
+                                my $strDuplicateWal =
+                                    ($bRemote ? BackRestTestCommon_LocalPathGet() : BackRestTestCommon_RepoPathGet()) .
+                                    "/archive/${strStanza}/out/${strArchiveFile}-4518a0fdf41d796760b384a358270d4682589820";
+
+                                unlink ($strDuplicateWal)
+                                        or confess "unable to remove duplicate WAL segment created for testing: ${strDuplicateWal}";
+                            }
                         }
 
                         archiveCheck($oFile, $strArchiveFile, $strArchiveChecksum, $bCompress);
