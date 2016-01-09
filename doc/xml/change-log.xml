@@ -11,6 +11,9 @@
                 <release-feature>
                     <text>Fixed an issue where specifying <setting>--no-archive-check</setting> would throw a configuration error.  <i>Reported by Jason O'Donnell</i>.</text>
                 </release-feature>
+                <release-feature>
+                    <text>Support for <postgres/> 9.5. [IN PROGRESS]</text>
+                </release-feature>
             </release-feature-bullet-list>
         </changelog-release>
 
