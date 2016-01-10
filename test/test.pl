@@ -334,7 +334,7 @@ eval
     {
         my $oyVm = vmGet();
 
-        if (!defined($${oyVm}{$strOS}))
+        if ($strOS ne 'all' && !defined($${oyVm}{$strOS}))
         {
             confess &log(ERROR, "${strOS} is not a valid VM");
         }
@@ -385,7 +385,7 @@ eval
                                 if (defined($$oTest{db}) && $$oTest{db})
                                 {
                                     $iDbVersionMin = 0;
-                                    $iDbVersionMax = @{$$oyVm{$strOS}{db}} - 1;
+                                    $iDbVersionMax = @{$$oyVm{$strTestOS}{db}} - 1;
                                 }
 
                                 my $bFirstDbVersion = true;
@@ -393,7 +393,7 @@ eval
                                 for (my $iDbVersionIdx = $iDbVersionMax; $iDbVersionIdx >= $iDbVersionMin; $iDbVersionIdx--)
                                 {
                                     if ($iDbVersionIdx == -1 || $strDbVersion eq 'all' ||
-                                        ($strDbVersion ne 'all' && $strDbVersion eq ${$$oyVm{$strOS}{db}}[$iDbVersionIdx]))
+                                        ($strDbVersion ne 'all' && $strDbVersion eq ${$$oyVm{$strTestOS}{db}}[$iDbVersionIdx]))
                                     {
                                         my $iyThreadMax = [defined($iThreadMax) ? $iThreadMax : 1];
 
@@ -412,7 +412,7 @@ eval
                                                 test => $$oTest{name},
                                                 run => $iTestRunIdx == -1 ? undef : $iTestRunIdx,
                                                 thread => $iThreadTestMax,
-                                                db => $iDbVersionIdx == -1 ? undef : ${$$oyVm{$strOS}{db}}[$iDbVersionIdx]
+                                                db => $iDbVersionIdx == -1 ? undef : ${$$oyVm{$strTestOS}{db}}[$iDbVersionIdx]
                                             };
 
                                             push(@{$oyTestRun}, $oTestRun);
