@@ -342,58 +342,52 @@ eval
         # Determine which tests to run
         my $iTestsToRun = 0;
 
-        foreach my $oModule (@{$$oTestDefinition{module}})
+        my $stryTestOS = [];
+
+        if ($strOS eq 'all')
         {
-            if ($strModule eq $$oModule{name} || $strModule eq 'all')
+            $stryTestOS = ['co6', 'u12', 'co7', 'u14'];
+        }
+        else
+        {
+            $stryTestOS = [$strOS];
+        }
+
+        foreach my $strTestOS (@{$stryTestOS})
+        {
+            foreach my $oModule (@{$$oTestDefinition{module}})
             {
-                &log(DEBUG, "Select Module $$oModule{name}");
-
-                foreach my $oTest (@{$$oModule{test}})
+                if ($strModule eq $$oModule{name} || $strModule eq 'all')
                 {
-                    if ($strModuleTest eq $$oTest{name} || $strModuleTest eq 'all')
+                    foreach my $oTest (@{$$oModule{test}})
                     {
-                        &log(DEBUG, "    Select Test $$oTest{name}");
-
-                        my $iTestRunMin = defined($iModuleTestRun) ? $iModuleTestRun : (defined($$oTest{total}) ? 1 : -1);
-                        my $iTestRunMax = defined($iModuleTestRun) ? $iModuleTestRun : (defined($$oTest{total}) ? $$oTest{total} : -1);
-
-                        if (defined($$oTest{total}) && $iTestRunMax > $$oTest{total})
+                        if ($strModuleTest eq $$oTest{name} || $strModuleTest eq 'all')
                         {
-                            confess &log(ERROR, "invalid run - must be >= 1 and <= $$oTest{total}")
-                        }
+                            my $iDbVersionMin = -1;
+                            my $iDbVersionMax = -1;
 
-                        for (my $iTestRunIdx = $iTestRunMin; $iTestRunIdx <= $iTestRunMax; $iTestRunIdx++)
-                        {
-                            &log(DEBUG, "        Select Run $iTestRunIdx");
-
-                            my $stryTestOS = [];
-
-                            if ($strOS eq 'all')
+                            if (defined($$oTest{db}) && $$oTest{db})
                             {
-                                $stryTestOS = ['u12', 'u14', 'co6', 'co7'];
-                            }
-                            else
-                            {
-                                $stryTestOS = [$strOS];
+                                $iDbVersionMin = 0;
+                                $iDbVersionMax = @{$$oyVm{$strTestOS}{db}} - 1;
                             }
 
-                            foreach my $strTestOS (@{$stryTestOS})
+                            my $bFirstDbVersion = true;
+
+                            for (my $iDbVersionIdx = $iDbVersionMax; $iDbVersionIdx >= $iDbVersionMin; $iDbVersionIdx--)
                             {
-                                my $iDbVersionMin = -1;
-                                my $iDbVersionMax = -1;
-
-                                if (defined($$oTest{db}) && $$oTest{db})
+                                if ($iDbVersionIdx == -1 || $strDbVersion eq 'all' ||
+                                    ($strDbVersion ne 'all' && $strDbVersion eq ${$$oyVm{$strTestOS}{db}}[$iDbVersionIdx]))
                                 {
-                                    $iDbVersionMin = 0;
-                                    $iDbVersionMax = @{$$oyVm{$strTestOS}{db}} - 1;
-                                }
+                                    my $iTestRunMin = defined($iModuleTestRun) ? $iModuleTestRun : (defined($$oTest{total}) ? 1 : -1);
+                                    my $iTestRunMax = defined($iModuleTestRun) ? $iModuleTestRun : (defined($$oTest{total}) ? $$oTest{total} : -1);
 
-                                my $bFirstDbVersion = true;
+                                    if (defined($$oTest{total}) && $iTestRunMax > $$oTest{total})
+                                    {
+                                        confess &log(ERROR, "invalid run - must be >= 1 and <= $$oTest{total}")
+                                    }
 
-                                for (my $iDbVersionIdx = $iDbVersionMax; $iDbVersionIdx >= $iDbVersionMin; $iDbVersionIdx--)
-                                {
-                                    if ($iDbVersionIdx == -1 || $strDbVersion eq 'all' ||
-                                        ($strDbVersion ne 'all' && $strDbVersion eq ${$$oyVm{$strTestOS}{db}}[$iDbVersionIdx]))
+                                    for (my $iTestRunIdx = $iTestRunMin; $iTestRunIdx <= $iTestRunMax; $iTestRunIdx++)
                                     {
                                         my $iyThreadMax = [defined($iThreadMax) ? $iThreadMax : 1];
 
